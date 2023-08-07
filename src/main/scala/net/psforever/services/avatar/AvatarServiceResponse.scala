@@ -12,6 +12,8 @@ import net.psforever.packet.game.objectcreate.ConstructorData
 import net.psforever.packet.game.ObjectCreateMessage
 import net.psforever.types.{ExoSuitType, PlanetSideEmpire, PlanetSideGUID, TransactionType, Vector3}
 import net.psforever.services.GenericGuidEventBusMsg
+import net.psforever.services.avatar.AvatarResponse.PlayerState
+import net.psforever.services.avatar.AvatarResponse.ProjectileState
 
 final case class AvatarServiceResponse(
     channel: String,
@@ -20,6 +22,12 @@ final case class AvatarServiceResponse(
 ) extends GenericGuidEventBusMsg {
   def inner                = replyMessage
   def guid: PlanetSideGUID = avatar_guid
+  def shouldRateLimit =
+    replyMessage match {
+      case _: PlayerState     => true
+      case _: ProjectileState => true
+      case _                  => false
+    }
 }
 
 object AvatarResponse {

@@ -18,8 +18,15 @@ final case class VehicleServiceResponse(
     avatar_guid: PlanetSideGUID,
     replyMessage: VehicleResponse.Response
 ) extends GenericGuidEventBusMsg {
-  override def inner                = replyMessage
-  override def guid: PlanetSideGUID = avatar_guid
+  def inner                = replyMessage
+  def guid: PlanetSideGUID = avatar_guid
+  def shouldRateLimit =
+    replyMessage match {
+      case _: VehicleResponse.ChildObjectState  => true
+      case _: VehicleResponse.FrameVehicleState => true
+      case _: VehicleResponse.VehicleState      => true
+      case _                                    => false
+    }
 }
 
 object VehicleResponse {

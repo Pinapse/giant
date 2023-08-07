@@ -26,6 +26,7 @@ trait GenericEventBusMsg {
 
 trait GenericGuidEventBusMsg extends GenericEventBusMsg {
   def guid: PlanetSideGUID
+  def shouldRateLimit: Boolean
 }
 
 object GenericEventBus {
@@ -104,7 +105,7 @@ class GenericGuidEventBus[A <: GenericGuidEventBusMsg](rateLimit: Double)
     }
 
   override def publish(event: Event): Unit = {
-    if (rateLimit <= 0) {
+    if (rateLimit <= 0 || !event.shouldRateLimit) {
       publishForce(event)
     } else {
       val cache =
