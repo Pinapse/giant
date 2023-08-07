@@ -35,7 +35,6 @@ import org.fusesource.jansi.Ansi._
 import org.slf4j
 import scopt.OParser
 import akka.actor.typed.scaladsl.adapter._
-import kamon.Kamon
 import net.psforever.packet.PlanetSidePacket
 import net.psforever.services.hart.HartService
 
@@ -90,10 +89,6 @@ object Server {
         case None          => InetAddress.getByName(Config.app.bind) // address from config
       }
 
-    if (Config.app.kamon.enable) {
-      logger.info("Starting Kamon")
-      Kamon.init()
-    }
     if (Config.app.sentry.enable) {
       logger.info(s"Enabling Sentry")
       val options = new SentryOptions()
@@ -101,7 +96,7 @@ object Server {
       Sentry.init(options)
     }
 
-    if (Config.app.prometheus.http) {
+    if (Config.app.prometheus.enable) {
       logger.info(s"Enabling Prometheus")
       DefaultExports.initialize()
       val server =

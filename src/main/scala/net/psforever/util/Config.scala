@@ -93,7 +93,6 @@ case class AppConfig(
     antiCheat: AntiCheatConfig,
     network: NetworkConfig,
     development: DevelopmentConfig,
-    kamon: KamonConfig,
     sentry: SentryConfig,
     prometheus: PrometheusConfig
 )
@@ -193,17 +192,13 @@ case class NetSimConfig(
     reorderTime: Duration
 )
 
-case class KamonConfig(
-    enable: Boolean
-)
-
 case class SentryConfig(
     enable: Boolean,
     dsn: String
 )
 
 case class PrometheusConfig(
-    http: Boolean,
+    enable: Boolean,
     port: Int,
     username: String,
     password: String
