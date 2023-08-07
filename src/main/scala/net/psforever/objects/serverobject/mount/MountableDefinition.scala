@@ -13,7 +13,7 @@ object MountInfo {
 
 trait MountableDefinition {
   /* key - mount index, value - mount object */
-  private val seats: mutable.HashMap[Int, SeatDefinition]  = mutable.HashMap[Int, SeatDefinition]()
+  private val seats: mutable.HashMap[Int, SeatDefinition] = mutable.HashMap[Int, SeatDefinition]()
   /* key - entry point index, value - mount index */
   private val mountPoints: mutable.HashMap[Int, MountInfo] = mutable.HashMap()
 

@@ -10,6 +10,7 @@ import net.psforever.types.Vector3
   * Calling this "geometry" would be accurate yet still generous.
   */
 trait EnvironmentCollision {
+
   /** in general, the highest point in this geometry */
   def altitude: Float
 
@@ -30,8 +31,7 @@ trait EnvironmentCollision {
   * The modifier "deep" indicates that the valid area goes down from the altitude to the bottom of the world.
   * @param altitude the z-coordinate of the geometry (height)
   */
-final case class DeepPlane(altitude: Float)
-  extends EnvironmentCollision {
+final case class DeepPlane(altitude: Float) extends EnvironmentCollision {
   def testInteraction(pos: Vector3, varDepth: Float): Boolean = {
     pos.z + varDepth < altitude
   }
@@ -54,7 +54,7 @@ final case class DeepPlane(altitude: Float)
   * @param west the x-coordinate of the other least side
   */
 final case class DeepSquare(altitude: Float, north: Float, east: Float, south: Float, west: Float)
-  extends EnvironmentCollision {
+    extends EnvironmentCollision {
   def testInteraction(pos: Vector3, varDepth: Float): Boolean = {
     pos.z + varDepth < altitude && north > pos.y && pos.y >= south && east > pos.x && pos.x >= west
   }
@@ -75,7 +75,7 @@ final case class DeepSquare(altitude: Float, north: Float, east: Float, south: F
   * @param west the x-coordinate of the other least side
   */
 final case class DeepSurface(altitude: Float, north: Float, east: Float, south: Float, west: Float)
-  extends EnvironmentCollision {
+    extends EnvironmentCollision {
   def testInteraction(pos: Vector3, varDepth: Float): Boolean = {
     pos.z < altitude && north > pos.y && pos.y >= south && east > pos.x && pos.x >= west
   }
@@ -89,8 +89,7 @@ final case class DeepSurface(altitude: Float, north: Float, east: Float, south: 
   * @param center the center of the geometry (height)
   * @param radius how large the circle is
   */
-final case class DeepCircularSurface(center: Vector3, radius: Float)
-  extends EnvironmentCollision {
+final case class DeepCircularSurface(center: Vector3, radius: Float) extends EnvironmentCollision {
   def altitude: Float = center.z
 
   def bounding: Rectangle = Rectangle(center.y + radius, center.x + radius, center.y - radius, center.x - radius)

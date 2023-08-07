@@ -156,7 +156,8 @@ class RemoteProjectileDataTest extends Specification {
     "encode (oicw_little_buddy)" in {
       val obj = LittleBuddyProjectileData(
         CommonFieldDataWithPlacement(
-            PlacementData(Vector3(3046.2344f, 3715.6953f, 68.578125f),
+          PlacementData(
+            Vector3(3046.2344f, 3715.6953f, 68.578125f),
             Vector3(0, 317.8125f, 357.1875f),
             Some(Vector3(-10.0125f, 101.475f, -101.7f))
           ),

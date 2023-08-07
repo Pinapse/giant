@@ -44,9 +44,67 @@ import net.psforever.objects.serverobject.turret.FacilityTurret
 import net.psforever.objects.vehicles._
 import net.psforever.objects.zones.{Zone, ZoneHotSpotProjector, Zoning}
 import net.psforever.objects._
-import net.psforever.packet.game.{AvatarAwardMessage, AvatarSearchCriteriaMessage, AvatarStatisticsMessage, AwardCompletion, BindPlayerMessage, BindStatus, CargoMountPointStatusMessage, ChangeShortcutBankMessage, ChatChannel, CreateShortcutMessage, DroppodFreefallingMessage, LoadMapMessage, ObjectCreateDetailedMessage, ObjectDeleteMessage, PlanetsideStringAttributeMessage, PlayerStateShiftMessage, SetChatFilterMessage, SetCurrentAvatarMessage, ShiftState}
-import net.psforever.packet.game.{AvatarDeadStateMessage, BroadcastWarpgateUpdateMessage, ChatMsg, ContinentalLockUpdateMessage, DeadState, DensityLevelUpdateMessage, DeployRequestMessage, DeployableInfo, DeployableObjectsInfoMessage, DeploymentAction, DisconnectMessage, DroppodError, DroppodLaunchResponseMessage, FriendsResponse, GenericObjectActionMessage, GenericObjectStateMsg, HotSpotUpdateMessage, ObjectAttachMessage, ObjectCreateMessage, PlanetsideAttributeEnum, PlanetsideAttributeMessage, PropertyOverrideMessage, ReplicationStreamMessage, SetEmpireMessage, TimeOfDayMessage, TriggerEffectMessage, ZoneForcedCavernConnectionsMessage, ZoneInfoMessage, ZoneLockInfoMessage, ZonePopulationUpdateMessage, HotSpotInfo => PacketHotSpotInfo}
-import net.psforever.packet.game.{BeginZoningMessage, DroppodLaunchRequestMessage, ReleaseAvatarRequestMessage, SpawnRequestMessage, WarpgateRequest}
+import net.psforever.packet.game.{
+  AvatarAwardMessage,
+  AvatarSearchCriteriaMessage,
+  AvatarStatisticsMessage,
+  AwardCompletion,
+  BindPlayerMessage,
+  BindStatus,
+  CargoMountPointStatusMessage,
+  ChangeShortcutBankMessage,
+  ChatChannel,
+  CreateShortcutMessage,
+  DroppodFreefallingMessage,
+  LoadMapMessage,
+  ObjectCreateDetailedMessage,
+  ObjectDeleteMessage,
+  PlanetsideStringAttributeMessage,
+  PlayerStateShiftMessage,
+  SetChatFilterMessage,
+  SetCurrentAvatarMessage,
+  ShiftState
+}
+import net.psforever.packet.game.{
+  AvatarDeadStateMessage,
+  BroadcastWarpgateUpdateMessage,
+  ChatMsg,
+  ContinentalLockUpdateMessage,
+  DeadState,
+  DensityLevelUpdateMessage,
+  DeployRequestMessage,
+  DeployableInfo,
+  DeployableObjectsInfoMessage,
+  DeploymentAction,
+  DisconnectMessage,
+  DroppodError,
+  DroppodLaunchResponseMessage,
+  FriendsResponse,
+  GenericObjectActionMessage,
+  GenericObjectStateMsg,
+  HotSpotUpdateMessage,
+  ObjectAttachMessage,
+  ObjectCreateMessage,
+  PlanetsideAttributeEnum,
+  PlanetsideAttributeMessage,
+  PropertyOverrideMessage,
+  ReplicationStreamMessage,
+  SetEmpireMessage,
+  TimeOfDayMessage,
+  TriggerEffectMessage,
+  ZoneForcedCavernConnectionsMessage,
+  ZoneInfoMessage,
+  ZoneLockInfoMessage,
+  ZonePopulationUpdateMessage,
+  HotSpotInfo => PacketHotSpotInfo
+}
+import net.psforever.packet.game.{
+  BeginZoningMessage,
+  DroppodLaunchRequestMessage,
+  ReleaseAvatarRequestMessage,
+  SpawnRequestMessage,
+  WarpgateRequest
+}
 import net.psforever.packet.game.DeathStatistic
 import net.psforever.packet.game.objectcreate.{DroppedItemData, ObjectCreateMessageParent, PlacementData}
 import net.psforever.packet.game.objectcreate.ObjectClass
@@ -72,42 +130,46 @@ object ZoningOperations {
 }
 
 class ZoningOperations(
-                        val sessionData: SessionData,
-                        avatarActor: typed.ActorRef[AvatarActor.Command],
-                        galaxyService: ActorRef,
-                        cluster: typed.ActorRef[ICS.Command],
-                        implicit val context: ActorContext
-                      ) extends CommonSessionInterfacingFunctionality {
-  private var zoningType: Zoning.Method = Zoning.Method.None
-  private var zoningChatMessageType: ChatMessageType = ChatMessageType.CMT_QUIT
-  private[support] var zoningStatus: Zoning.Status = Zoning.Status.None
-  private var zoningCounter: Int = 0
+    val sessionData: SessionData,
+    avatarActor: typed.ActorRef[AvatarActor.Command],
+    galaxyService: ActorRef,
+    cluster: typed.ActorRef[ICS.Command],
+    implicit val context: ActorContext
+) extends CommonSessionInterfacingFunctionality {
+  private var zoningType: Zoning.Method                                              = Zoning.Method.None
+  private var zoningChatMessageType: ChatMessageType                                 = ChatMessageType.CMT_QUIT
+  private[support] var zoningStatus: Zoning.Status                                   = Zoning.Status.None
+  private var zoningCounter: Int                                                     = 0
   private var instantActionFallbackDestination: Option[Zoning.InstantAction.Located] = None
+
   /**
-   * used during zone transfers to maintain reference to seated vehicle (which does not yet exist in the new zone)
-   * used during intrazone gate transfers, but not in a way distinct from prior zone transfer procedures
-   * should only be set during the transient period when moving between one spawn point and the next
-   * leaving set prior to a subsequent transfers may cause unstable vehicle associations, with memory leak potential
-   */
+    * used during zone transfers to maintain reference to seated vehicle (which does not yet exist in the new zone)
+    * used during intrazone gate transfers, but not in a way distinct from prior zone transfer procedures
+    * should only be set during the transient period when moving between one spawn point and the next
+    * leaving set prior to a subsequent transfers may cause unstable vehicle associations, with memory leak potential
+    */
   private[support] var interstellarFerry: Option[Vehicle] = None
+
   /**
-   * used during zone transfers for cleanup to refer to the vehicle that instigated a transfer
-   * "top level" is the carrier in a carrier/ferried association or a projected carrier/(ferried carrier)/ferried association
-   * inherited from parent (carrier) to child (ferried) through the `TransferPassenger` message
-   * the old-zone unique identifier for the carrier
-   * no harm should come from leaving the field set to an old unique identifier value after the transfer period
-   */
+    * used during zone transfers for cleanup to refer to the vehicle that instigated a transfer
+    * "top level" is the carrier in a carrier/ferried association or a projected carrier/(ferried carrier)/ferried association
+    * inherited from parent (carrier) to child (ferried) through the `TransferPassenger` message
+    * the old-zone unique identifier for the carrier
+    * no harm should come from leaving the field set to an old unique identifier value after the transfer period
+    */
   private[support] var interstellarFerryTopLevelGUID: Option[PlanetSideGUID] = None
-  private var loadConfZone: Boolean = false
+  private var loadConfZone: Boolean                                          = false
+
   /** a flag for the zone having finished loading during zoning
-   * `None` when no zone is loaded
-   * `Some(true)` when a zone has successfully loaded
-   * `Some(false)` when the loading process has failed or was executed but did not complete for some reason
-   */
+    * `None` when no zone is loaded
+    * `Some(true)` when a zone has successfully loaded
+    * `Some(false)` when the loading process has failed or was executed but did not complete for some reason
+    */
   private[support] var zoneLoaded: Option[Boolean] = None
+
   /** a flag that forces the current zone to reload itself during a zoning operation */
   private[support] var zoneReload: Boolean = false
-  private var zoningTimer: Cancellable = Default.Cancellable
+  private var zoningTimer: Cancellable     = Default.Cancellable
 
   private[session] val spawn: SpawnOperations = new SpawnOperations()
 
@@ -119,11 +181,11 @@ class ZoningOperations(
     if (spawn.deadState != DeadState.RespawnTime) {
       continent.Buildings.values.find(_.GUID == building_guid) match {
         case Some(wg: WarpGate) if wg.Active && (sessionData.vehicles.GetKnownVehicleAndSeat() match {
-          case (Some(vehicle), _) =>
-            wg.Definition.VehicleAllowance && !wg.Definition.NoWarp.contains(vehicle.Definition)
-          case _ =>
-            true
-        }) =>
+              case (Some(vehicle), _) =>
+                wg.Definition.VehicleAllowance && !wg.Definition.NoWarp.contains(vehicle.Definition)
+              case _ =>
+                true
+            }) =>
           spawn.deadState = DeadState.RespawnTime
           cluster ! ICS.GetSpawnPoint(
             destinationZoneGuid.guid,
@@ -161,7 +223,7 @@ class ZoningOperations(
     val BeginZoningMessage() = pkt
     log.trace(s"BeginZoningMessage: ${player.Name} is reticulating ${continent.id}'s splines ...")
     zoneLoaded = None
-    val name = avatar.name
+    val name           = avatar.name
     val continentId    = continent.id
     val faction        = player.Faction
     val factionChannel = s"$faction"
@@ -182,7 +244,7 @@ class ZoningOperations(
     //find and reclaim own deployables, if any
     val foundDeployables = continent.DeployableList.filter {
       case _: BoomerDeployable => false //if we do find boomers for any reason, ignore them
-      case dobj => dobj.OwnerName.contains(player.Name) && dobj.Health > 0
+      case dobj                => dobj.OwnerName.contains(player.Name) && dobj.Health > 0
     }
     foundDeployables.collect {
       case obj if avatar.deployables.AddOverLimit(obj) =>
@@ -244,7 +306,7 @@ class ZoningOperations(
           })
       )
       .foreach(obj => {
-        sendResponse(TriggerEffectMessage(obj.GUID, "on", unk1=true, 1000))
+        sendResponse(TriggerEffectMessage(obj.GUID, "on", unk1 = true, 1000))
       })
     //update the health of our faction's deployables (if necessary)
     //draw our faction's deployables on the map
@@ -443,8 +505,8 @@ class ZoningOperations(
     }
     deployedVehicles.filter(_.Definition == GlobalDefinitions.router).foreach { obj =>
       //the router won't work if it doesn't completely deploy
-      sendResponse(DeployRequestMessage(player.GUID, obj.GUID, DriveState.Deploying, 0, unk3=false, Vector3.Zero))
-      sendResponse(DeployRequestMessage(player.GUID, obj.GUID, DriveState.Deployed, 0, unk3=false, Vector3.Zero))
+      sendResponse(DeployRequestMessage(player.GUID, obj.GUID, DriveState.Deploying, 0, unk3 = false, Vector3.Zero))
+      sendResponse(DeployRequestMessage(player.GUID, obj.GUID, DriveState.Deployed, 0, unk3 = false, Vector3.Zero))
       sessionData.toggleTeleportSystem(obj, TelepadLike.AppraiseTeleportationSystem(obj, continent))
     }
     ServiceManager.serviceManager
@@ -554,7 +616,7 @@ class ZoningOperations(
   def handleZonesResponse(zones: Iterable[Zone]): Unit = {
     zones.foreach { zone =>
       val continentNumber = zone.Number
-      val popBO = 0
+      val popBO           = 0
       //TODO black ops test (partition)
       val popTR = zone.Players.count(_.faction == PlanetSideEmpire.TR)
       val popNC = zone.Players.count(_.faction == PlanetSideEmpire.NC)
@@ -575,12 +637,18 @@ class ZoningOperations(
       //VanuModuleUpdateMessage()
       //ModuleLimitsMessage()
       val isCavern = continent.map.cavern
-      sendResponse(ZoneInfoMessage(continentNumber, empire_status=true, if (isCavern) {
-        Int.MaxValue.toLong
-      } else {
-        0L
-      }))
-      sendResponse(ZoneLockInfoMessage(continentNumber, lock_status=false, unk=true))
+      sendResponse(
+        ZoneInfoMessage(
+          continentNumber,
+          empire_status = true,
+          if (isCavern) {
+            Int.MaxValue.toLong
+          } else {
+            0L
+          }
+        )
+      )
+      sendResponse(ZoneLockInfoMessage(continentNumber, lock_status = false, unk = true))
       sendResponse(ZoneForcedCavernConnectionsMessage(continentNumber, 0))
       sendResponse(
         HotSpotUpdateMessage(
@@ -601,7 +669,7 @@ class ZoningOperations(
     //PropertyOverrideMessage
     ServiceManager.serviceManager ! Lookup("propertyOverrideManager")
     sendResponse(PlanetsideAttributeMessage(PlanetSideGUID(0), 112, 0)) // disable festive backpacks
-    sendResponse(ReplicationStreamMessage(5, Some(6), Vector.empty)) //clear squad list
+    sendResponse(ReplicationStreamMessage(5, Some(6), Vector.empty))    //clear squad list
     (
       FriendsResponse.packetSequence(
         MemberAction.InitializeFriendList,
@@ -615,14 +683,16 @@ class ZoningOperations(
           MemberAction.InitializeIgnoreList,
           avatar.people.ignored.map { f => game.Friend(f.name) }
         )
-      ).foreach {
+    ).foreach {
       sendResponse
     }
     //the following subscriptions last until character switch/logout
-    galaxyService ! Service.Join("galaxy") //for galaxy-wide messages
-    galaxyService ! Service.Join(s"${avatar.faction}") //for hotspots, etc.
+    galaxyService ! Service.Join("galaxy")                        //for galaxy-wide messages
+    galaxyService ! Service.Join(s"${avatar.faction}")            //for hotspots, etc.
     sessionData.squadService ! Service.Join(s"${avatar.faction}") //channel will be player.Faction
-    sessionData.squadService ! Service.Join(s"${avatar.id}") //channel will be player.CharId (in order to work with packets)
+    sessionData.squadService ! Service.Join(
+      s"${avatar.id}"
+    ) //channel will be player.CharId (in order to work with packets)
     player.Zone match {
       case Zone.Nowhere =>
         RandomSanctuarySpawnPosition(player)
@@ -696,11 +766,15 @@ class ZoningOperations(
         zoningType = Zoning.Method.Login
         response match {
           case Some((zone, spawnPoint)) =>
-            spawn.loginChatMessage.addOne("@login_reposition_to_friendly_facility") //Your previous location was held by the enemy. You have been moved to the nearest friendly facility.
+            spawn.loginChatMessage.addOne(
+              "@login_reposition_to_friendly_facility"
+            ) //Your previous location was held by the enemy. You have been moved to the nearest friendly facility.
             val (pos, ori) = spawnPoint.SpecificPoint(player)
             spawn.LoadZonePhysicalSpawnPoint(zone.id, pos, ori, respawnTime = 0 seconds, Some(spawnPoint))
           case _ =>
-            spawn.loginChatMessage.addOne("@login_reposition_to_sanctuary") //Your previous location was held by the enemy.  As there were no operational friendly facilities on that continent, you have been brought back to your Sanctuary.
+            spawn.loginChatMessage.addOne(
+              "@login_reposition_to_sanctuary"
+            ) //Your previous location was held by the enemy.  As there were no operational friendly facilities on that continent, you have been brought back to your Sanctuary.
             RequestSanctuaryZoneSpawn(player, player.Zone.Number)
         }
 
@@ -724,10 +798,10 @@ class ZoningOperations(
   }
 
   def handleTransferPassenger(
-                               temp_channel: String,
-                               vehicle: Vehicle,
-                               manifest: VehicleManifest
-                             ): Unit = {
+      temp_channel: String,
+      vehicle: Vehicle,
+      manifest: VehicleManifest
+  ): Unit = {
     val playerName = player.Name
     log.debug(s"TransferPassenger: $playerName received the summons to transfer to ${vehicle.Zone.id} ...")
     (manifest.passengers.find {
@@ -782,9 +856,15 @@ class ZoningOperations(
   private def handleTransferPassengerVehicle(vehicle: Vehicle, temporaryChannel: String): Unit = {
     galaxyService ! Service.Leave(Some(temporaryChannel)) //temporary vehicle-specific channel (see above)
     spawn.deadState = DeadState.Release
-    sendResponse(AvatarDeadStateMessage(DeadState.Release, 0, 0, player.Position, player.Faction, unk5=true))
+    sendResponse(AvatarDeadStateMessage(DeadState.Release, 0, 0, player.Position, player.Faction, unk5 = true))
     interstellarFerry = Some(vehicle) //on the other continent and registered to that continent's GUID system
-    spawn.LoadZonePhysicalSpawnPoint(vehicle.Continent, vehicle.Position, vehicle.Orientation, respawnTime = 1 seconds, None)
+    spawn.LoadZonePhysicalSpawnPoint(
+      vehicle.Continent,
+      vehicle.Position,
+      vehicle.Orientation,
+      respawnTime = 1 seconds,
+      None
+    )
   }
 
   def handleDroppodLaunchDenial(errorCode: DroppodError): Unit = {
@@ -858,22 +938,22 @@ class ZoningOperations(
   /* support functions */
 
   /**
-   * A zoning message was received.
-   * That doesn't matter.
-   * In what stage of the zoning determination process is the client, and what is the next stage.<br>
-   * <br>
-   * To perform any actions involving zoning, an initial request must have been dispatched and marked as dispatched.
-   * When invoked after, the process will switch over to a countdown of time until the zoning actually occurs.
-   * The origin will be evaluated based on comparison of faction affinity with the client's player
-   * and from that an initial time and a message will be generated.
-   * Afterwards, the process will queue another inquiry for another zoning response.
-   * Each time 5s of the countdown passes, another message will be sent and received;
-   * and, this is another pass of the countdown.<br>
-   * <br>
-   * Once the countdown reaches 0, the transportation that has been promised by the zoning attempt may begin.
-   *
-   * @param runnable execute for the next step of the zoning process
-   */
+    * A zoning message was received.
+    * That doesn't matter.
+    * In what stage of the zoning determination process is the client, and what is the next stage.<br>
+    * <br>
+    * To perform any actions involving zoning, an initial request must have been dispatched and marked as dispatched.
+    * When invoked after, the process will switch over to a countdown of time until the zoning actually occurs.
+    * The origin will be evaluated based on comparison of faction affinity with the client's player
+    * and from that an initial time and a message will be generated.
+    * Afterwards, the process will queue another inquiry for another zoning response.
+    * Each time 5s of the countdown passes, another message will be sent and received;
+    * and, this is another pass of the countdown.<br>
+    * <br>
+    * Once the countdown reaches 0, the transportation that has been promised by the zoning attempt may begin.
+    *
+    * @param runnable execute for the next step of the zoning process
+    */
   def beginZoningCountdown(runnable: Runnable): Unit = {
     val descriptor = zoningType.toString.toLowerCase
     if (zoningStatus == Zoning.Status.Request) {
@@ -881,7 +961,7 @@ class ZoningOperations(
       zoningStatus = Zoning.Status.Countdown
       val (time, origin) = ZoningStartInitialMessageAndTimer()
       zoningCounter = time
-      sendResponse(ChatMsg(ChatMessageType.CMT_QUIT, wideContents=false, "", s"@${descriptor}_$origin", None))
+      sendResponse(ChatMsg(ChatMessageType.CMT_QUIT, wideContents = false, "", s"@${descriptor}_$origin", None))
       zoningTimer.cancel()
       zoningTimer = context.system.scheduler.scheduleOnce(5 seconds) {
         beginZoningCountdown(runnable)
@@ -891,7 +971,7 @@ class ZoningOperations(
       zoningTimer.cancel()
       if (zoningCounter > 0) {
         if (ZoningOperations.zoningCountdownMessages.contains(zoningCounter)) {
-          sendResponse(ChatMsg(zoningChatMessageType, wideContents=false, "", s"@${descriptor}_$zoningCounter", None))
+          sendResponse(ChatMsg(zoningChatMessageType, wideContents = false, "", s"@${descriptor}_$zoningCounter", None))
         }
         zoningTimer = context.system.scheduler.scheduleOnce(5 seconds) {
           beginZoningCountdown(runnable)
@@ -905,15 +985,15 @@ class ZoningOperations(
   }
 
   /**
-   * The primary method of determination involves the faction affinity of the most favorable available region subset,
-   * e.g., in the overlapping sphere of influences of a friendly field tower and an enemy major facility,
-   * the time representative of the the tower has priority.
-   * When no spheres of influence are being encroached, one is considered "in the wilderness".
-   * The messaging is different but the location is normally treated the same as if in a neutral sphere of influence.
-   * Being anywhere in one's faction's own sanctuary is a special case.
-   *
-   * @return a `Tuple` composed of the initial countdown time and the descriptor for message composition
-   */
+    * The primary method of determination involves the faction affinity of the most favorable available region subset,
+    * e.g., in the overlapping sphere of influences of a friendly field tower and an enemy major facility,
+    * the time representative of the the tower has priority.
+    * When no spheres of influence are being encroached, one is considered "in the wilderness".
+    * The messaging is different but the location is normally treated the same as if in a neutral sphere of influence.
+    * Being anywhere in one's faction's own sanctuary is a special case.
+    *
+    * @return a `Tuple` composed of the initial countdown time and the descriptor for message composition
+    */
   def ZoningStartInitialMessageAndTimer(): (Int, String) = {
     val location = if (Zones.sanctuaryZoneNumber(player.Faction) == continent.Number) {
       Zoning.Time.Sanctuary
@@ -940,33 +1020,33 @@ class ZoningOperations(
   }
 
   /**
-   * The user no longer expects to perform a zoning event for this reason.
-   *
-   * @param msg the message to the user
-   */
+    * The user no longer expects to perform a zoning event for this reason.
+    *
+    * @param msg the message to the user
+    */
   def CancelZoningProcessWithDescriptiveReason(msg: String): Unit = {
     CancelZoningProcessWithReason(s"@${zoningType.toString.toLowerCase}_$msg", Some(zoningChatMessageType))
   }
 
   /**
-   * The user no longer expects to perform a zoning event for this reason.
-   *
-   * @param msg     the message to the user
-   * @param msgType the type of message, influencing how it is presented to the user;
-   *                normally, this message uses the same value as `zoningChatMessageType`;
-   *                defaults to `None`
-   */
+    * The user no longer expects to perform a zoning event for this reason.
+    *
+    * @param msg     the message to the user
+    * @param msgType the type of message, influencing how it is presented to the user;
+    *                normally, this message uses the same value as `zoningChatMessageType`;
+    *                defaults to `None`
+    */
   def CancelZoningProcessWithReason(msg: String, msgType: Option[ChatMessageType] = None): Unit = {
     if (zoningStatus != Zoning.Status.None) {
-      sendResponse(ChatMsg(msgType.getOrElse(zoningChatMessageType), wideContents=false, "", msg, None))
+      sendResponse(ChatMsg(msgType.getOrElse(zoningChatMessageType), wideContents = false, "", msg, None))
     }
     CancelZoningProcess()
   }
 
   /**
-   * The user no longer expects to perform a zoning event,
-   * or the process is merely resetting its internal state.
-   */
+    * The user no longer expects to perform a zoning event,
+    * or the process is merely resetting its internal state.
+    */
   def CancelZoningProcess(): Unit = {
     zoningTimer.cancel()
     player.ZoningRequest = Zoning.Method.None
@@ -978,11 +1058,11 @@ class ZoningOperations(
   }
 
   /**
-   * For a given continental structure, determine the method of generating server-join client configuration packets.
-   * @param continentNumber the zone id
-   * @param buildingNumber the building id
-   * @param building the building object
-   */
+    * For a given continental structure, determine the method of generating server-join client configuration packets.
+    * @param continentNumber the zone id
+    * @param buildingNumber the building id
+    * @param building the building object
+    */
   def initBuilding(continentNumber: Int, buildingNumber: Int, building: Building): Unit = {
     building.BuildingType match {
       case StructureType.WarpGate =>
@@ -993,29 +1073,29 @@ class ZoningOperations(
   }
 
   /**
-   * For a given facility structure, configure a client by dispatching the appropriate packets.
-   * @see `BuildingInfoUpdateMessage`
-   * @see `DensityLevelUpdateMessage`
-   * @param continentNumber the zone id
-   * @param buildingNumber the building id
-   * @param building the building object
-   */
+    * For a given facility structure, configure a client by dispatching the appropriate packets.
+    * @see `BuildingInfoUpdateMessage`
+    * @see `DensityLevelUpdateMessage`
+    * @param continentNumber the zone id
+    * @param buildingNumber the building id
+    * @param building the building object
+    */
   def initFacility(continentNumber: Int, buildingNumber: Int, building: Building): Unit = {
     sendResponse(building.infoUpdateMessage())
     sendResponse(DensityLevelUpdateMessage(continentNumber, buildingNumber, List(0, 0, 0, 0, 0, 0, 0, 0)))
   }
 
   /**
-   * For a given lattice warp gate structure, configure a client by dispatching the appropriate packets.
-   * Unlike other facilities, gates do not have complicated `BuildingInfoUpdateMessage` packets.
-   * Also unlike facilities, gates have an additional packet.
-   * @see `BuildingInfoUpdateMessage`
-   * @see `DensityLevelUpdateMessage`
-   * @see `BroadcastWarpgateUpdateMessage`
-   * @param continentNumber the zone id
-   * @param buildingNumber the building id
-   * @param building the building object
-   */
+    * For a given lattice warp gate structure, configure a client by dispatching the appropriate packets.
+    * Unlike other facilities, gates do not have complicated `BuildingInfoUpdateMessage` packets.
+    * Also unlike facilities, gates have an additional packet.
+    * @see `BuildingInfoUpdateMessage`
+    * @see `DensityLevelUpdateMessage`
+    * @see `BroadcastWarpgateUpdateMessage`
+    * @param continentNumber the zone id
+    * @param buildingNumber the building id
+    * @param building the building object
+    */
   def initGate(continentNumber: Int, buildingNumber: Int, building: Building): Unit = {
     building match {
       case wg: WarpGate =>
@@ -1035,13 +1115,13 @@ class ZoningOperations(
   }
 
   /**
-   * Configure the buildings and each specific amenity for that building in a given zone by sending the client packets.
-   * These actions are performed during the loading of a zone.
-   * @see `SetEmpireMessage`<br>
-   *     `PlanetsideAttributeMessage`<br>
-   *     `HackMessage`
-   * @param zone the zone being loaded
-   */
+    * Configure the buildings and each specific amenity for that building in a given zone by sending the client packets.
+    * These actions are performed during the loading of a zone.
+    * @see `SetEmpireMessage`<br>
+    *     `PlanetsideAttributeMessage`<br>
+    *     `HackMessage`
+    * @param zone the zone being loaded
+    */
   def configZone(zone: Zone): Unit = {
     zone.Buildings.values.foreach(building => {
       val guid = building.GUID
@@ -1066,19 +1146,19 @@ class ZoningOperations(
   }
 
   /**
-   * Configure the specific working amenity by sending the client packets.
-   * Amenities that are not `Damageable` are also included.
-   * These actions are performed during the loading of a zone.
-   * @see `Door`
-   * @see `GenericObjectStateMsg`
-   * @see `Hackable`
-   * @see `HackObject`
-   * @see `PlanetsideAttributeMessage`
-   * @see `ResourceSilo`
-   * @see `SetEmpireMessage`
-   * @see `VitalityDefinition.Damageable`
-   * @param amenity the facility object
-   */
+    * Configure the specific working amenity by sending the client packets.
+    * Amenities that are not `Damageable` are also included.
+    * These actions are performed during the loading of a zone.
+    * @see `Door`
+    * @see `GenericObjectStateMsg`
+    * @see `Hackable`
+    * @see `HackObject`
+    * @see `PlanetsideAttributeMessage`
+    * @see `ResourceSilo`
+    * @see `SetEmpireMessage`
+    * @see `VitalityDefinition.Damageable`
+    * @param amenity the facility object
+    */
   def configAmenityAsWorking(amenity: Amenity): Unit = {
     val amenityId = amenity.GUID
     //sync model access state
@@ -1141,14 +1221,14 @@ class ZoningOperations(
   }
 
   /**
-   * Configure the specific destroyed amenity by sending the client packets.
-   * These actions are performed during the loading of a zone.
-   * @see `Generator`
-   * @see `ImplantTerminalMech`
-   * @see `PlanetsideAttributeMessage`
-   * @see `PlanetSideGameObject.Destroyed`
-   * @param amenity the facility object
-   */
+    * Configure the specific destroyed amenity by sending the client packets.
+    * These actions are performed during the loading of a zone.
+    * @see `Generator`
+    * @see `ImplantTerminalMech`
+    * @see `PlanetsideAttributeMessage`
+    * @see `PlanetSideGameObject.Destroyed`
+    * @param amenity the facility object
+    */
   def configAmenityAsDestroyed(amenity: Amenity): Unit = {
     val amenityId = amenity.GUID
     val configValue = amenity match {
@@ -1166,17 +1246,17 @@ class ZoningOperations(
   }
 
   /**
-   * Deal with a target player as free-standing infantry in the course of a redeployment action to a target continent
-   * whether that action is the result of a deconstruction (reconstruction), a death (respawning),
-   * or other position shifting action handled directly by the server.
-   *
-   * The two important vectors are still whether the zone being transported to is the same or is different
-   * and whether the target player is alive or released (note: not just "dead" ...).
-   *
-   * @param targetPlayer the target player being moved around;
-   *                     not necessarily the same player as the `WorldSessionActor`-global `player`
-   * @param zoneId       the zone in which the player will be placed
-   */
+    * Deal with a target player as free-standing infantry in the course of a redeployment action to a target continent
+    * whether that action is the result of a deconstruction (reconstruction), a death (respawning),
+    * or other position shifting action handled directly by the server.
+    *
+    * The two important vectors are still whether the zone being transported to is the same or is different
+    * and whether the target player is alive or released (note: not just "dead" ...).
+    *
+    * @param targetPlayer the target player being moved around;
+    *                     not necessarily the same player as the `WorldSessionActor`-global `player`
+    * @param zoneId       the zone in which the player will be placed
+    */
   def LoadZoneAsPlayer(targetPlayer: Player, zoneId: String): Unit = {
     log.debug(s"LoadZoneAsPlayer: ${targetPlayer.avatar.name} loading into $zoneId")
     if (!zoneReload && zoneId.equals(continent.id)) {
@@ -1192,15 +1272,19 @@ class ZoningOperations(
       val original = player
       if (player.isBackpack) {
         session = session.copy(player = targetPlayer)
-        TaskWorkflow.execute(taskThenZoneChange(
-          GUIDTask.unregisterObject(continent.GUID, original.avatar.locker),
-          ICS.FindZone(_.id.equals(zoneId), context.self)
-        ))
+        TaskWorkflow.execute(
+          taskThenZoneChange(
+            GUIDTask.unregisterObject(continent.GUID, original.avatar.locker),
+            ICS.FindZone(_.id.equals(zoneId), context.self)
+          )
+        )
       } else if (player.HasGUID) {
-        TaskWorkflow.execute(taskThenZoneChange(
-          GUIDTask.unregisterAvatar(continent.GUID, original),
-          ICS.FindZone(_.id.equals(zoneId), context.self)
-        ))
+        TaskWorkflow.execute(
+          taskThenZoneChange(
+            GUIDTask.unregisterAvatar(continent.GUID, original),
+            ICS.FindZone(_.id.equals(zoneId), context.self)
+          )
+        )
       } else {
         cluster ! ICS.FindZone(_.id.equals(zoneId), context.self)
       }
@@ -1208,23 +1292,23 @@ class ZoningOperations(
   }
 
   /**
-   * Deal with a target player as a vehicle occupant in the course of a redeployment action to a target continent
-   * whether that action is the result of a deconstruction (reconstruction)
-   * or other position shifting action handled directly by the server.<br>
-   * <br>
-   * The original target player must be alive and the only consideration is in what position the player is mounted in the vehicle.
-   * Any seated position that isn't the driver is a passenger.
-   * The most important role performed in this function is to declare a reference to the vehicle itsself
-   * since no other connection from the player to the vehicle is guaranteed to persist in a meaningful way during the transfer.
-   *
-   * @param vehicle the target vehicle being moved around;
-   *                WILL necessarily be the same vehicles as is controlled by the `WorldSessionActor`-global `player`
-   * @param pos     the game world coordinates where the vehicle will be positioned
-   * @param ori     the direction in which the vehicle will be oriented
-   * @param zone_id the zone in which the vehicle and driver will be placed,
-   *                or in which the vehicle has already been placed
-   * @return a tuple composed of an `ActorRef` destination and a message to send to that destination
-   */
+    * Deal with a target player as a vehicle occupant in the course of a redeployment action to a target continent
+    * whether that action is the result of a deconstruction (reconstruction)
+    * or other position shifting action handled directly by the server.<br>
+    * <br>
+    * The original target player must be alive and the only consideration is in what position the player is mounted in the vehicle.
+    * Any seated position that isn't the driver is a passenger.
+    * The most important role performed in this function is to declare a reference to the vehicle itsself
+    * since no other connection from the player to the vehicle is guaranteed to persist in a meaningful way during the transfer.
+    *
+    * @param vehicle the target vehicle being moved around;
+    *                WILL necessarily be the same vehicles as is controlled by the `WorldSessionActor`-global `player`
+    * @param pos     the game world coordinates where the vehicle will be positioned
+    * @param ori     the direction in which the vehicle will be oriented
+    * @param zone_id the zone in which the vehicle and driver will be placed,
+    *                or in which the vehicle has already been placed
+    * @return a tuple composed of an `ActorRef` destination and a message to send to that destination
+    */
   def LoadZoneInVehicle(vehicle: Vehicle, pos: Vector3, ori: Vector3, zone_id: String): Unit = {
     interstellarFerry = Some(vehicle)
     if (vehicle.PassengerInSeat(player).contains(0)) {
@@ -1237,31 +1321,31 @@ class ZoningOperations(
   }
 
   /**
-   * Deal with a target player as a vehicle driver in the course of a redeployment action to a target continent
-   * whether that action is the result of a deconstruction (reconstruction)
-   * or other position shifting action handled directly by the server.<br>
-   * <br>
-   * During a vehicle transfer, whether to the same zone or to a different zone,
-   * the driver has the important task of ensuring the certain safety of his passengers during transport.
-   * The driver must modify the conditions of the vehicle's passengers common communication channel
-   * originally determined entirely by the vehicle's soon-to-be blanked internal `Actor` object.
-   * Any cargo vehicles under the control of the target vehicle must also be made aware of the current state of the process.
-   * In the case of a series of ferrying vehicles and cargo vehicles,
-   * the vehicle to be deleted might not be the one immediately mounted.
-   * A reference to the top-level ferrying vehicle's former globally unique identifier has been retained for this purpose.
-   * This vehicle can be deleted for everyone if no more work can be detected.
-   *
-   * @param vehicle the target vehicle being moved around;
-   *                WILL necessarily be the same vehicles as is controlled by the `WorldSessionActor`-global `player`
-   * @param zoneId  the zone in which the vehicle and driver will be placed,
-   *                or in which the vehicle has already been placed
-   * @return a tuple composed of an `ActorRef` destination and a message to send to that destination
-   */
+    * Deal with a target player as a vehicle driver in the course of a redeployment action to a target continent
+    * whether that action is the result of a deconstruction (reconstruction)
+    * or other position shifting action handled directly by the server.<br>
+    * <br>
+    * During a vehicle transfer, whether to the same zone or to a different zone,
+    * the driver has the important task of ensuring the certain safety of his passengers during transport.
+    * The driver must modify the conditions of the vehicle's passengers common communication channel
+    * originally determined entirely by the vehicle's soon-to-be blanked internal `Actor` object.
+    * Any cargo vehicles under the control of the target vehicle must also be made aware of the current state of the process.
+    * In the case of a series of ferrying vehicles and cargo vehicles,
+    * the vehicle to be deleted might not be the one immediately mounted.
+    * A reference to the top-level ferrying vehicle's former globally unique identifier has been retained for this purpose.
+    * This vehicle can be deleted for everyone if no more work can be detected.
+    *
+    * @param vehicle the target vehicle being moved around;
+    *                WILL necessarily be the same vehicles as is controlled by the `WorldSessionActor`-global `player`
+    * @param zoneId  the zone in which the vehicle and driver will be placed,
+    *                or in which the vehicle has already been placed
+    * @return a tuple composed of an `ActorRef` destination and a message to send to that destination
+    */
   def LoadZoneInVehicleAsDriver(vehicle: Vehicle, zoneId: String): Unit = {
     val msg: String = s"${player.Name} is driving a ${vehicle.Definition.Name}"
     log.info(msg)
     log.debug(s"LoadZoneInVehicleAsDriver: $msg")
-    val manifest  = vehicle.PrepareGatingManifest()
+    val manifest = vehicle.PrepareGatingManifest()
     vehicle.Seats.collect { case (index: Int, seat: Seat) if index > 0 => seat.unmount(seat.occupant) }
     val pguid     = player.GUID
     val toChannel = manifest.file
@@ -1297,10 +1381,12 @@ class ZoningOperations(
     } else if (vehicle.Definition == GlobalDefinitions.droppod) {
       LoadZoneCommonTransferActivity()
       player.Continent = zoneId //forward-set the continent id to perform a test
-      TaskWorkflow.execute(taskThenZoneChange(
-        GUIDTask.unregisterAvatar(continent.GUID, player),
-        ICS.FindZone(_.id == zoneId, context.self)
-      ))
+      TaskWorkflow.execute(
+        taskThenZoneChange(
+          GUIDTask.unregisterAvatar(continent.GUID, player),
+          ICS.FindZone(_.id == zoneId, context.self)
+        )
+      )
     } else {
       sessionData.unaccessContainer(vehicle)
       LoadZoneCommonTransferActivity()
@@ -1319,38 +1405,40 @@ class ZoningOperations(
         }
       //unregister vehicle and driver whole + GiveWorld
       continent.Transport ! Zone.Vehicle.Despawn(vehicle)
-      TaskWorkflow.execute(taskThenZoneChange(
-        sessionData.unregisterDrivenVehicle(vehicle, player),
-        ICS.FindZone(_.id == zoneId, context.self)
-      ))
+      TaskWorkflow.execute(
+        taskThenZoneChange(
+          sessionData.unregisterDrivenVehicle(vehicle, player),
+          ICS.FindZone(_.id == zoneId, context.self)
+        )
+      )
     }
   }
 
   /**
-   * Deal with a target player as a vehicle passenger in the course of a redeployment action to a target continent
-   * whether that action is the result of a deconstruction (reconstruction)
-   * or other position shifting action handled directly by the server.<br>
-   * <br>
-   * The way a vehicle is handled in reference to being a passenger
-   * is very similar to how an infantry player is handled in the same process.
-   * If this player is the last person who requires a zone change
-   * which is the concluding zone transfer of what might have been a long chain of vehicle and passengers
-   * then that player is responsible for deleting the vehicle for other players of the previous zone.
-   * In the case of a series of ferrying vehicles and cargo vehicles,
-   * the vehicle to be deleted might not be the one immediately mounted.
-   * A reference to the top-level ferrying vehicle's former globally unique identifier has been retained for this purpose.
-   * This vehicle can be deleted for everyone if no more work can be detected.
-   *
-   * @see `GUIDTask.unregisterPlayer`
-   * @see `LoadZoneCommonTransferActivity`
-   * @see `Vehicles.AllGatedOccupantsInSameZone`
-   * @see `PlayerLoaded`
-   * @see `TaskBeforeZoneChange`
-   * @see `UnaccessContainer`
-   * @param vehicle the target vehicle being moved around
-   * @param zoneId  the zone in which the vehicle and driver will be placed
-   * @return a tuple composed of an `ActorRef` destination and a message to send to that destination
-   */
+    * Deal with a target player as a vehicle passenger in the course of a redeployment action to a target continent
+    * whether that action is the result of a deconstruction (reconstruction)
+    * or other position shifting action handled directly by the server.<br>
+    * <br>
+    * The way a vehicle is handled in reference to being a passenger
+    * is very similar to how an infantry player is handled in the same process.
+    * If this player is the last person who requires a zone change
+    * which is the concluding zone transfer of what might have been a long chain of vehicle and passengers
+    * then that player is responsible for deleting the vehicle for other players of the previous zone.
+    * In the case of a series of ferrying vehicles and cargo vehicles,
+    * the vehicle to be deleted might not be the one immediately mounted.
+    * A reference to the top-level ferrying vehicle's former globally unique identifier has been retained for this purpose.
+    * This vehicle can be deleted for everyone if no more work can be detected.
+    *
+    * @see `GUIDTask.unregisterPlayer`
+    * @see `LoadZoneCommonTransferActivity`
+    * @see `Vehicles.AllGatedOccupantsInSameZone`
+    * @see `PlayerLoaded`
+    * @see `TaskBeforeZoneChange`
+    * @see `UnaccessContainer`
+    * @param vehicle the target vehicle being moved around
+    * @param zoneId  the zone in which the vehicle and driver will be placed
+    * @return a tuple composed of an `ActorRef` destination and a message to send to that destination
+    */
   def LoadZoneInVehicleAsPassenger(vehicle: Vehicle, zoneId: String): Unit = {
     val msg: String = s"${player.Name} is the passenger of a ${vehicle.Definition.Name}"
     log.info(msg)
@@ -1364,23 +1452,25 @@ class ZoningOperations(
       player.Continent = zoneId //forward-set the continent id to perform a test
       interstellarFerryTopLevelGUID = None
 
-      TaskWorkflow.execute(taskThenZoneChange(
-        GUIDTask.unregisterAvatar(continent.GUID, player),
-        ICS.FindZone(_.id == zoneId, context.self)
-      ))
+      TaskWorkflow.execute(
+        taskThenZoneChange(
+          GUIDTask.unregisterAvatar(continent.GUID, player),
+          ICS.FindZone(_.id == zoneId, context.self)
+        )
+      )
     }
   }
 
   /**
-   * Dispatch messages to all target players in immediate passenger and gunner seats
-   * and to the driver of all vehicles in cargo holds
-   * that their current ferrying vehicle is being transported from one zone to the next
-   * and that they should follow after it.
-   * The messages address the avatar of their recipient `WorldSessionActor` objects.
-   * @param player_guid the driver of the target vehicle
-   * @param toZoneId the zone where the target vehicle will be moved
-   * @param vehicle the vehicle (object)
-   */
+    * Dispatch messages to all target players in immediate passenger and gunner seats
+    * and to the driver of all vehicles in cargo holds
+    * that their current ferrying vehicle is being transported from one zone to the next
+    * and that they should follow after it.
+    * The messages address the avatar of their recipient `WorldSessionActor` objects.
+    * @param player_guid the driver of the target vehicle
+    * @param toZoneId the zone where the target vehicle will be moved
+    * @param vehicle the vehicle (object)
+    */
   def LoadZoneTransferPassengerMessages(player_guid: PlanetSideGUID, toZoneId: String, vehicle: Vehicle): Unit = {
     vehicle.PublishGatingManifest() match {
       case Some(manifest) =>
@@ -1410,16 +1500,16 @@ class ZoningOperations(
 
   /** Before changing zones, perform the following task (which can be a nesting of subtasks). */
   def taskThenZoneChange(
-                          task: TaskBundle,
-                          zoneMessage: ICS.FindZone
-                        ): TaskBundle = {
+      task: TaskBundle,
+      zoneMessage: ICS.FindZone
+  ): TaskBundle = {
     TaskBundle(
       new StraightforwardTask() {
-        val localAvatar: Avatar = avatar
-        val localZone: Zone = continent
+        val localAvatar: Avatar                       = avatar
+        val localZone: Zone                           = continent
         val localCluster: typed.ActorRef[ICS.Command] = cluster
 
-        override def description() : String = s"doing ${task.description()} before transferring zones"
+        override def description(): String = s"doing ${task.description()} before transferring zones"
 
         def action(): Future[Any] = {
           localZone.Population ! Zone.Population.Leave(localAvatar)
@@ -1432,21 +1522,20 @@ class ZoningOperations(
   }
 
   /**
-   * Common behavior when transferring between zones
-   * encompassing actions that disassociate the player with entities they left (will leave) in the previous zone.
-   * It also sets up actions for the new zone loading process.
-   */
+    * Common behavior when transferring between zones
+    * encompassing actions that disassociate the player with entities they left (will leave) in the previous zone.
+    * It also sets up actions for the new zone loading process.
+    */
   def LoadZoneCommonTransferActivity(): Unit = {
     zoneLoaded = None
     zoneReload = false
     if (player.avatar.vehicle.nonEmpty && player.VehicleSeated != player.avatar.vehicle) {
       continent.GUID(player.avatar.vehicle) match {
         case Some(vehicle: Vehicle) if vehicle.Actor != Default.Actor =>
-
           // allow AMS, ANT and Router to remain deployed when owner leaves the zone
           vehicle.Definition match {
-            case GlobalDefinitions.ams | GlobalDefinitions.ant | GlobalDefinitions.router
-              => sessionData.vehicles.ConditionalDriverVehicleControl(vehicle)
+            case GlobalDefinitions.ams | GlobalDefinitions.ant | GlobalDefinitions.router =>
+              sessionData.vehicles.ConditionalDriverVehicleControl(vehicle)
 
             case _ => sessionData.vehicles.TotalDriverVehicleControl(vehicle)
           }
@@ -1458,24 +1547,27 @@ class ZoningOperations(
       }
       avatarActor ! AvatarActor.SetVehicle(None)
     }
-    sessionData.removeBoomerTriggersFromInventory().foreach(obj => {
-      TaskWorkflow.execute(GUIDTask.unregisterObject(continent.GUID, obj))
-    })
+    sessionData
+      .removeBoomerTriggersFromInventory()
+      .foreach(obj => {
+        TaskWorkflow.execute(GUIDTask.unregisterObject(continent.GUID, obj))
+      })
     Deployables.Disown(continent, avatar, context.self)
-    spawn.drawDeloyableIcon = spawn.RedrawDeployableIcons //important for when SetCurrentAvatar initializes the UI next zone
+    spawn.drawDeloyableIcon =
+      spawn.RedrawDeployableIcons //important for when SetCurrentAvatar initializes the UI next zone
     sessionData.squad.squadSetup = sessionData.squad.ZoneChangeSquadSetup
   }
 
   /**
-   * Attempt to transfer to the player's faction-specific sanctuary continent.
-   * If the server thinks the player is already on his sanctuary continent, and dead,
-   * it will disconnect the player under the assumption that an error has occurred.
-   * Eventually, this functionality should support better error-handling before it jumps to the conclusion:
-   * "Disconnecting the client is the safest option."
-   * @see `Zones.SanctuaryZoneNumber`
-   * @param tplayer the player
-   * @param currentZone the current zone number
-   */
+    * Attempt to transfer to the player's faction-specific sanctuary continent.
+    * If the server thinks the player is already on his sanctuary continent, and dead,
+    * it will disconnect the player under the assumption that an error has occurred.
+    * Eventually, this functionality should support better error-handling before it jumps to the conclusion:
+    * "Disconnecting the client is the safest option."
+    * @see `Zones.SanctuaryZoneNumber`
+    * @param tplayer the player
+    * @param currentZone the current zone number
+    */
   def RequestSanctuaryZoneSpawn(tplayer: Player, currentZone: Int): Unit = {
     if (currentZone == Zones.sanctuaryZoneNumber(tplayer.Faction)) {
       log.error(s"RequestSanctuaryZoneSpawn: ${player.Name} is already in faction sanctuary zone.")
@@ -1502,14 +1594,14 @@ class ZoningOperations(
   }
 
   /**
-   * Attach the player to a droppod vehicle and hurtle them through the stratosphere in some far off world.
-   * Perform all normal operation standardization (state cancels) as if any of form of zoning was being performed,
-   * then assemble the vehicle and work around some inconvenient setup requirements for vehicle gating.
-   * You can't instant action to respond to some activity using a droppod.
-   *
-   * @param zone          the destination zone
-   * @param spawnPosition the destination drop position
-   */
+    * Attach the player to a droppod vehicle and hurtle them through the stratosphere in some far off world.
+    * Perform all normal operation standardization (state cancels) as if any of form of zoning was being performed,
+    * then assemble the vehicle and work around some inconvenient setup requirements for vehicle gating.
+    * You can't instant action to respond to some activity using a droppod.
+    *
+    * @param zone          the destination zone
+    * @param spawnPosition the destination drop position
+    */
   def LoadZoneLaunchDroppod(zone: Zone, spawnPosition: Vector3): Unit = {
     log.info(s"${player.Name} is launching  to ${zone.id} in ${player.Sex.possessive} droppod")
     CancelZoningProcess()
@@ -1522,7 +1614,7 @@ class ZoningOperations(
     droppod.Position = spawnPosition.xy + Vector3.z(1024)
     droppod.Orientation = Vector3.z(180) //you always seems to land looking south; don't know why
     droppod.Seats(0).mount(player)
-    droppod.Invalidate() //now, we must short-circuit the jury-rig
+    droppod.Invalidate()              //now, we must short-circuit the jury-rig
     interstellarFerry = Some(droppod) //leverage vehicle gating
     player.Position = droppod.Position
     player.VehicleSeated = PlanetSideGUID(0)
@@ -1533,23 +1625,23 @@ class ZoningOperations(
     //xy-coordinates indicate spawn bias:
     val sanctuaryNum = Zones.sanctuaryZoneNumber(target.Faction)
     val harts = Zones.zones.find(zone => zone.Number == sanctuaryNum) match {
-      case Some(zone) => zone.Buildings
-        .values
-        .filter(b => b.Amenities.exists { a: Amenity => a.isInstanceOf[OrbitalShuttlePad] })
-        .toSeq
+      case Some(zone) =>
+        zone.Buildings.values
+          .filter(b => b.Amenities.exists { a: Amenity => a.isInstanceOf[OrbitalShuttlePad] })
+          .toSeq
       case None =>
         Nil
     }
     //compass directions to modify spawn destination
     val directionBias = math.abs(scala.util.Random.nextInt() % avatar.name.hashCode % 8) match {
-      case 0 => Vector3(-1, 1, 0) //NW
-      case 1 => Vector3(0, 1, 0) //N
-      case 2 => Vector3(1, 1, 0) //NE
-      case 3 => Vector3(1, 0, 0) //E
-      case 4 => Vector3(1, -1, 0) //SE
-      case 5 => Vector3(0, -1, 0) //S
+      case 0 => Vector3(-1, 1, 0)  //NW
+      case 1 => Vector3(0, 1, 0)   //N
+      case 2 => Vector3(1, 1, 0)   //NE
+      case 3 => Vector3(1, 0, 0)   //E
+      case 4 => Vector3(1, -1, 0)  //SE
+      case 5 => Vector3(0, -1, 0)  //S
       case 6 => Vector3(-1, -1, 0) //SW
-      case 7 => Vector3(-1, 0, 0) //W
+      case 7 => Vector3(-1, 0, 0)  //W
     }
     if (harts.nonEmpty) {
       //get a hart building and select one of the spawn facilities surrounding it
@@ -1563,31 +1655,31 @@ class ZoningOperations(
   }
 
   /**
-   * Use this function to facilitate registering a droppod for a globally unique identifier
-   * in the event that the user has instigated an instant action event to a destination within the current zone.<br>
-   * <br>
-   * If going to another zone instead,
-   * this is unneccessary as the normal vehicle gating protocol is partially intersected for droppod operation,
-   * and will properly register the droppod before introducing it into the new zone without additional concern.
-   * The droppod should actually not be completely unregistered.
-   * If inquired, it will act like a GUID had already been assigned to it, but it was invalidated.
-   * This condition is artificial, but it necessary to pass certain operations related to vehicle gating.
-   * Additionally, the driver is only partially associated with the vehicle at this time.
-   * `interstellarFerry` is properly keeping track of the vehicle during the transition
-   * and the user who is the driver (second param) is properly seated
-   * but the said driver does not know about the vehicle through his usual convention - `VehicleSeated` - yet.
-   * @see `GlobalDefinitions.droppod`
-   * @see `GUIDTask.registerObject`
-   * @see `interstellarFerry`
-   * @see `Player.VehicleSeated`
-   * @see `PlayerLoaded`
-   * @see `TaskBundle`
-   * @see `Vehicles.Own`
-   * @param vehicle the unregistered droppod
-   * @param tplayer the player using the droppod for instant action;
-   *                should already be the driver of the droppod
-   * @return a `TaskBundle` message
-   */
+    * Use this function to facilitate registering a droppod for a globally unique identifier
+    * in the event that the user has instigated an instant action event to a destination within the current zone.<br>
+    * <br>
+    * If going to another zone instead,
+    * this is unneccessary as the normal vehicle gating protocol is partially intersected for droppod operation,
+    * and will properly register the droppod before introducing it into the new zone without additional concern.
+    * The droppod should actually not be completely unregistered.
+    * If inquired, it will act like a GUID had already been assigned to it, but it was invalidated.
+    * This condition is artificial, but it necessary to pass certain operations related to vehicle gating.
+    * Additionally, the driver is only partially associated with the vehicle at this time.
+    * `interstellarFerry` is properly keeping track of the vehicle during the transition
+    * and the user who is the driver (second param) is properly seated
+    * but the said driver does not know about the vehicle through his usual convention - `VehicleSeated` - yet.
+    * @see `GlobalDefinitions.droppod`
+    * @see `GUIDTask.registerObject`
+    * @see `interstellarFerry`
+    * @see `Player.VehicleSeated`
+    * @see `PlayerLoaded`
+    * @see `TaskBundle`
+    * @see `Vehicles.Own`
+    * @param vehicle the unregistered droppod
+    * @param tplayer the player using the droppod for instant action;
+    *                should already be the driver of the droppod
+    * @return a `TaskBundle` message
+    */
   def registerDroppod(vehicle: Vehicle, tplayer: Player): TaskBundle = {
     TaskBundle(
       new StraightforwardTask() {
@@ -1612,50 +1704,53 @@ class ZoningOperations(
     ask(manager, PropertyOverrideManager.GetOverridesMessage)(Timeout(2.seconds)).onComplete {
       case Success(overrides: List[Any]) =>
         //safe to cast like this
-        sendResponse(PropertyOverrideMessage(overrides.map { _.asInstanceOf[PropertyOverrideMessage.GamePropertyScope] }))
+        sendResponse(PropertyOverrideMessage(overrides.map {
+          _.asInstanceOf[PropertyOverrideMessage.GamePropertyScope]
+        }))
       case _ => ;
     }
   }
 
   /**
-   * The normal response to receiving a `KeepAliveMessage` packet from the client.<br>
-   * <br>
-   * Even though receiving a `KeepAliveMessage` outside of zoning is uncommon,
-   * the behavior should be configured to maintain a neutral action.
-   *
-   * @see `KeepAliveMessage`
-   * @see `keepAliveFunc`
-   */
+    * The normal response to receiving a `KeepAliveMessage` packet from the client.<br>
+    * <br>
+    * Even though receiving a `KeepAliveMessage` outside of zoning is uncommon,
+    * the behavior should be configured to maintain a neutral action.
+    *
+    * @see `KeepAliveMessage`
+    * @see `keepAliveFunc`
+    */
   def NormalKeepAlive(): Unit = {}
 
   /* nested class - spawn operations */
 
   class SpawnOperations() {
-    private[support] var deadState: DeadState.Value = DeadState.Dead
-    private[support] var loginChatMessage: mutable.ListBuffer[String] = new mutable.ListBuffer[String]()
-    private[support] var amsSpawnPoints: List[SpawnPoint] = Nil
-    private[support] var noSpawnPointHere: Boolean = false
-    private[support] var setupAvatarFunc: () => Unit = AvatarCreate
-    private[support] var setCurrentAvatarFunc: Player => Unit = SetCurrentAvatarNormally
-    private[support] var nextSpawnPoint: Option[SpawnPoint] = None
+    private[support] var deadState: DeadState.Value                     = DeadState.Dead
+    private[support] var loginChatMessage: mutable.ListBuffer[String]   = new mutable.ListBuffer[String]()
+    private[support] var amsSpawnPoints: List[SpawnPoint]               = Nil
+    private[support] var noSpawnPointHere: Boolean                      = false
+    private[support] var setupAvatarFunc: () => Unit                    = AvatarCreate
+    private[support] var setCurrentAvatarFunc: Player => Unit           = SetCurrentAvatarNormally
+    private[support] var nextSpawnPoint: Option[SpawnPoint]             = None
     private[support] var interimUngunnedVehicle: Option[PlanetSideGUID] = None
-    private[support] var interimUngunnedVehicleSeat: Option[Int] = None
+    private[support] var interimUngunnedVehicleSeat: Option[Int]        = None
+
     /** Upstream message counter<br>
-     * Checks for server acknowledgement of the following messages in the following conditions:<br>
-     * `PlayerStateMessageUpstream` (infantry)<br>
-     * `VehicleStateMessage` (driver mount only)<br>
-     * `ChildObjectStateMessage` (any gunner mount that is not the driver)<br>
-     * `KeepAliveMessage` (any passenger mount that is not the driver)<br>
-     * As they should arrive roughly every 250 milliseconds this allows for a very crude method of scheduling tasks up to four times per second
-     */
-    private[support] var upstreamMessageCount: Int = 0
-    private[support] var shiftPosition: Option[Vector3] = None
-    private[support] var shiftOrientation: Option[Vector3] = None
+      * Checks for server acknowledgement of the following messages in the following conditions:<br>
+      * `PlayerStateMessageUpstream` (infantry)<br>
+      * `VehicleStateMessage` (driver mount only)<br>
+      * `ChildObjectStateMessage` (any gunner mount that is not the driver)<br>
+      * `KeepAliveMessage` (any passenger mount that is not the driver)<br>
+      * As they should arrive roughly every 250 milliseconds this allows for a very crude method of scheduling tasks up to four times per second
+      */
+    private[support] var upstreamMessageCount: Int                                       = 0
+    private[support] var shiftPosition: Option[Vector3]                                  = None
+    private[support] var shiftOrientation: Option[Vector3]                               = None
     private[support] var drawDeloyableIcon: PlanetSideGameObject with Deployable => Unit = RedrawDeployableIcons
-    private[support] var populateAvatarAwardRibbonsFunc: (Int, Long) => Unit = setupAvatarAwardMessageDelivery
-    private[support] var setAvatar: Boolean = false
-    private[support] var reviveTimer: Cancellable = Default.Cancellable
-    private[support] var respawnTimer: Cancellable = Default.Cancellable
+    private[support] var populateAvatarAwardRibbonsFunc: (Int, Long) => Unit             = setupAvatarAwardMessageDelivery
+    private[support] var setAvatar: Boolean                                              = false
+    private[support] var reviveTimer: Cancellable                                        = Default.Cancellable
+    private[support] var respawnTimer: Cancellable                                       = Default.Cancellable
 
     /* packets */
 
@@ -1704,7 +1799,12 @@ class ZoningOperations(
       avatarActor ! AvatarActor.LoginAvatar(context.self)
     }
 
-    def handleLoginInfoSomewhere(name: String, inZone: Zone, optionalSavedData: Option[Savedplayer], from: ActorRef): Unit = {
+    def handleLoginInfoSomewhere(
+        name: String,
+        inZone: Zone,
+        optionalSavedData: Option[Savedplayer],
+        from: ActorRef
+    ): Unit = {
       log.info(s"LoginInfo: player $name is considered a fresh character")
       sessionData.persistFunc = UpdatePersistence(from)
       deadState = DeadState.RespawnTime
@@ -1712,9 +1812,9 @@ class ZoningOperations(
       player.Zone = inZone
       optionalSavedData match {
         case Some(results) =>
-          val health = results.health
+          val health             = results.health
           val hasHealthUponLogin = health > 0
-          val position = Vector3(results.px * 0.001f, results.py * 0.001f, results.pz * 0.001f)
+          val position           = Vector3(results.px * 0.001f, results.py * 0.001f, results.pz * 0.001f)
           player.Position = position
           player.Orientation = Vector3(0f, 0f, results.orientation * 0.001f)
           /*
@@ -1739,7 +1839,7 @@ class ZoningOperations(
             player.ZoningRequest = Zoning.Method.Login
             zoningChatMessageType = ChatMessageType.UNK_227
             if (Zones.sanctuaryZoneNumber(player.Faction) != inZone.Number) {
-              val pfaction = player.Faction
+              val pfaction  = player.Faction
               val buildings = inZone.Buildings.values
               val ourBuildings = buildings.filter {
                 _.Faction == pfaction
@@ -1767,9 +1867,11 @@ class ZoningOperations(
                   Vector3.DistanceSquared(b.Position, position) < soi2
                 }
                 if (inBuildingSOI.nonEmpty) {
-                  if (!inBuildingSOI.exists {
-                    ourBuildings.contains
-                  }) {
+                  if (
+                    !inBuildingSOI.exists {
+                      ourBuildings.contains
+                    }
+                  ) {
                     zoningType = Zoning.Method.Reset
                     player.ZoningRequest = Zoning.Method.Reset
                     zoningChatMessageType = ChatMessageType.UNK_228
@@ -1848,7 +1950,8 @@ class ZoningOperations(
                 tplayer.Release //for proper respawn
                 tplayer.Zone = inZone
                 tplayer
-            }, avatar = a
+            },
+            avatar = a
           )
           avatarActor ! AvatarActor.ReplaceAvatar(a)
           avatarLoginResponse(a)
@@ -1864,7 +1967,7 @@ class ZoningOperations(
       log.warn(s"LoginInfo: $name is denied login for reason - $reason")
       reason match {
         case PlayerToken.DeniedLoginReason.Kicked => sessionData.kickedByAdministration()
-        case _ => sendResponse(DisconnectMessage("You will be logged out."))
+        case _                                    => sendResponse(DisconnectMessage("You will be logged out."))
       }
     }
 
@@ -1883,11 +1986,15 @@ class ZoningOperations(
           zoningType = Zoning.Method.Login
           response match {
             case Some((zone, spawnPoint)) =>
-              loginChatMessage.addOne("@login_reposition_to_friendly_facility") //Your previous location was held by the enemy. You have been moved to the nearest friendly facility.
+              loginChatMessage.addOne(
+                "@login_reposition_to_friendly_facility"
+              ) //Your previous location was held by the enemy. You have been moved to the nearest friendly facility.
               val (pos, ori) = spawnPoint.SpecificPoint(player)
               LoadZonePhysicalSpawnPoint(zone.id, pos, ori, respawnTime = 0 seconds, Some(spawnPoint))
             case _ =>
-              loginChatMessage.addOne("@login_reposition_to_sanctuary") //Your previous location was held by the enemy.  As there were no operational friendly facilities on that continent, you have been brought back to your Sanctuary.
+              loginChatMessage.addOne(
+                "@login_reposition_to_sanctuary"
+              ) //Your previous location was held by the enemy.  As there were no operational friendly facilities on that continent, you have been brought back to your Sanctuary.
               RequestSanctuaryZoneSpawn(player, player.Zone.Number)
           }
 
@@ -1912,9 +2019,9 @@ class ZoningOperations(
 
     def handleNewPlayerLoaded(tplayer: Player): Unit = {
       /* new zone, might be on `tplayer.Zone` but should definitely be on `session` */
-      val zone = session.zone
-      val id = zone.id
-      val map = zone.map
+      val zone    = session.zone
+      val id      = zone.id
+      val map     = zone.map
       val mapName = map.name
       log.info(s"${tplayer.Name} has spawned into $id")
       sessionData.oldRefsMap.clear()
@@ -1997,17 +2104,19 @@ class ZoningOperations(
 
     private def dropMedicalApplicators(p: Player): Unit = {
       WorldSession.DropLeftovers(p)(
-        (p.Holsters().zipWithIndex.collect { case (slot, index) if slot.Equipment.nonEmpty => InventoryItem(slot.Equipment.get, index) } ++
+        (p.Holsters().zipWithIndex.collect {
+          case (slot, index) if slot.Equipment.nonEmpty => InventoryItem(slot.Equipment.get, index)
+        } ++
           p.Inventory.Items ++
           p.FreeHand.Equipment.flatMap { item => Some(InventoryItem(item, Player.FreeHandSlot)) }.toList)
           .collect {
             case entry @ InventoryItem(equipment, index)
-              if equipment.Definition == GlobalDefinitions.medicalapplicator && p.DrawnSlot == index =>
+                if equipment.Definition == GlobalDefinitions.medicalapplicator && p.DrawnSlot == index =>
               p.Slot(index).Equipment = None
               p.DrawnSlot = Player.HandsDownSlot
               entry
             case entry @ InventoryItem(equipment, index)
-              if equipment.Definition == GlobalDefinitions.medicalapplicator =>
+                if equipment.Definition == GlobalDefinitions.medicalapplicator =>
               p.Slot(index).Equipment = None
               entry
           }
@@ -2028,16 +2137,16 @@ class ZoningOperations(
               case v: Vehicle  => v.Faction == player.Faction && !v.Destroyed && v.DeploymentState == DriveState.Deployed
               case _           => true
             })
-        case None            => true
+        case None => true
       }
     }
 
     /**
-     * During login, when the avatar is set, the response code sets up session and deployable toolbox stats.
-     * Immediately contact the interstellar cluster to deal with zoning conditions.
-     * Only call this once during login and never any time after that.
-     * @param avatar the avatar being set as the current one belonging to this session
-     */
+      * During login, when the avatar is set, the response code sets up session and deployable toolbox stats.
+      * Immediately contact the interstellar cluster to deal with zoning conditions.
+      * Only call this once during login and never any time after that.
+      * @param avatar the avatar being set as the current one belonging to this session
+      */
     def avatarLoginResponse(avatar: Avatar): Unit = {
       session = session.copy(avatar = avatar)
       Deployables.InitializeDeployableQuantities(avatar)
@@ -2045,10 +2154,10 @@ class ZoningOperations(
     }
 
     /**
-     * na
-     * @param tplayer na
-     * @param zone na
-     */
+      * na
+      * @param tplayer na
+      * @param zone na
+      */
     def HandleReleaseAvatar(tplayer: Player, zone: Zone): Unit = {
       sessionData.keepAliveFunc = sessionData.keepAlivePersistence
       tplayer.Release
@@ -2086,18 +2195,18 @@ class ZoningOperations(
     }
 
     /**
-     * A part of the process of spawning the player into the game world.
-     * The function should work regardless of whether the player is alive or dead - it will make them alive.
-     * It adds the `WorldSessionActor`-current `Player` to the current zone and sends out the expected packets.<br>
-     * <br>
-     * If that player is in a vehicle, it will construct that vehicle.
-     * If the player is the driver of the vehicle,
-     * they must temporarily be removed from the driver mount in order for the vehicle to be constructed properly.
-     * These two previous statements operate through similar though distinct mechanisms and imply different conditions.
-     * In reality, they produce the same output but enforce different relationships between the components.
-     * The vehicle without a rendered player will always be created if that vehicle exists.
-     * The vehicle should only be constructed once.
-     */
+      * A part of the process of spawning the player into the game world.
+      * The function should work regardless of whether the player is alive or dead - it will make them alive.
+      * It adds the `WorldSessionActor`-current `Player` to the current zone and sends out the expected packets.<br>
+      * <br>
+      * If that player is in a vehicle, it will construct that vehicle.
+      * If the player is the driver of the vehicle,
+      * they must temporarily be removed from the driver mount in order for the vehicle to be constructed properly.
+      * These two previous statements operate through similar though distinct mechanisms and imply different conditions.
+      * In reality, they produce the same output but enforce different relationships between the components.
+      * The vehicle without a rendered player will always be created if that vehicle exists.
+      * The vehicle should only be constructed once.
+      */
     def AvatarCreate(): Unit = {
       val health = player.Health
       val armor  = player.Armor
@@ -2201,27 +2310,31 @@ class ZoningOperations(
       continent.Population ! Zone.Population.Spawn(avatar, player, avatarActor)
       avatarActor ! AvatarActor.RefreshPurchaseTimes()
       //begin looking for conditions to set the avatar
-      context.system.scheduler.scheduleOnce(delay = 250 millisecond, context.self, SessionActor.SetCurrentAvatar(player, 200))
+      context.system.scheduler.scheduleOnce(
+        delay = 250 millisecond,
+        context.self,
+        SessionActor.SetCurrentAvatar(player, 200)
+      )
     }
 
     /**
-     * Create an avatar character so that avatar's player is mounted in a vehicle's mount.
-     * A part of the process of spawning the player into the game world.<br>
-     * <br>
-     * This is a very specific configuration of the player character that is not visited very often.
-     * The value of `player.VehicleSeated` should be set to accommodate `Packet.DetailedConstructorData` and,
-     * though not explicitly checked,
-     * should be the same as the globally unique identifier that is assigned to the `vehicle` parameter for the current zone.
-     * The priority of this function is consider "initial" so it introduces the avatar to the game world in this state
-     * and is permitted to introduce the avatar to the vehicle's internal settings in a similar way.
-     * Neither the player avatar nor the vehicle should be reconstructed before the next zone load operation
-     * to avoid damaging the critical setup of this function.
-     * @see `AccessContainer`
-     * @see `UpdateWeaponAtSeatPosition`
-     * @param tplayer the player avatar seated in the vehicle's mount
-     * @param vehicle the vehicle the player is riding
-     * @param seat the mount index
-     */
+      * Create an avatar character so that avatar's player is mounted in a vehicle's mount.
+      * A part of the process of spawning the player into the game world.<br>
+      * <br>
+      * This is a very specific configuration of the player character that is not visited very often.
+      * The value of `player.VehicleSeated` should be set to accommodate `Packet.DetailedConstructorData` and,
+      * though not explicitly checked,
+      * should be the same as the globally unique identifier that is assigned to the `vehicle` parameter for the current zone.
+      * The priority of this function is consider "initial" so it introduces the avatar to the game world in this state
+      * and is permitted to introduce the avatar to the vehicle's internal settings in a similar way.
+      * Neither the player avatar nor the vehicle should be reconstructed before the next zone load operation
+      * to avoid damaging the critical setup of this function.
+      * @see `AccessContainer`
+      * @see `UpdateWeaponAtSeatPosition`
+      * @param tplayer the player avatar seated in the vehicle's mount
+      * @param vehicle the vehicle the player is riding
+      * @param seat the mount index
+      */
     def AvatarCreateInVehicle(tplayer: Player, vehicle: Vehicle, seat: Int): Unit = {
       val pdef  = tplayer.avatar.definition
       val pguid = tplayer.GUID
@@ -2253,32 +2366,32 @@ class ZoningOperations(
     }
 
     /**
-     * A part of the process of spawning the player into the game world
-     * in the case of a restored game connection (relogging).<br>
-     * <br>
-     * A login protocol that substitutes the first call to `avatarSetupFunc` (replacing `AvatarCreate`)
-     * in consideration of a user re-logging into the game
-     * before the period of time where an avatar/player instance would decay and be cleaned-up.
-     * Large portions of this function operate as a combination of the mechanics
-     * for normal `AvatarCreate` and for `AvatarCreateInVehicle`.
-     * Unlike either of the previous, this functionlality is disinterested in updating other clients
-     * as the target player and potential vehicle already exist as far as other clients are concerned.<br>
-     * <br>
-     * If that player is in a vehicle, it will construct that vehicle.
-     * If the player is the driver of the vehicle,
-     * they must temporarily be removed from the driver mount in order for the vehicle to be constructed properly.
-     * These two previous statements operate through similar though distinct mechanisms and imply different conditions.
-     * In reality, they produce the same output but enforce different relationships between the components.
-     * The vehicle without a rendered player will always be created if that vehicle exists.<br>
-     * <br>
-     * The value of `player.VehicleSeated` should be set to accommodate `Packet.DetailedConstructorData` and,
-     * though not explicitly checked,
-     * should be the same as the globally unique identifier that is assigned to the `vehicle` parameter for the current zone.
-     * The priority of this function is consider "initial" so it introduces the avatar to the game world in this state
-     * and is permitted to introduce the avatar to the vehicle's internal settings in a similar way.
-     * Neither the player avatar nor the vehicle should be reconstructed before the next zone load operation
-     * to avoid damaging the critical setup of this function.
-     */
+      * A part of the process of spawning the player into the game world
+      * in the case of a restored game connection (relogging).<br>
+      * <br>
+      * A login protocol that substitutes the first call to `avatarSetupFunc` (replacing `AvatarCreate`)
+      * in consideration of a user re-logging into the game
+      * before the period of time where an avatar/player instance would decay and be cleaned-up.
+      * Large portions of this function operate as a combination of the mechanics
+      * for normal `AvatarCreate` and for `AvatarCreateInVehicle`.
+      * Unlike either of the previous, this functionlality is disinterested in updating other clients
+      * as the target player and potential vehicle already exist as far as other clients are concerned.<br>
+      * <br>
+      * If that player is in a vehicle, it will construct that vehicle.
+      * If the player is the driver of the vehicle,
+      * they must temporarily be removed from the driver mount in order for the vehicle to be constructed properly.
+      * These two previous statements operate through similar though distinct mechanisms and imply different conditions.
+      * In reality, they produce the same output but enforce different relationships between the components.
+      * The vehicle without a rendered player will always be created if that vehicle exists.<br>
+      * <br>
+      * The value of `player.VehicleSeated` should be set to accommodate `Packet.DetailedConstructorData` and,
+      * though not explicitly checked,
+      * should be the same as the globally unique identifier that is assigned to the `vehicle` parameter for the current zone.
+      * The priority of this function is consider "initial" so it introduces the avatar to the game world in this state
+      * and is permitted to introduce the avatar to the vehicle's internal settings in a similar way.
+      * Neither the player avatar nor the vehicle should be reconstructed before the next zone load operation
+      * to avoid damaging the critical setup of this function.
+      */
     def AvatarRejoin(): Unit = {
       sessionData.vehicles.GetKnownVehicleAndSeat() match {
         case (Some(vehicle: Vehicle), Some(seat: Int)) =>
@@ -2300,8 +2413,8 @@ class ZoningOperations(
           Vehicles.ReloadAccessPermissions(vehicle, continent.id)
           log.debug(s"AvatarCreate (vehicle): ${player.Name}'s ${vehicle.Definition.Name}")
           log.trace(s"AvatarCreate (vehicle): ${player.Name}'s ${vehicle.Definition.Name} - $vguid -> $vdata")
-          val pdef   = player.avatar.definition
-          val pguid  = player.GUID
+          val pdef  = player.avatar.definition
+          val pguid = player.GUID
           player.VehicleSeated = None
           val pdata = pdef.Packet.DetailedConstructorData(player).get
           player.VehicleSeated = vguid
@@ -2327,16 +2440,20 @@ class ZoningOperations(
       avatarActor ! AvatarActor.RefreshPurchaseTimes()
       setupAvatarFunc = AvatarCreate
       //begin looking for conditions to set the avatar
-      context.system.scheduler.scheduleOnce(delay = 750 millisecond, context.self, SessionActor.SetCurrentAvatar(player, 200))
+      context.system.scheduler.scheduleOnce(
+        delay = 750 millisecond,
+        context.self,
+        SessionActor.SetCurrentAvatar(player, 200)
+      )
     }
 
     /**
-     * Produce a clone of the player that is equipped with the default infantry loadout.
-     * The loadout is hardcoded.
-     * The player is expected to be in a Standard Exo-Suit.
-     * @param tplayer the original player
-     * @return the duplication of the player, in Standard Exo-Suit and with default equipment loadout
-     */
+      * Produce a clone of the player that is equipped with the default infantry loadout.
+      * The loadout is hardcoded.
+      * The player is expected to be in a Standard Exo-Suit.
+      * @param tplayer the original player
+      * @return the duplication of the player, in Standard Exo-Suit and with default equipment loadout
+      */
     def RespawnClone(tplayer: Player): Player = {
       // workaround to make sure player is spawned with full stamina
       player.avatar = player.avatar.copy(stamina = avatar.maxStamina)
@@ -2350,11 +2467,11 @@ class ZoningOperations(
     }
 
     /**
-     * Remove items from a deceased player that are not expected to be found on a corpse.
-     * Most all players have their melee slot knife (which can not be un-equipped normally) removed.
-     * MAX's have their primary weapon in the designated slot removed.
-     * @param obj the player to be turned into a corpse
-     */
+      * Remove items from a deceased player that are not expected to be found on a corpse.
+      * Most all players have their melee slot knife (which can not be un-equipped normally) removed.
+      * MAX's have their primary weapon in the designated slot removed.
+      * @param obj the player to be turned into a corpse
+      */
     def FriskDeadBody(obj: Player): Unit = {
       if (!obj.isAlive) {
         obj.Slot(4).Equipment match {
@@ -2378,25 +2495,27 @@ class ZoningOperations(
             case Some(_) | None => ;
           }
         })
-        sessionData.removeBoomerTriggersFromInventory().foreach(trigger => { sessionData.normalItemDrop(obj, continent)(trigger) })
+        sessionData
+          .removeBoomerTriggersFromInventory()
+          .foreach(trigger => { sessionData.normalItemDrop(obj, continent)(trigger) })
       }
     }
 
     /**
-     * Creates a player that has the characteristics of a corpse
-     * so long as the player has items in their knapsack or their holsters.
-     * If the player has no items stored, the clean solution is to remove the player from the game.
-     * To the game, that is a backpack (or some pastry, festive graphical modification allowing).
-     * @see `AvatarAction.ObjectDelete`
-     * @see `AvatarAction.Release`
-     * @see `AvatarServiceMessage`
-     * @see `FriskDeadBody`
-     * @see `GUIDTask.unregisterPlayer`
-     * @see `ObjectDeleteMessage`
-     * @see `WellLootedDeadBody`
-     * @see `Zone.Corpse.Add`
-     * @param tplayer the player
-     */
+      * Creates a player that has the characteristics of a corpse
+      * so long as the player has items in their knapsack or their holsters.
+      * If the player has no items stored, the clean solution is to remove the player from the game.
+      * To the game, that is a backpack (or some pastry, festive graphical modification allowing).
+      * @see `AvatarAction.ObjectDelete`
+      * @see `AvatarAction.Release`
+      * @see `AvatarServiceMessage`
+      * @see `FriskDeadBody`
+      * @see `GUIDTask.unregisterPlayer`
+      * @see `ObjectDeleteMessage`
+      * @see `WellLootedDeadBody`
+      * @see `Zone.Corpse.Add`
+      * @param tplayer the player
+      */
     def PrepareToTurnPlayerIntoCorpse(tplayer: Player, zone: Zone): Unit = {
       tplayer.Release
       FriskDeadBody(tplayer)
@@ -2413,19 +2532,19 @@ class ZoningOperations(
     }
 
     /**
-     * Creates a player that has the characteristics of a corpse.
-     * To the game, that is a backpack (or some pastry, festive graphical modification allowing).
-     * A player who has been kicked may not turn into a corpse.
-     * @see `AvatarAction.Release`
-     * @see `AvatarServiceMessage`
-     * @see `CorpseConverter.converter`
-     * @see `DepictPlayerAsCorpse`
-     * @see `Player.Release`
-     * @see `Zone.AvatarEvents`
-     * @see `Zone.Corpse.Add`
-     * @see `Zone.Population`
-     * @param tplayer the player
-     */
+      * Creates a player that has the characteristics of a corpse.
+      * To the game, that is a backpack (or some pastry, festive graphical modification allowing).
+      * A player who has been kicked may not turn into a corpse.
+      * @see `AvatarAction.Release`
+      * @see `AvatarServiceMessage`
+      * @see `CorpseConverter.converter`
+      * @see `DepictPlayerAsCorpse`
+      * @see `Player.Release`
+      * @see `Zone.AvatarEvents`
+      * @see `Zone.Corpse.Add`
+      * @see `Zone.Population`
+      * @param tplayer the player
+      */
     def TurnPlayerIntoCorpse(tplayer: Player, zone: Zone): Unit = {
       tplayer.Release
       DepictPlayerAsCorpse(tplayer)
@@ -2434,11 +2553,11 @@ class ZoningOperations(
     }
 
     /**
-     * Creates a player that has the characteristics of a corpse.
-     * To the game, that is a backpack (or some pastry, festive graphical modification allowing).
-     * @see `CorpseConverter.converter`
-     * @param tplayer the player
-     */
+      * Creates a player that has the characteristics of a corpse.
+      * To the game, that is a backpack (or some pastry, festive graphical modification allowing).
+      * @see `CorpseConverter.converter`
+      * @param tplayer the player
+      */
     def DepictPlayerAsCorpse(tplayer: Player): Unit = {
       val guid = tplayer.GUID
       //the corpse as a receptacle
@@ -2452,21 +2571,21 @@ class ZoningOperations(
     }
 
     /**
-     * If the corpse has been well-looted, it has no items in its primary holsters nor any items in its inventory.
-     * @param obj the corpse
-     * @return `true`, if the `obj` is actually a corpse and has no objects in its holsters or backpack;
-     *        `false`, otherwise
-     */
+      * If the corpse has been well-looted, it has no items in its primary holsters nor any items in its inventory.
+      * @param obj the corpse
+      * @return `true`, if the `obj` is actually a corpse and has no objects in its holsters or backpack;
+      *        `false`, otherwise
+      */
     def WellLootedDeadBody(obj: Player): Boolean = {
       !obj.isAlive && obj.Holsters().count(_.Equipment.nonEmpty) == 0 && obj.Inventory.Size == 0
     }
 
     /**
-     * If the corpse has been well-looted, remove it from the ground.
-     * @param obj the corpse
-     * @return `true`, if the `obj` is actually a corpse and has no objects in its holsters or backpack;
-     *        `false`, otherwise
-     */
+      * If the corpse has been well-looted, remove it from the ground.
+      * @param obj the corpse
+      * @return `true`, if the `obj` is actually a corpse and has no objects in its holsters or backpack;
+      *        `false`, otherwise
+      */
     def TryDisposeOfLootedCorpse(obj: Player): Boolean = {
       if (obj.isBackpack && WellLootedDeadBody(obj)) {
         obj.Zone.AvatarEvents ! AvatarServiceMessage.Corpse(RemoverActor.HurrySpecific(List(obj), obj.Zone))
@@ -2477,34 +2596,40 @@ class ZoningOperations(
     }
 
     /**
-     * Process recovered spawn request information to start the process of spawning an avatar player entity
-     * in a specific zone in a specific place in that zone after a certain amount of time has elapsed.<br>
-     * <br>
-     * To load: a zone, a spawn point, a spawning target entity, and the time it takes to spawn are required.
-     * Everything but the spawn point can be determined from the information already available to the context
-     * (does not need to be passed in as a parameter).
-     * The zone is more reliable when passed in as a parameter since local references may have changed.
-     * The spawn point defines the spawn position as well as the spawn orientation.
-     * Any of information provided can be used to calculate the time to spawn.
-     * The session's knowledge of the zoning event is also used to assist with the spawning event.<br>
-     * <br>
-     * If no spawn information has been provided, abort the whole process (unsafe!).
-     *
-     * @param spawnPointTarget an optional paired zone entity and a spawn point within the zone
-     * @param zoningType       a token that references the manner of zone transfer
-     */
+      * Process recovered spawn request information to start the process of spawning an avatar player entity
+      * in a specific zone in a specific place in that zone after a certain amount of time has elapsed.<br>
+      * <br>
+      * To load: a zone, a spawn point, a spawning target entity, and the time it takes to spawn are required.
+      * Everything but the spawn point can be determined from the information already available to the context
+      * (does not need to be passed in as a parameter).
+      * The zone is more reliable when passed in as a parameter since local references may have changed.
+      * The spawn point defines the spawn position as well as the spawn orientation.
+      * Any of information provided can be used to calculate the time to spawn.
+      * The session's knowledge of the zoning event is also used to assist with the spawning event.<br>
+      * <br>
+      * If no spawn information has been provided, abort the whole process (unsafe!).
+      *
+      * @param spawnPointTarget an optional paired zone entity and a spawn point within the zone
+      * @param zoningType       a token that references the manner of zone transfer
+      */
     def resolveZoningSpawnPointLoad(spawnPointTarget: Option[(Zone, SpawnPoint)], zoningType: Zoning.Method): Unit = {
       spawnPointTarget match {
         case Some((zone, spawnPoint)) =>
           val obj = continent.GUID(player.VehicleSeated) match {
             case Some(obj: Vehicle) if !obj.Destroyed => obj
-            case _ => player
+            case _                                    => player
           }
           val (pos, ori) = spawnPoint.SpecificPoint(obj)
           if (zoningType == Zoning.Method.InstantAction)
             LoadZonePhysicalSpawnPoint(zone.id, pos, ori, respawnTime = 0 seconds, Some(spawnPoint))
           else
-            LoadZonePhysicalSpawnPoint(zone.id, pos, ori, CountSpawnDelay(zone.id, spawnPoint, continent.id), Some(spawnPoint))
+            LoadZonePhysicalSpawnPoint(
+              zone.id,
+              pos,
+              ori,
+              CountSpawnDelay(zone.id, spawnPoint, continent.id),
+              Some(spawnPoint)
+            )
         case None =>
           log.warn(
             s"SpawnPointResponse: ${player.Name} received no spawn point response when asking InterstellarClusterService"
@@ -2517,16 +2642,16 @@ class ZoningOperations(
     }
 
     /**
-     * Given an origin and a destination, determine how long the process of traveling should take in reconstruction time.
-     * For most destinations, the unit of receiving ("spawn point") determines the reconstruction time.
-     * Possession of a lattice-linked friendly Bio Laboratory halves the time of spawning at facilities.
-     * In a special consideration, travel to any sanctuary or sanctuary-special zone should be as immediate as zone loading.
-     *
-     * @param toZoneId     the zone where the target is headed
-     * @param toSpawnPoint the unit the target is using as a destination
-     * @param fromZoneId   the zone where the target current is located
-     * @return how long the spawning process will take
-     */
+      * Given an origin and a destination, determine how long the process of traveling should take in reconstruction time.
+      * For most destinations, the unit of receiving ("spawn point") determines the reconstruction time.
+      * Possession of a lattice-linked friendly Bio Laboratory halves the time of spawning at facilities.
+      * In a special consideration, travel to any sanctuary or sanctuary-special zone should be as immediate as zone loading.
+      *
+      * @param toZoneId     the zone where the target is headed
+      * @param toSpawnPoint the unit the target is using as a destination
+      * @param fromZoneId   the zone where the target current is located
+      * @return how long the spawning process will take
+      */
     def CountSpawnDelay(toZoneId: String, toSpawnPoint: SpawnPoint, fromZoneId: String): FiniteDuration = {
       val sanctuaryZoneId = Zones.sanctuaryZoneId(player.Faction)
       if (fromZoneId.equals("Nowhere") || sanctuaryZoneId.equals(toZoneId) || !isAcceptableNextSpawnPoint) {
@@ -2545,42 +2670,42 @@ class ZoningOperations(
     }
 
     /**
-     * The starting point of behavior for a player who:
-     * is dead and is respawning;
-     * is deconstructing at a spawn tube and is respawning;
-     * is using a warp gate; or,
-     * any or none of the previous conditions, but the final result involves changing what zone the player occupies.
-     * This route is not taken when first spawning in the game world, unless special conditions need to be satisfied.
-     * The visible result will be apparent by the respawn timer being displayed to the client over the deployment map.<br>
-     * <br>
-     * Two choices must be independently made to complete this part of the process.
-     * The first choice ivolves the state of the player who is spawning
-     * as the known entry state involve either being alive or being dead.
-     * A dead player (technically, a "corpse" that can no longer be revived) is embodied
-     * in a completely new player with a new globally unique identifier and a whole new inventory.
-     * A player who is transferring continents also satisfies the requirements
-     * for obtaining a completely new globally unique identifier,
-     * though the new identifier belongs to the new zone rather than the previous (still current) one.
-     * The second choice is satisfied by respawning in the same zone while still in a state of still being alive.
-     * In this singular case, the player retains his previous globally unique identifier.
-     * In all other cases, as indicated, a new globally unique identifier is selected.<br>
-     * <br>
-     * If the player is alive and mounted in a vehicle, a different can of worms is produced.
-     * The ramifications of these conditions are not fully satisfied until the player loads into the new zone.
-     * Even then, the conclusion becomes delayed while a slightly lagged mechanism hoists players between zones.
-     * @param zoneId      the zone in which the player will be placed
-     * @param pos         the game world coordinates where the player will be positioned
-     * @param ori         the direction in which the player will be oriented
-     * @param respawnTime the character downtime spent respawning, as clocked on the redeployment screen;
-     *                    does not factor in any time required for loading zone or game objects
-     */
+      * The starting point of behavior for a player who:
+      * is dead and is respawning;
+      * is deconstructing at a spawn tube and is respawning;
+      * is using a warp gate; or,
+      * any or none of the previous conditions, but the final result involves changing what zone the player occupies.
+      * This route is not taken when first spawning in the game world, unless special conditions need to be satisfied.
+      * The visible result will be apparent by the respawn timer being displayed to the client over the deployment map.<br>
+      * <br>
+      * Two choices must be independently made to complete this part of the process.
+      * The first choice ivolves the state of the player who is spawning
+      * as the known entry state involve either being alive or being dead.
+      * A dead player (technically, a "corpse" that can no longer be revived) is embodied
+      * in a completely new player with a new globally unique identifier and a whole new inventory.
+      * A player who is transferring continents also satisfies the requirements
+      * for obtaining a completely new globally unique identifier,
+      * though the new identifier belongs to the new zone rather than the previous (still current) one.
+      * The second choice is satisfied by respawning in the same zone while still in a state of still being alive.
+      * In this singular case, the player retains his previous globally unique identifier.
+      * In all other cases, as indicated, a new globally unique identifier is selected.<br>
+      * <br>
+      * If the player is alive and mounted in a vehicle, a different can of worms is produced.
+      * The ramifications of these conditions are not fully satisfied until the player loads into the new zone.
+      * Even then, the conclusion becomes delayed while a slightly lagged mechanism hoists players between zones.
+      * @param zoneId      the zone in which the player will be placed
+      * @param pos         the game world coordinates where the player will be positioned
+      * @param ori         the direction in which the player will be oriented
+      * @param respawnTime the character downtime spent respawning, as clocked on the redeployment screen;
+      *                    does not factor in any time required for loading zone or game objects
+      */
     def LoadZonePhysicalSpawnPoint(
-                                    zoneId: String,
-                                    pos: Vector3,
-                                    ori: Vector3,
-                                    respawnTime: FiniteDuration,
-                                    physSpawnPoint: Option[SpawnPoint]
-                                  ): Unit = {
+        zoneId: String,
+        pos: Vector3,
+        ori: Vector3,
+        respawnTime: FiniteDuration,
+        physSpawnPoint: Option[SpawnPoint]
+    ): Unit = {
       log.info(s"${player.Name} will load in zone $zoneId at position $pos in $respawnTime")
       respawnTimer.cancel()
       reviveTimer.cancel()
@@ -2643,34 +2768,32 @@ class ZoningOperations(
     }
 
     /**
-     * The user is either already in the current zone and merely transporting from one location to another,
-     * also called "dying", or occasionally "deconstructing,"
-     * or is completely switching in between zones.
-     * These correspond to the message `NewPlayerLoaded` for the case of "dying" or the latter zone switching case,
-     * and `PlayerLoaded` for "deconstruction."
-     * In the latter case, the user must wait for the zone to be recognized as loaded for the server
-     * and this is performed through the send `LoadMapMessage`, receive `BeginZoningMessage` exchange.
-     * The user's player should have already been registered into the new zone
-     * and is at some stage of being added to the zone in which they will have control agency in that zone.
-     * Whether or not the zone is loaded in the earlier case depends on the destination with respect to the current location.
-     * Once all of the following is (assumed) accomplished,
-     * the server will attempt to declare that user's player the avatar of the user's client.
-     * Reception of certain packets that represent "reported user activity" after that marks the end of avatar loading.
-     * If the maximum number of unsuccessful attempts is reached, some course of action is taken.
-     * If the player dies, the process does not need to continue.
-     * He may or may not be accompanied by a vehicle at any stage of this process.
-     */
+      * The user is either already in the current zone and merely transporting from one location to another,
+      * also called "dying", or occasionally "deconstructing,"
+      * or is completely switching in between zones.
+      * These correspond to the message `NewPlayerLoaded` for the case of "dying" or the latter zone switching case,
+      * and `PlayerLoaded` for "deconstruction."
+      * In the latter case, the user must wait for the zone to be recognized as loaded for the server
+      * and this is performed through the send `LoadMapMessage`, receive `BeginZoningMessage` exchange.
+      * The user's player should have already been registered into the new zone
+      * and is at some stage of being added to the zone in which they will have control agency in that zone.
+      * Whether or not the zone is loaded in the earlier case depends on the destination with respect to the current location.
+      * Once all of the following is (assumed) accomplished,
+      * the server will attempt to declare that user's player the avatar of the user's client.
+      * Reception of certain packets that represent "reported user activity" after that marks the end of avatar loading.
+      * If the maximum number of unsuccessful attempts is reached, some course of action is taken.
+      * If the player dies, the process does not need to continue.
+      * He may or may not be accompanied by a vehicle at any stage of this process.
+      */
     def ReadyToSetCurrentAvatar(player: Player, max_attempts: Int, attempt: Int): Unit = {
       respawnTimer.cancel()
       val waitingOnUpstream = upstreamMessageCount == 0
       if (attempt >= max_attempts && waitingOnUpstream) {
         log.warn(
           s"SetCurrentAvatar/${player.Name}: max attempt failure: " +
-            s"zone=${
-              if (zoneLoaded.contains(true)) "loaded"
-              else if (zoneLoaded.contains(false)) "failed"
-              else "unloaded"
-            }, " +
+            s"zone=${if (zoneLoaded.contains(true)) "loaded"
+            else if (zoneLoaded.contains(false)) "failed"
+            else "unloaded"}, " +
             s"guid=${player.HasGUID}, control=${player.Actor != Default.Actor}, no upstream messaging"
         )
         zoneLoaded match {
@@ -2683,10 +2806,10 @@ class ZoningOperations(
             log.warn(
               s"SetCurrentAvatar/${player.Name}: max attempt failure: the zone loaded but elements remain unready; restarting the process ..."
             )
-            val pos = shiftPosition.getOrElse(player.Position)
+            val pos    = shiftPosition.getOrElse(player.Position)
             val orient = shiftOrientation.getOrElse(player.Orientation)
             deadState = DeadState.Release
-            sendResponse(AvatarDeadStateMessage(DeadState.Release, 0, 0, pos, player.Faction, unk5=true))
+            sendResponse(AvatarDeadStateMessage(DeadState.Release, 0, 0, pos, player.Faction, unk5 = true))
             val toZoneId = continent.id
             player.Die
             continent.Population ! Zone.Population.Leave(avatar) //does not matter if it doesn't work
@@ -2697,23 +2820,23 @@ class ZoningOperations(
       } else if (player.isAlive) {
         if (
           zoneLoaded.contains(true) &&
-            player.HasGUID && player.Actor != Default.Actor && (continent.GUID(player.VehicleSeated) match {
+          player.HasGUID && player.Actor != Default.Actor && (continent.GUID(player.VehicleSeated) match {
             case Some(o: Vehicle) => o.HasGUID && o.Actor != Default.Actor && !o.Destroyed
-            case _ => true
+            case _                => true
           })
         ) {
           if (!setAvatar || waitingOnUpstream) {
             setCurrentAvatarFunc(player)
             respawnTimer = context.system.scheduler.scheduleOnce(
               delay = (if (attempt <= max_attempts / 2) 10
-              else 5) seconds,
+                       else 5) seconds,
               context.self,
               SessionActor.SetCurrentAvatar(player, max_attempts, attempt + max_attempts / 3)
             )
           } else {
             sessionData.keepAliveFunc = sessionData.vehicles.GetMountableAndSeat(None, player, continent) match {
               case (Some(v: Vehicle), Some(seatNumber))
-                if seatNumber > 0 && v.WeaponControlledFromSeat(seatNumber).isEmpty =>
+                  if seatNumber > 0 && v.WeaponControlledFromSeat(seatNumber).isEmpty =>
                 sessionData.keepAlivePersistence
               case _ =>
                 NormalKeepAlive
@@ -2732,11 +2855,11 @@ class ZoningOperations(
     }
 
     /**
-     * Instruct the client to treat this player as the avatar.
-     * Initialize all client-specific data that is dependent on some player being declared the "avatar".
-     *
-     * @param tplayer the target player
-     */
+      * Instruct the client to treat this player as the avatar.
+      * Initialize all client-specific data that is dependent on some player being declared the "avatar".
+      *
+      * @param tplayer the target player
+      */
     def HandleSetCurrentAvatar(tplayer: Player): Unit = {
       log.trace(s"HandleSetCurrentAvatar - ${tplayer.Name}")
       session = session.copy(player = tplayer)
@@ -2744,14 +2867,16 @@ class ZoningOperations(
       sessionData.updateDeployableUIElements(Deployables.InitializeDeployableUIElements(avatar))
       sendResponse(PlanetsideAttributeMessage(PlanetSideGUID(0), 75, 0))
       sendResponse(SetCurrentAvatarMessage(guid, 0, 0))
-      sendResponse(ChatMsg(ChatMessageType.CMT_EXPANSIONS, wideContents=true, "", "1 on", None)) //CC on //TODO once per respawn?
-      val pos = player.Position = shiftPosition.getOrElse(tplayer.Position)
+      sendResponse(
+        ChatMsg(ChatMessageType.CMT_EXPANSIONS, wideContents = true, "", "1 on", None)
+      ) //CC on //TODO once per respawn?
+      val pos    = player.Position = shiftPosition.getOrElse(tplayer.Position)
       val orient = player.Orientation = shiftOrientation.getOrElse(tplayer.Orientation)
       sendResponse(PlayerStateShiftMessage(ShiftState(1, pos, orient.z)))
       shiftPosition = None
       shiftOrientation = None
       if (player.spectator) {
-        sendResponse(ChatMsg(ChatMessageType.CMT_TOGGLESPECTATORMODE, wideContents=false, "", "on", None))
+        sendResponse(ChatMsg(ChatMessageType.CMT_TOGGLESPECTATORMODE, wideContents = false, "", "on", None))
       }
       if (player.Jammed) {
         //TODO something better than just canceling?
@@ -2765,14 +2890,16 @@ class ZoningOperations(
       }
 
       sendResponse(PlanetsideAttributeMessage(PlanetSideGUID(0), 82, 0))
-      avatar.shortcuts
-        .zipWithIndex
-        .collect { case (Some(shortcut), index) =>
-          sendResponse(CreateShortcutMessage(
-            guid,
-            index + 1,
-            Some(AvatarShortcut.convert(shortcut))
-          ))
+      avatar.shortcuts.zipWithIndex
+        .collect {
+          case (Some(shortcut), index) =>
+            sendResponse(
+              CreateShortcutMessage(
+                guid,
+                index + 1,
+                Some(AvatarShortcut.convert(shortcut))
+              )
+            )
         }
       sendResponse(ChangeShortcutBankMessage(guid, 0))
       //Favorites lists
@@ -2794,14 +2921,18 @@ class ZoningOperations(
       //for caverns, who knows what this does
       //why is this all set in bulk?
       continent.Buildings
-        .filter { case (_, building) =>
-          val buildingType = building.BuildingType
-          buildingType == StructureType.Facility ||
+        .filter {
+          case (_, building) =>
+            val buildingType = building.BuildingType
+            buildingType == StructureType.Facility ||
             buildingType == StructureType.Tower ||
             buildingType == StructureType.Bunker
         }
-        .foreach { case (_, building) =>
-          sendResponse(PlanetsideAttributeMessage(building.GUID, 67, 0 /*building.BuildingType == StructureType.Facility*/))
+        .foreach {
+          case (_, building) =>
+            sendResponse(
+              PlanetsideAttributeMessage(building.GUID, 67, 0 /*building.BuildingType == StructureType.Facility*/ )
+            )
         }
       (0 to 30).foreach(_ => {
         //TODO 30 for a new character only?
@@ -2861,11 +2992,15 @@ class ZoningOperations(
           }
           // positive shield strength
           if (vehicle.Definition.MaxShields > 0) {
-            sendResponse(PlanetsideAttributeMessage(vehicle.GUID, vehicle.Definition.shieldUiAttribute, vehicle.Shields))
+            sendResponse(
+              PlanetsideAttributeMessage(vehicle.GUID, vehicle.Definition.shieldUiAttribute, vehicle.Shields)
+            )
           }
           // ANT capacitor
           if (vehicle.Definition == GlobalDefinitions.ant) {
-            sendResponse(PlanetsideAttributeMessage(vehicle.GUID, 45, vehicle.NtuCapacitorScaled)) // set ntu on vehicle UI
+            sendResponse(
+              PlanetsideAttributeMessage(vehicle.GUID, 45, vehicle.NtuCapacitorScaled)
+            ) // set ntu on vehicle UI
           }
           // vehicle capacitor
           if (vehicle.Definition.MaxCapacitor > 0) {
@@ -2906,7 +3041,7 @@ class ZoningOperations(
         val effortBy = nextSpawnPoint
           .collect { case sp: SpawnTube => (sp, continent.GUID(sp.Owner.GUID)) }
           .collect {
-            case (_, Some(v: Vehicle)) => continent.GUID(v.Owner)
+            case (_, Some(v: Vehicle))   => continent.GUID(v.Owner)
             case (sp, Some(_: Building)) => Some(sp)
           }
           .collect { case Some(thing: PlanetSideGameObject with FactionAffinity) => Some(SourceEntry(thing)) }
@@ -2926,36 +3061,36 @@ class ZoningOperations(
     }
 
     /**
-     * Instruct the client to treat this player as the avatar.
-     *
-     * @see `SetCurrentAvatar`
-     * @param tplayer the target player
-     */
+      * Instruct the client to treat this player as the avatar.
+      *
+      * @see `SetCurrentAvatar`
+      * @param tplayer the target player
+      */
     def SetCurrentAvatarNormally(tplayer: Player): Unit = {
       HandleSetCurrentAvatar(tplayer)
     }
 
     /**
-     * Draw the icon for this deployable object.<br>
-     * <br>
-     * When a client first joins a zone, all deployables are drawn on the continent map once.
-     * Should the player place any deployables, those deployables belong to that player.
-     * Ownership causes icon to be drawn in yellow to the player (as opposed to a white icon)
-     * and that signifies a certain level of control over the deployable, at least the ability to quietly deconstruct it.
-     * Under normal death/respawn cycles while the player is in a given zone,
-     * the map icons for owned deployables ramin manipulable to that given user.
-     * They do not havwe to be redrawn to stay accurate.
-     * Upon leaving a zone, where the icons are erased, and returning back to the zone, where they are drawn again,
-     * the deployables that a player owned should be restored in terms of their map icon visibility.
-     * This control can not be recovered, however, until they are updated with the player's globally unique identifier.
-     * Since the player does not need to redraw his own deployable icons each time he respawns,
-     * but will not possess a valid GUID for that zone until he spawns in it at least once,
-     * this function is swapped with another after the first spawn in any given zone.
-     * This function is restored upon transferring zones.
-     * @see `DontRedrawIcons`
-     * @see `SetCurrentAvatar`
-     * @param obj a `Deployable` object
-     */
+      * Draw the icon for this deployable object.<br>
+      * <br>
+      * When a client first joins a zone, all deployables are drawn on the continent map once.
+      * Should the player place any deployables, those deployables belong to that player.
+      * Ownership causes icon to be drawn in yellow to the player (as opposed to a white icon)
+      * and that signifies a certain level of control over the deployable, at least the ability to quietly deconstruct it.
+      * Under normal death/respawn cycles while the player is in a given zone,
+      * the map icons for owned deployables ramin manipulable to that given user.
+      * They do not havwe to be redrawn to stay accurate.
+      * Upon leaving a zone, where the icons are erased, and returning back to the zone, where they are drawn again,
+      * the deployables that a player owned should be restored in terms of their map icon visibility.
+      * This control can not be recovered, however, until they are updated with the player's globally unique identifier.
+      * Since the player does not need to redraw his own deployable icons each time he respawns,
+      * but will not possess a valid GUID for that zone until he spawns in it at least once,
+      * this function is swapped with another after the first spawn in any given zone.
+      * This function is restored upon transferring zones.
+      * @see `DontRedrawIcons`
+      * @see `SetCurrentAvatar`
+      * @param obj a `Deployable` object
+      */
     def RedrawDeployableIcons(obj: Deployable): Unit = {
       val deployInfo = DeployableInfo(
         obj.GUID,
@@ -2967,47 +3102,47 @@ class ZoningOperations(
     }
 
     /**
-     * Do not draw any icon for this deployable object.<br>
-     * <br>
-     * When a client first joins a zone, all deployables are drawn on the continent map once.
-     * Should the player place any deployables, those deployables belong to that player.
-     * Ownership causes icon to be drawn in yellow to the player (as opposed to a white icon)
-     * and that signifies a certain level of control over the deployable, at least the ability to quietly deconstruct it.
-     * Under normal death/respawn cycles while the player is in a given zone,
-     * the map icons for owned deployables remain manipulable by that given user.
-     * They do not have to be redrawn to stay accurate.
-     * Upon leaving a zone, where the icons are erased, and returning back to the zone, where they are drawn again,
-     * the deployables that a player owned should be restored in terms of their map icon visibility.
-     * This control can not be recovered, however, until they are updated with the player's globally unique identifier.
-     * Since the player does not need to redraw his own deployable icons each time he respawns,
-     * but will not possess a valid GUID for that zone until he spawns in it at least once,
-     * this function swaps out with another after the first spawn in any given zone.
-     * It stays swapped in until the player changes zones.
-     * @see `RedrawDeployableIcons`
-     * @see `SetCurrentAvatar`
-     * @param obj a `Deployable` object
-     */
+      * Do not draw any icon for this deployable object.<br>
+      * <br>
+      * When a client first joins a zone, all deployables are drawn on the continent map once.
+      * Should the player place any deployables, those deployables belong to that player.
+      * Ownership causes icon to be drawn in yellow to the player (as opposed to a white icon)
+      * and that signifies a certain level of control over the deployable, at least the ability to quietly deconstruct it.
+      * Under normal death/respawn cycles while the player is in a given zone,
+      * the map icons for owned deployables remain manipulable by that given user.
+      * They do not have to be redrawn to stay accurate.
+      * Upon leaving a zone, where the icons are erased, and returning back to the zone, where they are drawn again,
+      * the deployables that a player owned should be restored in terms of their map icon visibility.
+      * This control can not be recovered, however, until they are updated with the player's globally unique identifier.
+      * Since the player does not need to redraw his own deployable icons each time he respawns,
+      * but will not possess a valid GUID for that zone until he spawns in it at least once,
+      * this function swaps out with another after the first spawn in any given zone.
+      * It stays swapped in until the player changes zones.
+      * @see `RedrawDeployableIcons`
+      * @see `SetCurrentAvatar`
+      * @param obj a `Deployable` object
+      */
     def DontRedrawIcons(obj: Deployable): Unit = {}
 
     /**
-     * Make this client display the deployment map, and all its available destination spawn points.
-     * @see `AvatarDeadStateMessage`
-     * @see `DeadState.Release`
-     * @see `Player.Release`
-     */
+      * Make this client display the deployment map, and all its available destination spawn points.
+      * @see `AvatarDeadStateMessage`
+      * @see `DeadState.Release`
+      * @see `Player.Release`
+      */
     def GoToDeploymentMap(): Unit = {
       deadState = DeadState.Release //we may be alive or dead, may or may not be a corpse
-      sendResponse(AvatarDeadStateMessage(DeadState.Release, 0, 0, player.Position, player.Faction, unk5=true))
+      sendResponse(AvatarDeadStateMessage(DeadState.Release, 0, 0, player.Position, player.Faction, unk5 = true))
       DrawCurrentAmsSpawnPoint()
     }
 
     /**
-     * In the background, a list of advanced mobile spawn vehicles that are deployed in the zone is being updated constantly.
-     * Select, from this list, the AMS that is closest to the player's current or last position
-     * and draw its spawn selection icon onto the deployment map.
-     * @see `BindPlayerMessage`
-     * @see `DeadState.Release`
-     */
+      * In the background, a list of advanced mobile spawn vehicles that are deployed in the zone is being updated constantly.
+      * Select, from this list, the AMS that is closest to the player's current or last position
+      * and draw its spawn selection icon onto the deployment map.
+      * @see `BindPlayerMessage`
+      * @see `DeadState.Release`
+      */
     def DrawCurrentAmsSpawnPoint(): Unit = {
       if (deadState == DeadState.Release) {
         amsSpawnPoints
@@ -3018,8 +3153,8 @@ class ZoningOperations(
               BindPlayerMessage(
                 BindStatus.Available,
                 "@ams",
-                display_icon=true,
-                logging=false,
+                display_icon = true,
+                logging = false,
                 SpawnGroup.AMS,
                 continent.Number,
                 5,
@@ -3031,8 +3166,8 @@ class ZoningOperations(
               BindPlayerMessage(
                 BindStatus.Unavailable,
                 "@ams",
-                display_icon=false,
-                logging=false,
+                display_icon = false,
+                logging = false,
                 SpawnGroup.AMS,
                 continent.Number,
                 0,
@@ -3044,25 +3179,25 @@ class ZoningOperations(
     }
 
     /**
-     * The upstream counter accumulates when the server receives specific messages from the client.
-     * It counts upwards until it reach maximum value, and then starts over.
-     * When it starts over, which should take an exceptionally long time to achieve,
-     * it starts counting at one rather than zero.
-     * @param p the player's globally unique identifier number
-     */
+      * The upstream counter accumulates when the server receives specific messages from the client.
+      * It counts upwards until it reach maximum value, and then starts over.
+      * When it starts over, which should take an exceptionally long time to achieve,
+      * it starts counting at one rather than zero.
+      * @param p the player's globally unique identifier number
+      */
     def NormalTurnCounter(p: PlanetSideGUID): Unit = {
       upstreamMessageCount = 1 + upstreamMessageCount % Int.MaxValue
     }
 
     /**
-     * During the interim period between the avatar being in one place/zone
-     * and completing the process of transitioning to another place/zone,
-     * the upstream message counter is zero'd
-     * awaiting new activity from the client.
-     * Until new upstream messages that pass some tests against their data start being reported,
-     * the counter does not accumulate properly.
-     * @param guid the player's globally unique identifier number
-     */
+      * During the interim period between the avatar being in one place/zone
+      * and completing the process of transitioning to another place/zone,
+      * the upstream message counter is zero'd
+      * awaiting new activity from the client.
+      * Until new upstream messages that pass some tests against their data start being reported,
+      * the counter does not accumulate properly.
+      * @param guid the player's globally unique identifier number
+      */
     def TurnCounterDuringInterim(guid: PlanetSideGUID): Unit = {
       upstreamMessageCount = 0
       if (player != null && player.HasGUID && player.GUID == guid && player.Zone == continent) {
@@ -3071,27 +3206,27 @@ class ZoningOperations(
     }
 
     /**
-     * During the interim period between the avatar being in one place/zone
-     * and completing the process of transitioning to another place/zone,
-     * the upstream message counter is zero'd
-     * awaiting new activity from the client.
-     * Until new upstream messages that pass some tests against their data start being reported,
-     * the counter does not accumulate properly.<br>
-     * <br>
-     * In the case that the transitioning player is seated in a vehicle mount
-     * that is not the driver and does not have a mounted weapon under its control,
-     * no obvious feedback will be provided by the client.
-     * For example, when as infantry, a `PlayerStateMessageUpstream` packet is dispatched by the client.
-     * For example, when in the driver mount, a `VehicleStateMessage` is dispatched by the client.
-     * In the given case, the only packet that indicates the player is seated is a `KeepAliveMessage`.
-     * Detection of this `KeepALiveMessage`, for the purpose of transitioning logic,
-     * can not be instantaneous to the zoning process or other checks for proper zoning conditions that will be disrupted.
-     * To avoid complications, the player in such a mount is initially spawned as infantry on their own client,
-     * realizes the state transition confirmation for infantry (turn counter),
-     * and is forced to transition into being seated,
-     * and only at that time will begin registering `KeepAliveMessage` to mark the end of their interim period.
-     * @param guid the player's globally unique identifier number
-     */
+      * During the interim period between the avatar being in one place/zone
+      * and completing the process of transitioning to another place/zone,
+      * the upstream message counter is zero'd
+      * awaiting new activity from the client.
+      * Until new upstream messages that pass some tests against their data start being reported,
+      * the counter does not accumulate properly.<br>
+      * <br>
+      * In the case that the transitioning player is seated in a vehicle mount
+      * that is not the driver and does not have a mounted weapon under its control,
+      * no obvious feedback will be provided by the client.
+      * For example, when as infantry, a `PlayerStateMessageUpstream` packet is dispatched by the client.
+      * For example, when in the driver mount, a `VehicleStateMessage` is dispatched by the client.
+      * In the given case, the only packet that indicates the player is seated is a `KeepAliveMessage`.
+      * Detection of this `KeepALiveMessage`, for the purpose of transitioning logic,
+      * can not be instantaneous to the zoning process or other checks for proper zoning conditions that will be disrupted.
+      * To avoid complications, the player in such a mount is initially spawned as infantry on their own client,
+      * realizes the state transition confirmation for infantry (turn counter),
+      * and is forced to transition into being seated,
+      * and only at that time will begin registering `KeepAliveMessage` to mark the end of their interim period.
+      * @param guid the player's globally unique identifier number
+      */
     def TurnCounterDuringInterimWhileInPassengerSeat(guid: PlanetSideGUID): Unit = {
       upstreamMessageCount = 0
       val pguid = player.GUID
@@ -3111,97 +3246,100 @@ class ZoningOperations(
         sessionData.turnCounterFunc = NormalTurnCounter
       }
     }
+
     /**
-     * The upstream counter accumulates when the server receives specific messages from the client.<br>
-     * <br>
-     * This accumulator is assigned after a login event.
-     * The main purpose is to display any messages to the client regarding
-     * if their previous log-out location and their current log-in location are different.
-     * Hereafter, the normal accumulator will be referenced.
-     * @param guid the player's globally unique identifier number
-     */
+      * The upstream counter accumulates when the server receives specific messages from the client.<br>
+      * <br>
+      * This accumulator is assigned after a login event.
+      * The main purpose is to display any messages to the client regarding
+      * if their previous log-out location and their current log-in location are different.
+      * Hereafter, the normal accumulator will be referenced.
+      * @param guid the player's globally unique identifier number
+      */
     def TurnCounterLogin(guid: PlanetSideGUID): Unit = {
       NormalTurnCounter(guid)
-      loginChatMessage.foreach { msg => sendResponse(ChatMsg(zoningChatMessageType, wideContents=false, "", msg, None)) }
+      loginChatMessage.foreach { msg =>
+        sendResponse(ChatMsg(zoningChatMessageType, wideContents = false, "", msg, None))
+      }
       loginChatMessage.clear()
       CancelZoningProcess()
       sessionData.turnCounterFunc = NormalTurnCounter
     }
 
     /**
-     * Dispatch an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet only to this client.
-     *
-     * @see `CargoMountPointStatusMessage`
-     * @see `ObjectAttachMessage`
-     * @param carrier    the ferrying vehicle
-     * @param cargo      the ferried vehicle
-     * @param mountPoint the point on the ferryoing vehicle where the ferried vehicle is attached
-     * @return a tuple composed of an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet
-     */
+      * Dispatch an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet only to this client.
+      *
+      * @see `CargoMountPointStatusMessage`
+      * @see `ObjectAttachMessage`
+      * @param carrier    the ferrying vehicle
+      * @param cargo      the ferried vehicle
+      * @param mountPoint the point on the ferryoing vehicle where the ferried vehicle is attached
+      * @return a tuple composed of an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet
+      */
     def CargoMountBehaviorForUs(
-                                 carrier: Vehicle,
-                                 cargo: Vehicle,
-                                 mountPoint: Int
-                               ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
-      val msgs@(attachMessage, mountPointStatusMessage) = CarrierBehavior.CargoMountMessages(carrier, cargo, mountPoint)
+        carrier: Vehicle,
+        cargo: Vehicle,
+        mountPoint: Int
+    ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
+      val msgs @ (attachMessage, mountPointStatusMessage) =
+        CarrierBehavior.CargoMountMessages(carrier, cargo, mountPoint)
       CargoMountMessagesForUs(attachMessage, mountPointStatusMessage)
       msgs
     }
 
     /**
-     * Dispatch an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet only to this client.
-     *
-     * @see `CargoMountPointStatusMessage`
-     * @see `ObjectAttachMessage`
-     * @param attachMessage           an `ObjectAttachMessage` packet suitable for initializing cargo operations
-     * @param mountPointStatusMessage a `CargoMountPointStatusMessage` packet suitable for initializing cargo operations
-     */
+      * Dispatch an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet only to this client.
+      *
+      * @see `CargoMountPointStatusMessage`
+      * @see `ObjectAttachMessage`
+      * @param attachMessage           an `ObjectAttachMessage` packet suitable for initializing cargo operations
+      * @param mountPointStatusMessage a `CargoMountPointStatusMessage` packet suitable for initializing cargo operations
+      */
     def CargoMountMessagesForUs(
-                                 attachMessage: ObjectAttachMessage,
-                                 mountPointStatusMessage: CargoMountPointStatusMessage
-                               ): Unit = {
+        attachMessage: ObjectAttachMessage,
+        mountPointStatusMessage: CargoMountPointStatusMessage
+    ): Unit = {
       sendResponse(attachMessage)
       sendResponse(mountPointStatusMessage)
     }
 
     /**
-     * Don't extract the award advancement information from a player character upon respawning or zoning.
-     * You only need to perform that population once at login.
-     *
-     * @param bundleSize it doesn't matter
-     * @param delay      it doesn't matter
-     */
+      * Don't extract the award advancement information from a player character upon respawning or zoning.
+      * You only need to perform that population once at login.
+      *
+      * @param bundleSize it doesn't matter
+      * @param delay      it doesn't matter
+      */
     def skipAvatarAwardMessageDelivery(bundleSize: Int, delay: Long): Unit = {}
 
     /**
-     * Extract the award advancement information from a player character, and
-     * coordinate timed dispatches of groups of packets.
-     *
-     * @param bundleSize divide packets into groups of this size
-     * @param delay      dispatch packet divisions in intervals
-     */
+      * Extract the award advancement information from a player character, and
+      * coordinate timed dispatches of groups of packets.
+      *
+      * @param bundleSize divide packets into groups of this size
+      * @param delay      dispatch packet divisions in intervals
+      */
     def setupAvatarAwardMessageDelivery(bundleSize: Int, delay: Long): Unit = {
       setupAvatarAwardMessageDelivery(player, bundleSize, delay)
       populateAvatarAwardRibbonsFunc = skipAvatarAwardMessageDelivery
     }
 
     /**
-     * Extract the merit commendation advancement information from a player character,
-     * filter unnecessary or not applicable statistics,
-     * translate the information into packet data, and
-     * coordinate timed dispatches of groups of packets.
-     *
-     * @param tplayer    the player character
-     * @param bundleSize divide packets into groups of this size
-     * @param delay      dispatch packet divisions in intervals
-     */
+      * Extract the merit commendation advancement information from a player character,
+      * filter unnecessary or not applicable statistics,
+      * translate the information into packet data, and
+      * coordinate timed dispatches of groups of packets.
+      *
+      * @param tplayer    the player character
+      * @param bundleSize divide packets into groups of this size
+      * @param delay      dispatch packet divisions in intervals
+      */
     def setupAvatarAwardMessageDelivery(tplayer: Player, bundleSize: Int, delay: Long): Unit = {
       val date: Int = (System.currentTimeMillis() / 1000L).toInt - 604800 //last week, in seconds
       performAvatarAwardMessageDelivery(
-        Award
-          .values
+        Award.values
           .filter { merit =>
-            val label = merit.value
+            val label     = merit.value
             val alignment = merit.alignment
             if (merit.category == AwardCategory.Exclusive) false
             else if (alignment != PlanetSideEmpire.NEUTRAL && alignment != player.Faction) false
@@ -3222,15 +3360,15 @@ class ZoningOperations(
     }
 
     /**
-     * Coordinate timed dispatches of groups of packets.
-     *
-     * @param messageBundles groups of packets to be dispatched
-     * @param delay          dispatch packet divisions in intervals
-     */
+      * Coordinate timed dispatches of groups of packets.
+      *
+      * @param messageBundles groups of packets to be dispatched
+      * @param delay          dispatch packet divisions in intervals
+      */
     def performAvatarAwardMessageDelivery(
-                                           messageBundles: Iterable[Iterable[PlanetSideGamePacket]],
-                                           delay: Long
-                                         ): Unit = {
+        messageBundles: Iterable[Iterable[PlanetSideGamePacket]],
+        delay: Long
+    ): Unit = {
       messageBundles match {
         case Nil => ;
         case x :: Nil =>
@@ -3250,19 +3388,19 @@ class ZoningOperations(
     }
 
     /**
-     * Update this player avatar for persistence.
-     * Set to `persist` when (new) player is loaded.
-     */
+      * Update this player avatar for persistence.
+      * Set to `persist` when (new) player is loaded.
+      */
     def UpdatePersistenceAndRefs(): Unit = {
       sessionData.persistFunc()
       sessionData.updateOldRefsMap()
     }
 
     /**
-     * Update this player avatar for persistence.
-     * Set this to `persistFunc` when persistence is ready.
-     * @param persistRef reference to the persistence monitor
-     */
+      * Update this player avatar for persistence.
+      * Set this to `persistFunc` when persistence is ready.
+      * @param persistRef reference to the persistence monitor
+      */
     def UpdatePersistence(persistRef: ActorRef)(): Unit = {
       persistRef ! AccountPersistenceService.Update(player.Name, continent, player.Position)
     }

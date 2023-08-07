@@ -339,11 +339,11 @@ class ProximityTerminalControlStopTest extends ActorTest {
 
       terminal.Actor ! CommonMessages.Unuse(avatar, Some(avatar))
       probe2.fishForMessage(2.seconds, hint = "could not find StopAction") {
-        case _ : ProximityUnit.Action => false
-        case _                        => true
+        case _: ProximityUnit.Action => false
+        case _                       => true
       } match {
-        case _ : ProximityUnit.StopAction => ;
-        case out                            => assert(false, s"last message $out is not StopAction")
+        case _: ProximityUnit.StopAction => ;
+        case out                         => assert(false, s"last message $out is not StopAction")
       }
       //probe2.expectMsgClass(1 second, classOf[ProximityUnit.StopAction])
       probe1.expectMsgClass(1 second, classOf[Terminal.StopProximityEffect])

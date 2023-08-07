@@ -21,11 +21,7 @@ import net.psforever.objects.zones.{Zone => World}
   * @see `AmenityOwner`
   * @see `FactionAffinity`
   */
-abstract class Amenity
-  extends PlanetSideServerObject
-    with Vitality
-    with StandardResistanceProfile
-    with BlockMapEntity {
+abstract class Amenity extends PlanetSideServerObject with Vitality with StandardResistanceProfile with BlockMapEntity {
   private[this] val log = org.log4s.getLogger("Amenity")
 
   /** what other entity has authority over this amenity; usually either a building or a vehicle */

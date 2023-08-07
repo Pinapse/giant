@@ -1,13 +1,20 @@
 // Copyright (c) 2017 PSForever
 package net.psforever.services.avatar
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.Props
 import net.psforever.objects.zones.Zone
 import net.psforever.packet.game.ObjectCreateMessage
-import net.psforever.packet.game.objectcreate.{DroppedItemData, ObjectCreateMessageParent, PlacementData}
+import net.psforever.packet.game.objectcreate.DroppedItemData
+import net.psforever.packet.game.objectcreate.ObjectCreateMessageParent
+import net.psforever.packet.game.objectcreate.PlacementData
+import net.psforever.services.GenericGuidEventBus
+import net.psforever.services.RemoverActor
+import net.psforever.services.Service
+import net.psforever.services.avatar.support.CorpseRemovalActor
+import net.psforever.services.avatar.support.DroppedItemRemover
 import net.psforever.types.PlanetSideGUID
-import net.psforever.services.avatar.support.{CorpseRemovalActor, DroppedItemRemover}
-import net.psforever.services.{GenericEventBus, RemoverActor, Service}
 
 class AvatarService(zone: Zone) extends Actor {
   private val undertaker: ActorRef = context.actorOf(Props[CorpseRemovalActor](), s"${zone.id}-corpse-removal-agent")
@@ -15,7 +22,7 @@ class AvatarService(zone: Zone) extends Actor {
 
   private[this] val log = org.log4s.getLogger
 
-  val AvatarEvents = new GenericEventBus[AvatarServiceResponse] //AvatarEventBus
+  val AvatarEvents = new GenericGuidEventBus[AvatarServiceResponse](20) //AvatarEventBus
 
   def receive: Receive = {
     case Service.Join(channel) =>
@@ -280,7 +287,11 @@ class AvatarService(zone: Zone) extends Actor {
           )
         case AvatarAction.PutDownFDU(player_guid) =>
           AvatarEvents.publish(
-            AvatarServiceResponse(s"/$forChannel/Avatar", Service.defaultPlayerGUID, AvatarResponse.PutDownFDU(player_guid))
+            AvatarServiceResponse(
+              s"/$forChannel/Avatar",
+              Service.defaultPlayerGUID,
+              AvatarResponse.PutDownFDU(player_guid)
+            )
           )
         case AvatarAction.Release(player, _, time) =>
           undertaker forward RemoverActor.AddTask(player, zone, time)
@@ -409,7 +420,9 @@ class AvatarService(zone: Zone) extends Actor {
           )
 
         case AvatarAction.DropSpecialItem() =>
-          AvatarEvents.publish(AvatarServiceResponse(s"/$forChannel/Avatar", Service.defaultPlayerGUID, AvatarResponse.DropSpecialItem()))
+          AvatarEvents.publish(
+            AvatarServiceResponse(s"/$forChannel/Avatar", Service.defaultPlayerGUID, AvatarResponse.DropSpecialItem())
+          )
 
         case AvatarAction.UseKit(kit_guid, kit_objid) =>
           AvatarEvents.publish(

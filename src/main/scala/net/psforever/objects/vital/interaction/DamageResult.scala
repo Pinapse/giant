@@ -19,7 +19,7 @@ final case class DamageResult(targetBefore: SourceEntry, targetAfter: SourceEntr
   def adversarial: Option[Adversarial] = {
     interaction.adversarial match {
       case Some(adversarial) => Some(Adversarial(adversarial.attacker, targetAfter, adversarial.implement))
-      case None =>              None
+      case None              => None
     }
   }
 }

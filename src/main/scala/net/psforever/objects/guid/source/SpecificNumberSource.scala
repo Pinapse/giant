@@ -17,43 +17,44 @@ class SpecificNumberSource(values: Iterable[Int]) extends NumberSource {
     throw new IllegalArgumentException(s"must provide one or more positive integers (or zero)")
   }
   values.filter(_ < 0) match {
-    case Nil => ;
+    case Nil  => ;
     case list => throw new IllegalArgumentException(s"non-negative integers only, not ${list.mkString(" ")}")
   }
-  private val ary : Map[Int, Key] = values.map(index => (index, new Key)).toMap
+  private val ary: Map[Int, Key] = values.map(index => (index, new Key)).toMap
 
-  def max : Int = ary.keys.max
+  def max: Int = ary.keys.max
 
-  def size : Int = ary.size
+  def size: Int = ary.size
 
-  def countAvailable : Int = ary.values.count { _.policy == AvailabilityPolicy.Available }
+  def countAvailable: Int = ary.values.count { _.policy == AvailabilityPolicy.Available }
 
-  def countUsed : Int = ary.values.count { _.policy == AvailabilityPolicy.Leased }
+  def countUsed: Int = ary.values.count { _.policy == AvailabilityPolicy.Leased }
 
   def countDangling: Int = ary.values.count { key => key.policy == AvailabilityPolicy.Leased && key.obj.isEmpty }
 
-  def test(number : Int) : Boolean = ary.get(number).nonEmpty
+  def test(number: Int): Boolean = ary.get(number).nonEmpty
 
-  def get(number : Int) : Option[SecureKey] = {
+  def get(number: Int): Option[SecureKey] = {
     ary.get(number) match {
       case Some(key) => Some(new SecureKey(number, key))
-      case _ => None
+      case _         => None
     }
   }
 
-  def get(obj : IdentifiableEntity) : Option[SecureKey] = {
-    ary.find { case (_, key) =>
-      key.obj match {
-        case Some(o) => o eq obj
-        case _ => false
-      }
+  def get(obj: IdentifiableEntity): Option[SecureKey] = {
+    ary.find {
+      case (_, key) =>
+        key.obj match {
+          case Some(o) => o eq obj
+          case _       => false
+        }
     } match {
       case Some((number, key)) => Some(new SecureKey(number, key))
-      case _ => None
+      case _                   => None
     }
   }
 
-  def getAvailable(number : Int) : Option[LoanedKey] = {
+  def getAvailable(number: Int): Option[LoanedKey] = {
     ary.get(number) match {
       case Some(key) if key.policy == AvailabilityPolicy.Available =>
         key.policy = AvailabilityPolicy.Leased
@@ -63,7 +64,7 @@ class SpecificNumberSource(values: Iterable[Int]) extends NumberSource {
     }
   }
 
-  def returnNumber(number : Int) : Option[IdentifiableEntity] = {
+  def returnNumber(number: Int): Option[IdentifiableEntity] = {
     ary.get(number) match {
       case Some(key) if key.policy == AvailabilityPolicy.Leased =>
         val out = key.obj

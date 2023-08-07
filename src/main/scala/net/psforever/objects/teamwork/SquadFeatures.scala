@@ -81,7 +81,10 @@ class SquadFeatures(val Squad: Squad) {
   private lazy val channel: String = s"${Squad.Faction}-Squad${Squad.GUID.guid}"
 
   def Start(implicit context: ActorContext, subs: SquadSubscriptionEntity): SquadFeatures = {
-    switchboard = context.actorOf(Props(classOf[SquadSwitchboard], this, subs), s"squad_${Squad.GUID.guid}_${System.currentTimeMillis}")
+    switchboard = context.actorOf(
+      Props(classOf[SquadSwitchboard], this, subs),
+      s"squad_${Squad.GUID.guid}_${System.currentTimeMillis}"
+    )
     waypoints = Array.fill[WaypointData](SquadWaypoint.values.size)(new WaypointData())
     this
   }
@@ -104,8 +107,6 @@ class SquadFeatures(val Squad: Squad) {
 
   def Waypoints: Array[WaypointData] = waypoints
 
-
-
   /**
     * Display the indicated waypoint.<br>
     * <br>
@@ -121,10 +122,10 @@ class SquadFeatures(val Squad: Squad) {
     * @return the waypoint data, if the waypoint type is changed
     */
   def AddWaypoint(
-                   guid: PlanetSideGUID,
-                   waypointType: SquadWaypoint,
-                   info: WaypointInfo
-                 ): Option[WaypointData] = {
+      guid: PlanetSideGUID,
+      waypointType: SquadWaypoint,
+      info: WaypointInfo
+  ): Option[WaypointData] = {
     waypoints.lift(waypointType.value) match {
       case Some(point) =>
         point.zone_number = info.zone_number

@@ -15,10 +15,10 @@ class HartTimerNotScheduled extends ActorTest {
     val catchall = new TestProbe(system).ref
     val zone = new Zone("test", new ZoneMap("test"), 0) {
       override def SetupNumberPools() = {}
-      override def AvatarEvents = catchall
-      override def LocalEvents = catchall
+      override def AvatarEvents  = catchall
+      override def LocalEvents   = catchall
       override def VehicleEvents = catchall
-      override def Activity = catchall
+      override def Activity      = catchall
     }
     val timer = system.actorOf(Props(classOf[HartTimer], zone), "hart-timer")
 
@@ -35,10 +35,10 @@ class HartTimerInitializedPairingScheduled extends ActorTest {
     val catchall = new TestProbe(system).ref
     val zone = new Zone("test", new ZoneMap("test"), 0) {
       override def SetupNumberPools() = {}
-      override def AvatarEvents = catchall
-      override def LocalEvents = catchall
+      override def AvatarEvents  = catchall
+      override def LocalEvents   = catchall
       override def VehicleEvents = catchall
-      override def Activity = catchall
+      override def Activity      = catchall
     }
     val timer = system.actorOf(Props(classOf[HartTimer], zone), "hart-timer")
 

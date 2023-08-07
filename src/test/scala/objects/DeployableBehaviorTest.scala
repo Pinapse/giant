@@ -23,25 +23,28 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
 class DeployableBehaviorSetupTest extends ActorTest {
-  val eventsProbe = new TestProbe(system)
-  val jmine = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
+  val eventsProbe    = new TestProbe(system)
+  val jmine          = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
   val deployableList = new ListBuffer()
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 5))
+  val guid           = new NumberPoolHub(new MaxNumberSource(max = 5))
   val zone = new Zone(id = "test", new ZoneMap(name = "test"), zoneNumber = 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools(): Unit = {}
     GUID(guid)
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
 
     this.actor = new TestProbe(system).ref.toTyped[ZoneActor.Command]
   }
   guid.register(jmine, number = 1)
   jmine.Faction = PlanetSideEmpire.TR
-  jmine.Position = Vector3(1,2,3)
-  jmine.Orientation = Vector3(4,5,6)
+  jmine.Position = Vector3(1, 2, 3)
+  jmine.Orientation = Vector3(4, 5, 6)
 
   "DeployableBehavior" should {
     "perform self-setup" in {
@@ -51,26 +54,33 @@ class DeployableBehaviorSetupTest extends ActorTest {
       val eventsMsgs = eventsProbe.receiveN(3, 10.seconds)
       eventsMsgs.head match {
         case LocalServiceMessage(
-          "test",
-          LocalAction.TriggerEffectLocation(PlanetSideGUID(0), "spawn_object_effect", Vector3(1,2,3), Vector3(4,5,6))
-        )      => ;
+              "test",
+              LocalAction.TriggerEffectLocation(
+                PlanetSideGUID(0),
+                "spawn_object_effect",
+                Vector3(1, 2, 3),
+                Vector3(4, 5, 6)
+              )
+            ) =>
+          ;
         case _ => assert(false, "self-setup test - no spawn fx")
       }
       eventsMsgs(1) match {
         case AvatarServiceMessage("test", AvatarAction.DeployItem(PlanetSideGUID(0), obj)) =>
           assert(obj eq jmine, "self-setup test - not same mine")
         case _ =>
-          assert( false, "self-setup test - wrong deploy message")
+          assert(false, "self-setup test - wrong deploy message")
       }
       eventsMsgs(2) match {
         case LocalServiceMessage(
-          "TR",
-          LocalAction.DeployableMapIcon(
-            PlanetSideGUID(0),
-            DeploymentAction.Build,
-            DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1,2,3), PlanetSideGUID(0))
-          )
-        )      => ;
+              "TR",
+              LocalAction.DeployableMapIcon(
+                PlanetSideGUID(0),
+                DeploymentAction.Build,
+                DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1, 2, 3), PlanetSideGUID(0))
+              )
+            ) =>
+          ;
         case _ => assert(false, "self-setup test - no icon or wrong icon")
       }
       assert(deployableList.contains(jmine), "self-setup test - deployable not appended to list")
@@ -79,23 +89,26 @@ class DeployableBehaviorSetupTest extends ActorTest {
 }
 
 class DeployableBehaviorSetupOwnedP1Test extends ActorTest {
-  val eventsProbe = new TestProbe(system)
-  val avatar = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player = Player(avatar) //guid=3
-  val jmine = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
-  val citem = new ConstructionItem(GlobalDefinitions.ace) //guid = 2
+  val eventsProbe    = new TestProbe(system)
+  val avatar         = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player         = Player(avatar)                               //guid=3
+  val jmine          = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
+  val citem          = new ConstructionItem(GlobalDefinitions.ace)  //guid = 2
   val deployableList = new ListBuffer()
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 5))
+  val guid           = new NumberPoolHub(new MaxNumberSource(max = 5))
   val zone = new Zone(id = "test", new ZoneMap(name = "test"), zoneNumber = 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools(): Unit = {}
     GUID(guid)
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
-    override def Players = List(avatar)
-    override def LivePlayers = List(player)
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
+    override def Players                = List(avatar)
+    override def LivePlayers            = List(player)
 
     this.actor = new TestProbe(system).ref.toTyped[ZoneActor.Command]
   }
@@ -103,8 +116,8 @@ class DeployableBehaviorSetupOwnedP1Test extends ActorTest {
   guid.register(citem, number = 2)
   guid.register(player, number = 3)
   jmine.Faction = PlanetSideEmpire.TR
-  jmine.Position = Vector3(1,2,3)
-  jmine.Orientation = Vector3(4,5,6)
+  jmine.Position = Vector3(1, 2, 3)
+  jmine.Orientation = Vector3(4, 5, 6)
   jmine.AssignOwnership(player)
 
   "DeployableBehavior" should {
@@ -116,7 +129,10 @@ class DeployableBehaviorSetupOwnedP1Test extends ActorTest {
 
       playerProbe.receiveOne(200.milliseconds) match {
         case Player.BuildDeployable(a, b) =>
-          assert((a eq jmine) && (b eq citem), "owned setup test, 1 - process echoing wrong mine or wrong construction item")
+          assert(
+            (a eq jmine) && (b eq citem),
+            "owned setup test, 1 - process echoing wrong mine or wrong construction item"
+          )
         case _ =>
           assert(false, "owned setup test, 1 - not echoing messages to owner")
       }
@@ -125,23 +141,26 @@ class DeployableBehaviorSetupOwnedP1Test extends ActorTest {
 }
 
 class DeployableBehaviorSetupOwnedP2Test extends FreedContextActorTest {
-  val eventsProbe = new TestProbe(system)
-  val avatar = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player = Player(avatar) //guid=3
-  val jmine = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
-  val citem = new ConstructionItem(GlobalDefinitions.ace) //guid = 2
+  val eventsProbe    = new TestProbe(system)
+  val avatar         = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player         = Player(avatar)                               //guid=3
+  val jmine          = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
+  val citem          = new ConstructionItem(GlobalDefinitions.ace)  //guid = 2
   val deployableList = new ListBuffer()
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 5))
+  val guid           = new NumberPoolHub(new MaxNumberSource(max = 5))
   val zone = new Zone(id = "test", new ZoneMap(name = "test"), zoneNumber = 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools(): Unit = {}
     GUID(guid)
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
-    override def Players = List(avatar)
-    override def LivePlayers = List(player)
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
+    override def Players                = List(avatar)
+    override def LivePlayers            = List(player)
 
     this.actor = new TestProbe(system).ref.toTyped[ZoneActor.Command]
   }
@@ -150,8 +169,8 @@ class DeployableBehaviorSetupOwnedP2Test extends FreedContextActorTest {
   guid.register(player, number = 3)
   guid.register(avatar.locker, number = 4)
   jmine.Faction = PlanetSideEmpire.TR
-  jmine.Position = Vector3(1,2,3)
-  jmine.Orientation = Vector3(4,5,6)
+  jmine.Position = Vector3(1, 2, 3)
+  jmine.Orientation = Vector3(4, 5, 6)
   jmine.AssignOwnership(player)
   avatar.deployables.UpdateMaxCounts(Set(Certification.CombatEngineering, Certification.AssaultEngineering))
   player.Zone = zone
@@ -168,55 +187,65 @@ class DeployableBehaviorSetupOwnedP2Test extends FreedContextActorTest {
       val eventsMsgs = eventsProbe.receiveN(7, 10.seconds)
       eventsMsgs.head match {
         case AvatarServiceMessage(
-          "TestCharacter1",
-          AvatarAction.SendResponse(
-            Service.defaultPlayerGUID,
-            ObjectDeployedMessage(0, "jammer_mine", DeployOutcome.Success, 1, 20)
-          )
-        ) => ;
+              "TestCharacter1",
+              AvatarAction.SendResponse(
+                Service.defaultPlayerGUID,
+                ObjectDeployedMessage(0, "jammer_mine", DeployOutcome.Success, 1, 20)
+              )
+            ) =>
+          ;
         case _ =>
           assert(false, "owned setup test, 2 - did not receive build confirmation")
       }
       eventsMsgs(1) match {
         case LocalServiceMessage("TestCharacter1", LocalAction.DeployableUIFor(DeployedItem.jammer_mine)) => ;
-        case _ => assert(false, "owned setup test, 2 - did not receive ui update")
+        case _                                                                                            => assert(false, "owned setup test, 2 - did not receive ui update")
       }
       eventsMsgs(2) match {
         case LocalServiceMessage(
-          "test",
-          LocalAction.TriggerEffectLocation(PlanetSideGUID(3), "spawn_object_effect", Vector3(1,2,3), Vector3(4,5,6))
-        )      => ;
+              "test",
+              LocalAction.TriggerEffectLocation(
+                PlanetSideGUID(3),
+                "spawn_object_effect",
+                Vector3(1, 2, 3),
+                Vector3(4, 5, 6)
+              )
+            ) =>
+          ;
         case _ => assert(false, "owned setup test, 2 - no spawn fx")
       }
       eventsMsgs(3) match {
         case AvatarServiceMessage("test", AvatarAction.DeployItem(PlanetSideGUID(0), obj)) =>
           assert(obj eq jmine, "owned setup test, 2 - not same mine")
         case _ =>
-          assert( false, "owned setup test, 2 - wrong deploy message")
+          assert(false, "owned setup test, 2 - wrong deploy message")
       }
       //the message order can be jumbled from here-on
       eventsMsgs(4) match {
         case LocalServiceMessage(
-          "TR",
-          LocalAction.DeployableMapIcon(
-            PlanetSideGUID(0),
-            DeploymentAction.Build,
-            DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1,2,3), PlanetSideGUID(3))
-          )
-        ) => ;
+              "TR",
+              LocalAction.DeployableMapIcon(
+                PlanetSideGUID(0),
+                DeploymentAction.Build,
+                DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1, 2, 3), PlanetSideGUID(3))
+              )
+            ) =>
+          ;
         case _ =>
           assert(false, "owned setup test, 2 - no icon or wrong icon")
       }
       eventsMsgs(5) match {
         case AvatarServiceMessage(
-          "TestCharacter1",
-          AvatarAction.SendResponse(Service.defaultPlayerGUID, GenericObjectActionMessage(PlanetSideGUID(1), 21))
-        ) => ;
+              "TestCharacter1",
+              AvatarAction.SendResponse(Service.defaultPlayerGUID, GenericObjectActionMessage(PlanetSideGUID(1), 21))
+            ) =>
+          ;
         case _ =>
           assert(false, "owned setup test, 2 - build action not reset (GOAM21)")
       }
       eventsMsgs(6) match {
-        case AvatarServiceMessage("test", AvatarAction.ObjectDelete(Service.defaultPlayerGUID, PlanetSideGUID(2), 0)) => ;
+        case AvatarServiceMessage("test", AvatarAction.ObjectDelete(Service.defaultPlayerGUID, PlanetSideGUID(2), 0)) =>
+          ;
         case _ =>
           assert(false, "owned setup test, 2 - construction tool not deleted")
       }
@@ -228,25 +257,28 @@ class DeployableBehaviorSetupOwnedP2Test extends FreedContextActorTest {
 }
 
 class DeployableBehaviorDeconstructTest extends ActorTest {
-  val eventsProbe = new TestProbe(system)
-  val jmine = Deployables.Make(DeployedItem.jammer_mine)() //guid = 1
+  val eventsProbe    = new TestProbe(system)
+  val jmine          = Deployables.Make(DeployedItem.jammer_mine)() //guid = 1
   val deployableList = new ListBuffer()
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 5))
+  val guid           = new NumberPoolHub(new MaxNumberSource(max = 5))
   val zone = new Zone(id = "test", new ZoneMap(name = "test"), zoneNumber = 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools(): Unit = {}
     GUID(guid)
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
 
     this.actor = new TestProbe(system).ref.toTyped[ZoneActor.Command]
   }
   guid.register(jmine, number = 1)
   jmine.Faction = PlanetSideEmpire.TR
-  jmine.Position = Vector3(1,2,3)
-  jmine.Orientation = Vector3(4,5,6)
+  jmine.Position = Vector3(1, 2, 3)
+  jmine.Orientation = Vector3(4, 5, 6)
 
   "DeployableBehavior" should {
     "deconstruct, by self" in {
@@ -257,18 +289,23 @@ class DeployableBehaviorDeconstructTest extends ActorTest {
       jmine.Actor ! Deployable.Deconstruct()
       val eventsMsgs = eventsProbe.receiveN(2, 10.seconds)
       eventsMsgs.head match {
-        case LocalServiceMessage("test", LocalAction.EliminateDeployable(`jmine`, PlanetSideGUID(1), Vector3(1,2,3), 2)) => ;
+        case LocalServiceMessage(
+              "test",
+              LocalAction.EliminateDeployable(`jmine`, PlanetSideGUID(1), Vector3(1, 2, 3), 2)
+            ) =>
+          ;
         case _ => assert(false, "deconstruct test - not eliminating deployable")
       }
       eventsMsgs(1) match {
         case LocalServiceMessage(
-          "TR",
-          LocalAction.DeployableMapIcon(
-            PlanetSideGUID(0),
-            DeploymentAction.Dismiss,
-            DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1, 2, 3), PlanetSideGUID(0))
-          )
-        ) => ;
+              "TR",
+              LocalAction.DeployableMapIcon(
+                PlanetSideGUID(0),
+                DeploymentAction.Dismiss,
+                DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1, 2, 3), PlanetSideGUID(0))
+              )
+            ) =>
+          ;
         case _ => assert(false, "owned deconstruct test - not removing icon")
       }
       assert(!deployableList.contains(jmine), "deconstruct test - deployable not removed from list")
@@ -277,23 +314,26 @@ class DeployableBehaviorDeconstructTest extends ActorTest {
 }
 
 class DeployableBehaviorDeconstructOwnedTest extends FreedContextActorTest {
-  val eventsProbe = new TestProbe(system)
-  val avatar = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player = Player(avatar) //guid=3
-  val jmine = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
-  val citem = new ConstructionItem(GlobalDefinitions.ace) //guid = 2
+  val eventsProbe    = new TestProbe(system)
+  val avatar         = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player         = Player(avatar)                               //guid=3
+  val jmine          = Deployables.Make(DeployedItem.jammer_mine)() //guid=1
+  val citem          = new ConstructionItem(GlobalDefinitions.ace)  //guid = 2
   val deployableList = new ListBuffer()
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 5))
+  val guid           = new NumberPoolHub(new MaxNumberSource(max = 5))
   val zone = new Zone(id = "test", new ZoneMap(name = "test"), zoneNumber = 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools(): Unit = {}
     GUID(guid)
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
-    override def Players = List(avatar)
-    override def LivePlayers = List(player)
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
+    override def Players                = List(avatar)
+    override def LivePlayers            = List(player)
 
     this.actor = new TestProbe(system).ref.toTyped[ZoneActor.Command]
   }
@@ -302,8 +342,8 @@ class DeployableBehaviorDeconstructOwnedTest extends FreedContextActorTest {
   guid.register(player, number = 3)
   guid.register(avatar.locker, number = 4)
   jmine.Faction = PlanetSideEmpire.TR
-  jmine.Position = Vector3(1,2,3)
-  jmine.Orientation = Vector3(4,5,6)
+  jmine.Position = Vector3(1, 2, 3)
+  jmine.Orientation = Vector3(4, 5, 6)
   jmine.AssignOwnership(player)
   avatar.deployables.UpdateMaxCounts(Set(Certification.CombatEngineering, Certification.AssaultEngineering))
   player.Zone = zone
@@ -320,24 +360,28 @@ class DeployableBehaviorDeconstructOwnedTest extends FreedContextActorTest {
       jmine.Actor ! Deployable.Deconstruct()
       val eventsMsgs = eventsProbe.receiveN(3, 10.seconds)
       eventsMsgs.head match {
-        case LocalServiceMessage("test",LocalAction.EliminateDeployable(mine, ValidPlanetSideGUID(1), Vector3(1.0,2.0,3.0),2))
-          if mine eq jmine => ;
+        case LocalServiceMessage(
+              "test",
+              LocalAction.EliminateDeployable(mine, ValidPlanetSideGUID(1), Vector3(1.0, 2.0, 3.0), 2)
+            ) if mine eq jmine =>
+          ;
         case _ => assert(false, "owned deconstruct test - not eliminating deployable")
       }
       eventsMsgs(1) match {
         case LocalServiceMessage(
-          "TR",
-          LocalAction.DeployableMapIcon(
-            PlanetSideGUID(0),
-            DeploymentAction.Dismiss,
-            DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1, 2, 3), PlanetSideGUID(0))
-          )
-        ) => ;
+              "TR",
+              LocalAction.DeployableMapIcon(
+                PlanetSideGUID(0),
+                DeploymentAction.Dismiss,
+                DeployableInfo(PlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3(1, 2, 3), PlanetSideGUID(0))
+              )
+            ) =>
+          ;
         case _ => assert(false, "owned deconstruct test - not removing icon")
       }
       eventsMsgs(2) match {
         case LocalServiceMessage("TestCharacter1", LocalAction.DeployableUIFor(DeployedItem.jammer_mine)) => ;
-        case _ => assert(false, "")
+        case _                                                                                            => assert(false, "")
       }
 
       assert(deployableList.isEmpty, "owned deconstruct test - deployable still in list")

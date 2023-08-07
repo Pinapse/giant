@@ -19,14 +19,17 @@ import scala.concurrent.duration._
   * @param projectileList the zone's projectile list
   */
 class ZoneProjectileActor(
-                           zone: Zone,
-                           projectileList: mutable.ListBuffer[Projectile]
-                         ) extends Actor {
-  /** a series of timers matched against projectile unique identifiers,
-    * marking the maximum lifespan of the projectile */
-  val projectileLifespan: mutable.HashMap[PlanetSideGUID, Cancellable] = new mutable.HashMap[PlanetSideGUID, Cancellable]
+    zone: Zone,
+    projectileList: mutable.ListBuffer[Projectile]
+) extends Actor {
 
-  override def postStop() : Unit = {
+  /** a series of timers matched against projectile unique identifiers,
+    * marking the maximum lifespan of the projectile
+    */
+  val projectileLifespan: mutable.HashMap[PlanetSideGUID, Cancellable] =
+    new mutable.HashMap[PlanetSideGUID, Cancellable]
+
+  override def postStop(): Unit = {
     projectileLifespan.values.foreach { _.cancel() }
     projectileList.iterator.filter(_.HasGUID).foreach { p => cleanUpRemoteProjectile(p.GUID, p) }
     projectileList.clear()
@@ -72,8 +75,8 @@ class ZoneProjectileActor(
   private def registerProjectile(filterGuid: PlanetSideGUID, obj: Projectile): TaskBundle = {
     TaskBundle(
       new StraightforwardTask() {
-        private val filter = filterGuid
-        private val globalProjectile = obj
+        private val filter                                                     = filterGuid
+        private val globalProjectile                                           = obj
         private val func: (PlanetSideGUID, PlanetSideGUID, Projectile) => Unit = loadedRemoteProjectile
 
         override def description(): String = s"register a ${globalProjectile.profile.Name}"
@@ -134,16 +137,16 @@ class ZoneProjectileActor(
     * @param projectile the projectile being included
     */
   def loadedRemoteProjectile(
-                              filterGuid: PlanetSideGUID,
-                              projectileGuid: PlanetSideGUID,
-                              projectile: Projectile
-                            ): Unit = {
+      filterGuid: PlanetSideGUID,
+      projectileGuid: PlanetSideGUID,
+      projectile: Projectile
+  ): Unit = {
     val definition = projectile.Definition
     projectileList.addOne(projectile)
     val (clarifiedFilterGuid, duration) = if (definition.radiation_cloud) {
       zone.blockMap.addTo(projectile)
       (Service.defaultPlayerGUID, projectile.profile.Lifespan seconds)
-    } else if (definition.RemoteClientData == (0,0)) {
+    } else if (definition.RemoteClientData == (0, 0)) {
       //remote projectiles that are not radiation clouds have lifespans controlled by the controller (user)
       //this projectile has defaulted remote client data
       (Service.defaultPlayerGUID, projectile.profile.Lifespan * 1.5f seconds)
@@ -183,7 +186,7 @@ class ZoneProjectileActor(
   def cleanUpRemoteProjectile(projectile_guid: PlanetSideGUID, projectile: Projectile): Unit = {
     projectileLifespan.remove(projectile_guid) match {
       case Some(c) => c.cancel()
-      case _ => ;
+      case _       => ;
     }
     projectileList.remove(projectileList.indexOf(projectile))
     if (projectile.Definition.radiation_cloud) {
@@ -192,7 +195,7 @@ class ZoneProjectileActor(
         zone.id,
         AvatarAction.ObjectDelete(PlanetSideGUID(0), projectile_guid, 2)
       )
-    } else if (projectile.Definition.RemoteClientData == (0,0)) {
+    } else if (projectile.Definition.RemoteClientData == (0, 0)) {
       zone.AvatarEvents ! AvatarServiceMessage(
         zone.id,
         AvatarAction.ObjectDelete(PlanetSideGUID(0), projectile_guid, 2)
@@ -207,6 +210,7 @@ class ZoneProjectileActor(
 }
 
 object ZoneProjectile {
+
   /**
     * Start monitoring the projectile.
     * @param filterGuid a unique identifier filtering messages from a certain recipient
@@ -215,6 +219,7 @@ object ZoneProjectile {
   final case class Add(filterGuid: PlanetSideGUID, projectile: Projectile)
 
   object Add {
+
     /**
       * Overloaded constructor for `Add` which onyl requires the projectile
       * and defaults the filtering.

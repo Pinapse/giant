@@ -18,9 +18,7 @@ import net.psforever.types.{PlanetSideEmpire, PlanetSideGUID}
   * @see `LockerContainer`
   * @param locker the player-facing locker
   */
-class LockerEquipment(locker: LockerContainer)
-  extends Equipment
-  with Container {
+class LockerEquipment(locker: LockerContainer) extends Equipment with Container {
   private val obj = locker
 
   override def GUID: PlanetSideGUID = obj.GUID

@@ -46,9 +46,10 @@ import scala.util.{Failure, Success}
   * @param poolActors a mapping created from the `NumberPool`s, to achieve synchronized access
   */
 class UniqueNumberOps(
-                       private val guid: NumberPoolHub,
-                       private val poolActors: Map[String, ActorRef]
-                     ) {
+    private val guid: NumberPoolHub,
+    private val poolActors: Map[String, ActorRef]
+) {
+
   /** The timeout used by all number pool `ask` messaging */
   private implicit val timeout = UniqueNumberOps.timeout
 
@@ -61,9 +62,9 @@ class UniqueNumberOps(
     * @return the anticipation of this activity being completed
     */
   def Register(
-                obj: IdentifiableEntity,
-                poolName: String
-              ): Future[Any] = {
+      obj: IdentifiableEntity,
+      poolName: String
+  ): Future[Any] = {
     val result: Promise[Any] = Promise()
     if (obj.HasGUID) {
       alreadyRegisteredTo(obj, poolName) match {
@@ -112,9 +113,9 @@ class UniqueNumberOps(
     * @return the anticipation of this activity being completed
     */
   private def registrationProcess(
-                                   obj: IdentifiableEntity,
-                                   poolName: String
-                                 ): Future[Any] = {
+      obj: IdentifiableEntity,
+      poolName: String
+  ): Future[Any] = {
     registrationProcess(obj, guid, poolActors, poolName)
   }
 
@@ -132,21 +133,21 @@ class UniqueNumberOps(
     * @return the anticipation of this activity being completed
     */
   private def registrationProcess(
-                                   obj: IdentifiableEntity,
-                                   hub: NumberPoolHub,
-                                   pools: Map[String, ActorRef],
-                                   poolName: String
-                                 ): Future[Any] = {
+      obj: IdentifiableEntity,
+      hub: NumberPoolHub,
+      pools: Map[String, ActorRef],
+      poolName: String
+  ): Future[Any] = {
     val promisingResult: Promise[Any] = Promise()
     pools.get(poolName) match {
       case Some(pool) =>
         //cache
-        val localPromise = promisingResult
-        val localTarget = obj
-        val localUns = hub
-        val localPools = pools
+        val localPromise  = promisingResult
+        val localTarget   = obj
+        val localUns      = hub
+        val localPools    = pools
         val localPoolName = poolName
-        val localPool = pool
+        val localPool     = pool
 
         val result = ask(pool, NumberPoolActor.GetAnyNumber())(timeout)
         result.onComplete {
@@ -187,13 +188,13 @@ class UniqueNumberOps(
     * @param poolName the pool to which the object is trying to register
     */
   def registrationProcessRetry(
-                                promise: Promise[Any],
-                                exception: Throwable,
-                                obj: IdentifiableEntity,
-                                hub: NumberPoolHub,
-                                pools: Map[String, ActorRef],
-                                poolName: String
-                              ): Unit = {
+      promise: Promise[Any],
+      exception: Throwable,
+      obj: IdentifiableEntity,
+      hub: NumberPoolHub,
+      pools: Map[String, ActorRef],
+      poolName: String
+  ): Unit = {
     if (poolName.equals("generic")) {
       promise.failure(new RegisteringException(msg = s"did not register entity $obj", exception))
     } else {
@@ -212,10 +213,10 @@ class UniqueNumberOps(
     * @return the anticipation of this activity being completed
     */
   private def unregistrationProcess(
-                                     obj: IdentifiableEntity,
-                                     number: Int,
-                                     poolName: String
-                                   ): Future[Any] = {
+      obj: IdentifiableEntity,
+      number: Int,
+      poolName: String
+  ): Future[Any] = {
     unregistrationProcess(obj, guid, poolActors, number, poolName)
   }
 
@@ -230,22 +231,22 @@ class UniqueNumberOps(
     * @return the anticipation of this activity being completed
     */
   private def unregistrationProcess(
-                                     obj: IdentifiableEntity,
-                                     hub: NumberPoolHub,
-                                     pools: Map[String, ActorRef],
-                                     number: Int,
-                                     poolName: String
-                                   ): Future[Any] = {
+      obj: IdentifiableEntity,
+      hub: NumberPoolHub,
+      pools: Map[String, ActorRef],
+      number: Int,
+      poolName: String
+  ): Future[Any] = {
     val promisingResult: Promise[Any] = Promise()
     pools.get(poolName) match {
       case Some(pool) =>
         //cache
-        val localPromise = promisingResult
-        val localTarget = obj
-        val localUns = hub
+        val localPromise  = promisingResult
+        val localTarget   = obj
+        val localUns      = hub
         val localPoolName = poolName
-        val localPool = pool
-        val localNumber = number
+        val localPool     = pool
+        val localNumber   = number
 
         val result = ask(pool, NumberPoolActor.ReturnNumber(number))
         result.onComplete {
@@ -258,19 +259,27 @@ class UniqueNumberOps(
               localPool,
               localNumber
             )
-          case Success(NumberPoolActor.ReturnNumberResult(_, Some(ex))) => //if there is a problem when returning the number
-            localPromise.failure { new UnregisteringException(msg = s"could not unregister $localTarget with number $localNumber", ex) }
+          case Success(
+                NumberPoolActor.ReturnNumberResult(_, Some(ex))
+              ) => //if there is a problem when returning the number
+            localPromise.failure {
+              new UnregisteringException(msg = s"could not unregister $localTarget with number $localNumber", ex)
+            }
           case msg =>
             UniqueNumberOps.log.warn(s"unexpected message $msg during $localTarget's unregistration process")
         }
         result.recover {
           case ex: AskTimeoutException =>
-            localPromise.failure { new UnregisteringException(msg = s"did not unregister entity $localTarget in time", ex) }
+            localPromise.failure {
+              new UnregisteringException(msg = s"did not unregister entity $localTarget in time", ex)
+            }
         }
 
       case None =>
         //do not log; use callback
-        promisingResult.failure { new UnregisteringException(msg = s"can not find pool $poolName; $obj was not unregistered") }
+        promisingResult.failure {
+          new UnregisteringException(msg = s"can not find pool $poolName; $obj was not unregistered")
+        }
     }
     promisingResult.future
   }
@@ -301,7 +310,7 @@ class UniqueNumberOps(
 }
 
 object UniqueNumberOps {
-  private val log   = org.log4s.getLogger
+  private val log              = org.log4s.getLogger
   private implicit val timeout = Timeout(2.seconds)
 
   /**
@@ -315,13 +324,13 @@ object UniqueNumberOps {
     * @param number the number that was drawn
     */
   private def processRegisterResult(
-                                     promise: Promise[Any],
-                                     obj: IdentifiableEntity,
-                                     guid: NumberPoolHub,
-                                     poolName: String,
-                                     pool: ActorRef,
-                                     number: Int
-                                   ): Unit = {
+      promise: Promise[Any],
+      obj: IdentifiableEntity,
+      guid: NumberPoolHub,
+      poolName: String,
+      pool: ActorRef,
+      number: Int
+  ): Unit = {
     guid.latterPartRegister(obj, number) match {
       case Success(_) =>
         promise.success(RegisteredEntity(obj, poolName, guid, number))
@@ -343,13 +352,13 @@ object UniqueNumberOps {
     * @param number the number that was previously drawn from the specified `NumberPool`
     */
   private def processUnregisterResult(
-                                       promise: Promise[Any],
-                                       obj: IdentifiableEntity,
-                                       guid: NumberPoolHub,
-                                       poolName: String,
-                                       pool: ActorRef,
-                                       number: Int
-                                     ): Unit = {
+      promise: Promise[Any],
+      obj: IdentifiableEntity,
+      guid: NumberPoolHub,
+      poolName: String,
+      pool: ActorRef,
+      number: Int
+  ): Unit = {
     guid.latterPartUnregister(number) match {
       case Some(_) =>
         obj.Invalidate()
@@ -357,7 +366,11 @@ object UniqueNumberOps {
       case None =>
         //do not log
         requestSpecificNumberNoCallback(number, pool) //recovery?
-        promise.failure(new UnregisteringException(msg = s"failed to unregister $obj from number $number; this may be a critical error"))
+        promise.failure(
+          new UnregisteringException(
+            msg = s"failed to unregister $obj from number $number; this may be a critical error"
+          )
+        )
     }
   }
 
@@ -407,7 +420,7 @@ class UnregisteringException(msg: String) extends Exception(msg) {
   * @param number the name associated with this entity
   */
 class RegisteredToWrongPlaceException(obj: IdentifiableEntity, number: Int)
-  extends RuntimeException(s"$obj registered to number $number that is not part of a known or local number pool") {
+    extends RuntimeException(s"$obj registered to number $number that is not part of a known or local number pool") {
 
   def this(obj: IdentifiableEntity, number: Int, cause: Throwable) = {
     this(obj, number)
@@ -426,9 +439,9 @@ class RegisteredToWrongPlaceException(obj: IdentifiableEntity, number: Int)
   * @param poolActorConversionFunc the number pool management class
   */
 class UniqueNumberSetup(
-                         hub: NumberPoolHub,
-                         poolActorConversionFunc: (ActorContext, NumberPoolHub) => Map[String, ActorRef]
-                       ) extends Actor {
+    hub: NumberPoolHub,
+    poolActorConversionFunc: (ActorContext, NumberPoolHub) => Map[String, ActorRef]
+) extends Actor {
   init()
 
   final def receive: Receive = { case _ => ; }
@@ -447,8 +460,8 @@ object UniqueNumberSetup {
     * @return a `Map` of the pool names to the `ActorRef` created from the `NumberPool`
     */
   def AllocateNumberPoolActors(context: ActorContext, poolSource: NumberPoolHub): Map[String, ActorRef] = {
-    poolSource.Pools
-      .map { case (pname, pool) => (pname, context.actorOf(Props(classOf[NumberPoolActor], pool), pname)) }
-      .toMap
+    poolSource.Pools.map {
+      case (pname, pool) => (pname, context.actorOf(Props(classOf[NumberPoolActor], pool), pname))
+    }.toMap
   }
 }

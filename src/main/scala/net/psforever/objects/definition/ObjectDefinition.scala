@@ -44,10 +44,11 @@ abstract class ObjectDefinition(private val objectId: Int) extends BasicDefiniti
     Packet
   }
 
-  private var maxDepth: Float = 0 //water_maxdragdepth
+  private var maxDepth: Float            = 0 //water_maxdragdepth
   private var disableAtMaxDepth: Boolean = false
-  private var drownAtMaxDepth: Boolean = false
-  private var underwaterLifespan: Map[OxygenState, Long] = Map.empty //water_underwaterlifespan and water_underwaterlifespanrecovery
+  private var drownAtMaxDepth: Boolean   = false
+  private var underwaterLifespan: Map[OxygenState, Long] =
+    Map.empty //water_underwaterlifespan and water_underwaterlifespanrecovery
 
   def MaxDepth: Float = maxDepth
 
@@ -90,11 +91,12 @@ abstract class ObjectDefinition(private val objectId: Int) extends BasicDefiniti
 
   private var serverGeometry: Any => VolumetricGeometry = GeometryForm.representByPoint()
 
-  def Geometry: Any => VolumetricGeometry = if (ServerSplashTargetsCentroid) {
-    GeometryForm.representByPoint()
-  } else {
-    serverGeometry
-  }
+  def Geometry: Any => VolumetricGeometry =
+    if (ServerSplashTargetsCentroid) {
+      GeometryForm.representByPoint()
+    } else {
+      serverGeometry
+    }
 
   def Geometry_=(func: Any => VolumetricGeometry): Any => VolumetricGeometry = {
     serverGeometry = func

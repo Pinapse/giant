@@ -36,7 +36,7 @@ class TerminalControl(term: Terminal)
     .orElse(canBeRepairedByNanoDispenser)
     .orElse(autoRepairBehavior)
 
-  def poweredStateLogic : Receive =
+  def poweredStateLogic: Receive =
     commonBehavior
       .orElse(hackableBehavior)
       .orElse {
@@ -44,7 +44,7 @@ class TerminalControl(term: Terminal)
           TerminalControl.Dispatch(sender(), term, Terminal.TerminalMessage(player, msg, term.Request(player, msg)))
 
         case CommonMessages.Use(player, Some(item: SimpleItem))
-          if item.Definition == GlobalDefinitions.remote_electronics_kit =>
+            if item.Definition == GlobalDefinitions.remote_electronics_kit =>
           //TODO setup certifications check
           term.Owner match {
             case b: Building if (b.Faction != player.Faction || b.CaptureTerminalIsHacked) && term.HackedBy.isEmpty =>
@@ -59,20 +59,21 @@ class TerminalControl(term: Terminal)
         case _ => ;
       }
 
-  def unpoweredStateLogic : Receive = commonBehavior
-    .orElse {
-      case Terminal.Request(player, msg) =>
-        sender() ! Terminal.TerminalMessage(player, msg, Terminal.NoDeal())
+  def unpoweredStateLogic: Receive =
+    commonBehavior
+      .orElse {
+        case Terminal.Request(player, msg) =>
+          sender() ! Terminal.TerminalMessage(player, msg, Terminal.NoDeal())
 
-      case _ => ;
-    }
+        case _ => ;
+      }
 
-  override protected def DamageAwareness(target: Target, cause: DamageResult, amount: Any) : Unit = {
+  override protected def DamageAwareness(target: Target, cause: DamageResult, amount: Any): Unit = {
     tryAutoRepair()
     super.DamageAwareness(target, cause, amount)
   }
 
-  override protected def DestructionAwareness(target: Damageable.Target, cause: DamageResult) : Unit = {
+  override protected def DestructionAwareness(target: Damageable.Target, cause: DamageResult): Unit = {
     tryAutoRepair()
     if (term.HackedBy.nonEmpty) {
       val zone = term.Zone
@@ -81,19 +82,19 @@ class TerminalControl(term: Terminal)
     super.DestructionAwareness(target, cause)
   }
 
-  override def PerformRepairs(target : Target, amount : Int) : Int = {
+  override def PerformRepairs(target: Target, amount: Int): Int = {
     val newHealth = super.PerformRepairs(target, amount)
-    if(newHealth == target.Definition.MaxHealth) {
+    if (newHealth == target.Definition.MaxHealth) {
       stopAutoRepair()
     }
     newHealth
   }
 
-  override def tryAutoRepair() : Boolean = {
+  override def tryAutoRepair(): Boolean = {
     isPowered && super.tryAutoRepair()
   }
 
-  def powerTurnOffCallback() : Unit = {
+  def powerTurnOffCallback(): Unit = {
     stopAutoRepair()
     //clear hack state
     if (term.HackedBy.nonEmpty) {
@@ -102,7 +103,7 @@ class TerminalControl(term: Terminal)
     }
   }
 
-  def powerTurnOnCallback() : Unit = {
+  def powerTurnOnCallback(): Unit = {
     tryAutoRepair()
   }
 

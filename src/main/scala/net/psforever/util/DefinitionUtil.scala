@@ -312,7 +312,7 @@ object DefinitionUtil {
       case 986 => vulture
       case 997 => wasp
       //default
-      case _  => throw new IllegalArgumentException(s"you can not build $id")
+      case _ => throw new IllegalArgumentException(s"you can not build $id")
     }
   }
 

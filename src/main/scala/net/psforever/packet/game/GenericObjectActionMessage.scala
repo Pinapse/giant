@@ -64,7 +64,10 @@ final case class GenericObjectActionMessage(object_guid: PlanetSideGUID, code: I
 }
 
 object GenericObjectActionMessage extends Marshallable[GenericObjectActionMessage] {
-  def apply(object_guid: PlanetSideGUID, code: GenericObjectActionEnum.GenericObjectActionEnum): GenericObjectActionMessage = {
+  def apply(
+      object_guid: PlanetSideGUID,
+      code: GenericObjectActionEnum.GenericObjectActionEnum
+  ): GenericObjectActionMessage = {
     GenericObjectActionMessage(object_guid, code.id)
   }
 

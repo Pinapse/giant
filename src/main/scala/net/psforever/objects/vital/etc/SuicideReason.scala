@@ -12,8 +12,7 @@ import net.psforever.objects.vital.resolution.{DamageAndResistance, DamageResist
   * A wrapper for a "damage source" in damage calculations
   * that parameterizes information necessary to explain wanting to kill oneself.
   */
-final case class SuicideReason()
-  extends DamageReason {
+final case class SuicideReason() extends DamageReason {
   /*
   In my head canon, there is a neverending termite eating into the Auraxian human empires.
   There is no recruitment.
@@ -30,7 +29,7 @@ final case class SuicideReason()
 
   Anyway, this has nothing to do with that.
   Most playes probably just want to jump to the next base over.
-  */
+   */
   def source: DamageProperties = SuicideReason.damageProperties
 
   def resolution: DamageResolution.Value = DamageResolution.Suicide
@@ -45,6 +44,7 @@ final case class SuicideReason()
 }
 
 object SuicideReason {
+
   /** one swift blow that guarantees death */
   val damageProperties = new DamageProperties {
     Damage0 = 99999

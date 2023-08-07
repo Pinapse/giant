@@ -249,49 +249,49 @@ object ChatMessageType extends Enum[ChatMessageType] {
   case object CMT_DEBUG_MASSIVE          extends ChatMessageType // /debugmassive
   case object CMT_WARP_TO_NEXT_BILLBOARD extends ChatMessageType // ???
   case object UNK_222                    extends ChatMessageType // "CTF Flag stolen"
-                                                                 // Plays a trumpet-like sound and displays the message: "<Base Type> <Base Name> has spawned a LLU"
-                                                                 // "It must be taken to <Base Type> <Base Name>'s Control Console within 15 minutes or the hack will fail!"
-                                                                 // Example string: @CTF_FlagSpawned^@cryo_facility~^@Hanish~^@comm_station_dsp~^@Akkan~^15~
-  case object UNK_223                    extends ChatMessageType // "CTF Flag lost"
-                                                                 // Handles both LLU lost and LLU resecured
-                                                                 // Example string: @CTF_Failed_SourceResecured^@TerranRepublic~^@Hanish~
-                                                                 // Output: "The Terran Republic resecured Hanish!" "The LLU was lost!"
-                                                                 // Example string: @CTF_Failed_FlagLost^@TerranRepublic~^@Hanish~
-                                                                 // Output: "The Terran Republic lost Hanish's LLU" "Hack canceled!"
-  case object UNK_224                    extends ChatMessageType // ??? "Vehicle Dismount"
-  case object UNK_225                    extends ChatMessageType // ??? empty
-  case object UNK_226                    extends ChatMessageType // ??? empty
-  case object UNK_227                    extends ChatMessageType // ??? empty
-  case object UNK_228                    extends ChatMessageType // ??? empty
-  case object UNK_229                    extends ChatMessageType // See UNK_222 - seems to do the same except without trumpet-like sound
-                                                                 // Is used for flag pickup @CTF_FlagPickedUp^OzTurtle~^@NewConglomerate~^@Qumu~
-                                                                 // Or flag warning @CTF_Warning_Carrier^VanuHemlock~^@VanuSovereigncy~^@Mani~^@Dagur~^10~
-  case object UNK_230                    extends ChatMessageType // ??? "Vehicle Mount"
-  case object UNK_231                    extends ChatMessageType // ??? empty
-  case object UNK_232                    extends ChatMessageType // ??? empty
-  case object CMT_ALARM                  extends ChatMessageType // /alarm
-  case object CMT_APPEAL                 extends ChatMessageType // /appeal
-  case object CMT_BUGREPORT              extends ChatMessageType // /bug
-  case object CMT_CHATLOG                extends ChatMessageType // /log
-  case object CMT_CREATE_MACRO           extends ChatMessageType // /macro
-  case object CMT_EMOTE                  extends ChatMessageType // /emote OR /em
-  case object CMT_FILTER                 extends ChatMessageType // /filter
-  case object CMT_FRIENDS                extends ChatMessageType // /friends
-  case object CMT_IGNORE                 extends ChatMessageType // /ignore
-  case object CMT_HELP                   extends ChatMessageType // /help OR /gm
-  case object CMT_LOC                    extends ChatMessageType // /loc
-  case object CMT_REPLY                  extends ChatMessageType // /reply OR /r
-  case object CMT_TIME                   extends ChatMessageType // /time
-  case object CMT_TIMEDHELP              extends ChatMessageType // /timedhelp
-  case object CMT_TOGGLE_STATS           extends ChatMessageType // /stats
-  case object CMT_VERSION                extends ChatMessageType // /version
-  case object CMT_INCENTIVES             extends ChatMessageType // /incentives
-  case object CMT_HIDESPECTATOR          extends ChatMessageType // /hidespectator
-  case object CMT_HUMBUG                 extends ChatMessageType // /humbug
-  case object CMT_SOUND_HORNS            extends ChatMessageType // /horns
-  case object CMT_SQUADINVITE            extends ChatMessageType // /invite OR /squadinvite
-  case object CMT_SQUADKICK              extends ChatMessageType // /kick
-  case object CMT_SQUADACCEPTINVITATION  extends ChatMessageType // /accept OR /yes
+  // Plays a trumpet-like sound and displays the message: "<Base Type> <Base Name> has spawned a LLU"
+  // "It must be taken to <Base Type> <Base Name>'s Control Console within 15 minutes or the hack will fail!"
+  // Example string: @CTF_FlagSpawned^@cryo_facility~^@Hanish~^@comm_station_dsp~^@Akkan~^15~
+  case object UNK_223 extends ChatMessageType // "CTF Flag lost"
+  // Handles both LLU lost and LLU resecured
+  // Example string: @CTF_Failed_SourceResecured^@TerranRepublic~^@Hanish~
+  // Output: "The Terran Republic resecured Hanish!" "The LLU was lost!"
+  // Example string: @CTF_Failed_FlagLost^@TerranRepublic~^@Hanish~
+  // Output: "The Terran Republic lost Hanish's LLU" "Hack canceled!"
+  case object UNK_224 extends ChatMessageType // ??? "Vehicle Dismount"
+  case object UNK_225 extends ChatMessageType // ??? empty
+  case object UNK_226 extends ChatMessageType // ??? empty
+  case object UNK_227 extends ChatMessageType // ??? empty
+  case object UNK_228 extends ChatMessageType // ??? empty
+  case object UNK_229 extends ChatMessageType // See UNK_222 - seems to do the same except without trumpet-like sound
+  // Is used for flag pickup @CTF_FlagPickedUp^OzTurtle~^@NewConglomerate~^@Qumu~
+  // Or flag warning @CTF_Warning_Carrier^VanuHemlock~^@VanuSovereigncy~^@Mani~^@Dagur~^10~
+  case object UNK_230                   extends ChatMessageType // ??? "Vehicle Mount"
+  case object UNK_231                   extends ChatMessageType // ??? empty
+  case object UNK_232                   extends ChatMessageType // ??? empty
+  case object CMT_ALARM                 extends ChatMessageType // /alarm
+  case object CMT_APPEAL                extends ChatMessageType // /appeal
+  case object CMT_BUGREPORT             extends ChatMessageType // /bug
+  case object CMT_CHATLOG               extends ChatMessageType // /log
+  case object CMT_CREATE_MACRO          extends ChatMessageType // /macro
+  case object CMT_EMOTE                 extends ChatMessageType // /emote OR /em
+  case object CMT_FILTER                extends ChatMessageType // /filter
+  case object CMT_FRIENDS               extends ChatMessageType // /friends
+  case object CMT_IGNORE                extends ChatMessageType // /ignore
+  case object CMT_HELP                  extends ChatMessageType // /help OR /gm
+  case object CMT_LOC                   extends ChatMessageType // /loc
+  case object CMT_REPLY                 extends ChatMessageType // /reply OR /r
+  case object CMT_TIME                  extends ChatMessageType // /time
+  case object CMT_TIMEDHELP             extends ChatMessageType // /timedhelp
+  case object CMT_TOGGLE_STATS          extends ChatMessageType // /stats
+  case object CMT_VERSION               extends ChatMessageType // /version
+  case object CMT_INCENTIVES            extends ChatMessageType // /incentives
+  case object CMT_HIDESPECTATOR         extends ChatMessageType // /hidespectator
+  case object CMT_HUMBUG                extends ChatMessageType // /humbug
+  case object CMT_SOUND_HORNS           extends ChatMessageType // /horns
+  case object CMT_SQUADINVITE           extends ChatMessageType // /invite OR /squadinvite
+  case object CMT_SQUADKICK             extends ChatMessageType // /kick
+  case object CMT_SQUADACCEPTINVITATION extends ChatMessageType // /accept OR /yes
 
   /* TODO: Past this point, the types overflow 8 bits, so need a way to either map them for ChatMsg or just take them completely out
 

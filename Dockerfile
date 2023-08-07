@@ -1,17 +1,11 @@
-FROM sbtscala/scala-sbt:eclipse-temurin-focal-11.0.17_8_1.8.2_2.13.10 as builder
+FROM azul/prime:17
+# FROM azul/zulu-openjdk-alpine:17-latest
 
-COPY . /PSF-LoginServer
-
-WORKDIR /PSF-LoginServer
-
-RUN sbt server/pack
-
-FROM openjdk:18-slim
-
-COPY --from=builder /PSF-LoginServer/server/target/pack/ /usr/local
+COPY ./server/target/pack/ /PSF-LoginServer
 
 EXPOSE 51000/udp
 EXPOSE 51001/udp
 EXPOSE 51002/tcp
 
-CMD ["psforever-server"]
+CMD ["/PSF-LoginServer/bin/psforever-server"]
+

@@ -16,8 +16,7 @@ import net.psforever.types.Vector3
   * @param radius a distance expressed in all circular cross-sections along the `relativeUp` direction
   * @param height the distance between the "base" and the "top"
   */
-final case class Cylinder(p: Point, relativeUp: Vector3, radius: Float, height: Float)
-  extends VolumetricGeometry {
+final case class Cylinder(p: Point, relativeUp: Vector3, radius: Float, height: Float) extends VolumetricGeometry {
   Slope.assertUnitVector(relativeUp)
 
   /**
@@ -39,36 +38,42 @@ final case class Cylinder(p: Point, relativeUp: Vector3, radius: Float, height: 
     * @return a point
     */
   override def pointOnOutside(v: Vector3): Point = {
-    val centerVector = center.asVector3
-    val slope = Vector3.Unit(v)
+    val centerVector        = center.asVector3
+    val slope               = Vector3.Unit(v)
     val dotProdOfSlopeAndUp = Vector3.DotProduct(slope, relativeUp)
-    if (Geometry.equalFloats(dotProdOfSlopeAndUp, value2 = 1) || Geometry.equalFloats(dotProdOfSlopeAndUp, value2 = -1)) {
+    if (
+      Geometry.equalFloats(dotProdOfSlopeAndUp, value2 = 1) || Geometry.equalFloats(dotProdOfSlopeAndUp, value2 = -1)
+    ) {
       // very rare condition: 'slope' and 'relativeUp' are parallel or antiparallel
       Point(centerVector + slope * height * 0.5f)
     } else {
-      val acrossTopAndBase = slope - relativeUp * dotProdOfSlopeAndUp
-      val pointOnSide = centerVector + slope * (radius / Vector3.Magnitude(acrossTopAndBase))
-      val pointOnBase = p.asVector3 + acrossTopAndBase * radius
-      val pointOnTop = pointOnBase + relativeUp * height
-      val fromPointOnTopToSide = Vector3.Unit(pointOnTop - pointOnSide)
+      val acrossTopAndBase      = slope - relativeUp * dotProdOfSlopeAndUp
+      val pointOnSide           = centerVector + slope * (radius / Vector3.Magnitude(acrossTopAndBase))
+      val pointOnBase           = p.asVector3 + acrossTopAndBase * radius
+      val pointOnTop            = pointOnBase + relativeUp * height
+      val fromPointOnTopToSide  = Vector3.Unit(pointOnTop - pointOnSide)
       val fromPointOnSideToBase = Vector3.Unit(pointOnSide - pointOnBase)
-      val target = if(Geometry.equalVectors(fromPointOnTopToSide, Vector3.Zero) ||
-                      Geometry.equalVectors(fromPointOnSideToBase, Vector3.Zero) ||
-                      Geometry.equalVectors(fromPointOnTopToSide, fromPointOnSideToBase)) {
-        //on side, including top rim or base rim
-        pointOnSide
-      } else {
-        //on top or base
-        // the full equation would be 'centerVector + slope * (height * 0.5f / Vector3.Magnitude(relativeUp))'
-        // 'relativeUp` is already a unit vector (magnitude of 1)
-        centerVector + slope * height * 0.5f
-      }
+      val target =
+        if (
+          Geometry.equalVectors(fromPointOnTopToSide, Vector3.Zero) ||
+          Geometry.equalVectors(fromPointOnSideToBase, Vector3.Zero) ||
+          Geometry.equalVectors(fromPointOnTopToSide, fromPointOnSideToBase)
+        ) {
+          //on side, including top rim or base rim
+          pointOnSide
+        } else {
+          //on top or base
+          // the full equation would be 'centerVector + slope * (height * 0.5f / Vector3.Magnitude(relativeUp))'
+          // 'relativeUp` is already a unit vector (magnitude of 1)
+          centerVector + slope * height * 0.5f
+        }
       Point(target)
     }
   }
 }
 
 object Cylinder {
+
   /**
     * An overloaded constructor where the 'relativeUp' of the cylinder is perpendicular to the xy-plane.
     * @param p the point
@@ -76,7 +81,7 @@ object Cylinder {
     * @param height the distance between the "base" and the "top"
     * @return
     */
-  def apply(p: Point, radius: Float, height: Float): Cylinder = Cylinder(p, Vector3(0,0,1), radius, height)
+  def apply(p: Point, radius: Float, height: Float): Cylinder = Cylinder(p, Vector3(0, 0, 1), radius, height)
 
   /**
     * An overloaded constructor where the origin point is expressed as a vector
@@ -86,7 +91,7 @@ object Cylinder {
     * @param height the distance between the "base" and the "top"
     * @return
     */
-  def apply(p: Vector3, radius: Float, height: Float): Cylinder = Cylinder(Point(p), Vector3(0,0,1), radius, height)
+  def apply(p: Vector3, radius: Float, height: Float): Cylinder = Cylinder(Point(p), Vector3(0, 0, 1), radius, height)
 
   /**
     * An overloaded constructor the origin point is expressed as a vector.

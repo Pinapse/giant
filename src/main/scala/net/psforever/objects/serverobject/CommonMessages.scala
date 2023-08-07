@@ -25,13 +25,13 @@ object CommonMessages {
   }
 
   /**
-   * A request has been made to charge this entity's shields.
-   * @see `FacilityBenefitShieldChargeRequestMessage`
-   * @param amount the number of points to charge
-   * @param motivator the element that caused the shield to charge;
-   *                  allowed to be `None`;
-   *                  most often, a `Building`;
-   *                  if the vehicle instigated its own charge (battleframe robotics), specify that
-   */
+    * A request has been made to charge this entity's shields.
+    * @see `FacilityBenefitShieldChargeRequestMessage`
+    * @param amount the number of points to charge
+    * @param motivator the element that caused the shield to charge;
+    *                  allowed to be `None`;
+    *                  most often, a `Building`;
+    *                  if the vehicle instigated its own charge (battleframe robotics), specify that
+    */
   final case class ChargeShields(amount: Int, motivator: Option[PlanetSideGameObject])
 }

@@ -40,13 +40,17 @@ trait DeployableBehavior {
 
   /** the timer for the construction process */
   var setup: Cancellable = Default.Cancellable
+
   /** the timer for the deconstruction process */
   var decay: Cancellable = Default.Cancellable
+
   /** used to manage the internal knowledge of the construction process;
     * `None` means "never constructed",
     * `Some(false)` means "deconstructed" or a state that is unresponsive to certain messaging input,
-    * `Some(true)` means "constructed" */
+    * `Some(true)` means "constructed"
+    */
   private var constructed: Option[Boolean] = None
+
   /** a value that is utilized by the `ObjectDeleteMessage` packet, affecting animation */
   var deletionType: Int = 2
 
@@ -58,15 +62,13 @@ trait DeployableBehavior {
   def isConstructed: Option[Boolean] = constructed
 
   val deployableBehavior: Receive = {
-    case Zone.Deployable.Setup()
-      if constructed.isEmpty && setup.isCancelled =>
+    case Zone.Deployable.Setup() if constructed.isEmpty && setup.isCancelled =>
       setupDeployable(sender())
 
     case DeployableBehavior.Finalize(callback) =>
       finalizeDeployable(callback)
 
-    case Deployable.Ownership(None)
-      if DeployableObject.Owner.nonEmpty =>
+    case Deployable.Ownership(None) if DeployableObject.Owner.nonEmpty =>
       val obj = DeployableObject
       if (constructed.contains(true)) {
         loseOwnership(obj.Faction)
@@ -74,23 +76,21 @@ trait DeployableBehavior {
         obj.Owner = None
       }
 
-    case Deployable.Ownership(Some(player))
-      if !DeployableObject.Destroyed && DeployableObject.Owner.isEmpty =>
+    case Deployable.Ownership(Some(player)) if !DeployableObject.Destroyed && DeployableObject.Owner.isEmpty =>
       if (constructed.contains(true)) {
         gainOwnership(player)
       } else {
         DeployableObject.AssignOwnership(player)
       }
 
-    case Deployable.Deconstruct(time)
-      if constructed.contains(true) =>
+    case Deployable.Deconstruct(time) if constructed.contains(true) =>
       deconstructDeployable(time)
 
     case DeployableBehavior.FinalizeElimination() =>
       dismissDeployable()
 
     case Zone.Deployable.IsDismissed(obj)
-      if (obj eq DeployableObject) && (constructed.isEmpty || constructed.contains(false)) =>
+        if (obj eq DeployableObject) && (constructed.isEmpty || constructed.contains(false)) =>
       unregisterDeployable(obj)
   }
 
@@ -102,13 +102,13 @@ trait DeployableBehavior {
     *                  may also affect deployable operation
     */
   def loseOwnership(toFaction: PlanetSideEmpire.Value): Unit = {
-    val obj = DeployableObject
-    val guid = obj.GUID
-    val zone = obj.Zone
-    val localEvents = zone.LocalEvents
+    val obj             = DeployableObject
+    val guid            = obj.GUID
+    val zone            = obj.Zone
+    val localEvents     = zone.LocalEvents
     val originalFaction = obj.Faction
-    val changeFaction = originalFaction != toFaction
-    val info = DeployableInfo(guid, DeployableIcon.Boomer, obj.Position, Service.defaultPlayerGUID)
+    val changeFaction   = originalFaction != toFaction
+    val info            = DeployableInfo(guid, DeployableIcon.Boomer, obj.Position, Service.defaultPlayerGUID)
     if (changeFaction) {
       obj.Faction = toFaction
       //visual tells in regards to ownership by faction
@@ -160,10 +160,10 @@ trait DeployableBehavior {
     obj.AssignOwnership(player)
     decay.cancel()
 
-    val guid = obj.GUID
-    val zone = obj.Zone
+    val guid            = obj.GUID
+    val zone            = obj.Zone
     val originalFaction = obj.Faction
-    val info = DeployableInfo(guid, DeployableIcon.Boomer, obj.Position, obj.Owner.get)
+    val info            = DeployableInfo(guid, DeployableIcon.Boomer, obj.Position, obj.Owner.get)
     if (originalFaction != toFaction) {
       obj.Faction = toFaction
       val localEvents = zone.LocalEvents
@@ -231,13 +231,13 @@ trait DeployableBehavior {
     setup.cancel()
     setup = Default.Cancellable
     constructed = Some(true)
-    val obj = DeployableObject
-    val zone       = obj.Zone
+    val obj         = DeployableObject
+    val zone        = obj.Zone
     val localEvents = zone.LocalEvents
-    val owner     = obj.Owner.getOrElse(Service.defaultPlayerGUID)
+    val owner       = obj.Owner.getOrElse(Service.defaultPlayerGUID)
     obj.OwnerName match {
       case Some(_) =>
-      case None    =>
+      case None =>
         import scala.concurrent.ExecutionContext.Implicits.global
         decay = context.system.scheduler.scheduleOnce(
           Deployable.decay,
@@ -252,7 +252,8 @@ trait DeployableBehavior {
       obj.Faction.toString,
       LocalAction.DeployableMapIcon(
         Service.defaultPlayerGUID,
-        DeploymentAction.Build, DeployableInfo(obj.GUID, Deployable.Icon(obj.Definition.Item), obj.Position, owner)
+        DeploymentAction.Build,
+        DeployableInfo(obj.GUID, Deployable.Icon(obj.Definition.Item), obj.Position, owner)
       )
     )
     //local build management
@@ -292,7 +293,7 @@ trait DeployableBehavior {
     setup.cancel()
     setup = Default.Cancellable
     decay.cancel()
-    val obj = DeployableObject
+    val obj  = DeployableObject
     val zone = obj.Zone
     //there's no special meaning behind directing any replies from from zone governance straight back to zone governance
     //this deployable control agency, however, will be expiring and can not be a recipient
@@ -311,6 +312,7 @@ trait DeployableBehavior {
 }
 
 object DeployableBehavior {
+
   /** internal message for progressing the build process */
   private case class Finalize(callback: ActorRef)
 

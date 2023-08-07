@@ -5,13 +5,13 @@ import net.psforever.objects.definition.ObjectDefinition
 import net.psforever.types.{CaptureBenefit, CavernBenefit, LatticeBenefit}
 
 class BuildingDefinition(objectId: Int)
-  extends ObjectDefinition(objectId)
+    extends ObjectDefinition(objectId)
     with NtuContainerDefinition
     with SphereOfInfluence {
   Name = "building"
   MaxNtuCapacitor = Int.MaxValue
   private var latBenefit: LatticeBenefit = LatticeBenefit.None
-  private var cavBenefit: CavernBenefit = CavernBenefit.None
+  private var cavBenefit: CavernBenefit  = CavernBenefit.None
 
   def LatticeLinkBenefit: LatticeBenefit = latBenefit
 

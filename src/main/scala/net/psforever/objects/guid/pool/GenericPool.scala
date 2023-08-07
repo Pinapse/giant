@@ -7,13 +7,13 @@ import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 class GenericPool(
-                   private val hub: mutable.LongMap[String],
-                   private val max: Int,
-                   private val poolName: String,
-                   private val selectionFunc: (List[Long], Int) => Int
-                 ) extends NumberPool {
-  private val numbers: mutable.ListBuffer[Int]   = mutable.ListBuffer[Int]()
-  private val selector: SpecificSelector = new SpecificSelector
+    private val hub: mutable.LongMap[String],
+    private val max: Int,
+    private val poolName: String,
+    private val selectionFunc: (List[Long], Int) => Int
+) extends NumberPool {
+  private val numbers: mutable.ListBuffer[Int] = mutable.ListBuffer[Int]()
+  private val selector: SpecificSelector       = new SpecificSelector
   selector.SelectionIndex = -1
 
   def Numbers: List[Int] = numbers.toList
@@ -58,6 +58,7 @@ class GenericPool(
 }
 
 object GenericPool {
+
   /**
     * Overloaded constructor that assigns a "numerical first discovery" function for number selection.
     * @param hub na
@@ -66,10 +67,10 @@ object GenericPool {
     * @return a `GenericPool` entity
     */
   def apply(
-             hub: mutable.LongMap[String],
-             max: Int,
-             poolName: String
-           ): GenericPool =
+      hub: mutable.LongMap[String],
+      max: Int,
+      poolName: String
+  ): GenericPool =
     new GenericPool(hub, max, poolName, GenericPool.first)
 
   /**
@@ -83,9 +84,9 @@ object GenericPool {
   def first(list: List[Long], domainSize: Int): Int = {
     if (list.size < domainSize) {
       val sortedList: List[Long] = 0L +: list.sorted :+ domainSize
-      var index: Int = 0
-      val listLen = sortedList.length - 1
-      while(index < listLen && index < domainSize) {
+      var index: Int             = 0
+      val listLen                = sortedList.length - 1
+      while (index < listLen && index < domainSize) {
         val curr = sortedList(index + 1) - sortedList(index)
         if (curr > 1) {
           return sortedList(index).toInt + 1

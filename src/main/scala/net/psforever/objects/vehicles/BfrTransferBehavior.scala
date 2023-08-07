@@ -17,18 +17,17 @@ import net.psforever.services.vehicle.{VehicleAction, VehicleServiceMessage}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-trait BfrTransferBehavior
-  extends TransferBehavior
-  with NtuStorageBehavior {
+trait BfrTransferBehavior extends TransferBehavior with NtuStorageBehavior {
   var ntuProcessingRequest: Boolean = false
   var ntuProcessingTick             = Default.Cancellable
 
-  findChargeTargetFunc              = Vehicles.FindBfrChargingSource
-  findDischargeTargetFunc           = Vehicles.FindBfrDischargingTarget
+  findChargeTargetFunc = Vehicles.FindBfrChargingSource
+  findDischargeTargetFunc = Vehicles.FindBfrDischargingTarget
 
   def TransferMaterial = Ntu.Nanites
 
   private var pairedSlotList: Option[List[(VehicleSubsystem, (Int, EquipmentSlot))]] = None
+
   /**
     * Return the paired arm weapon subsystems with arm weapon equipment mount and the slot number for that mount,
     * connecting "left" to "left" and "right" to "right".
@@ -39,13 +38,15 @@ trait BfrTransferBehavior
   def pairedArmSlotSubsystems(): List[(VehicleSubsystem, (Int, EquipmentSlot))] = {
     pairedSlotList.getOrElse {
       val obj = ChargeTransferObject
-      val pairs = obj.Subsystems()
+      val pairs = obj
+        .Subsystems()
         .filter { sub =>
           sub.sys.name.startsWith("BattleframeLeftArm") || sub.sys.name.startsWith("BattleframeRightArm")
         }
         .zip(
-          obj.Weapons.filter { case (a, _) =>
-            a == 1 || a == 2 || a == 3 //gunner -> 2,3; flight -> 1,2
+          obj.Weapons.filter {
+            case (a, _) =>
+              a == 1 || a == 2 || a == 3 //gunner -> 2,3; flight -> 1,2
           }
         )
       pairedSlotList = Some(pairs)
@@ -53,6 +54,7 @@ trait BfrTransferBehavior
     }
   }
   private var pairedList: Option[List[(VehicleSubsystem, EquipmentSlot)]] = None
+
   /**
     * Return the paired arm weapon subsystems with arm weapon mount,
     * connecting "left" to "left" and "right" to "right".
@@ -70,11 +72,12 @@ trait BfrTransferBehavior
 
   def getNtuContainer(): Option[NtuContainer] = {
     pairedArmSubsystems()
-      .find { case (sub, arm) =>
-        //find an active ntu siphon
-        arm.Equipment.nonEmpty &&
-        GlobalDefinitions.isBattleFrameNTUSiphon(arm.Equipment.get.Definition) &&
-        sub.Enabled
+      .find {
+        case (sub, arm) =>
+          //find an active ntu siphon
+          arm.Equipment.nonEmpty &&
+            GlobalDefinitions.isBattleFrameNTUSiphon(arm.Equipment.get.Definition) &&
+            sub.Enabled
       }
       .map { d => d._2.Equipment.get } match {
       case Some(equipment: Tool) =>
@@ -86,24 +89,24 @@ trait BfrTransferBehavior
 
   def ChargeTransferObject: Vehicle with NtuContainer
 
-  def bfrBehavior: Receive = storageBehavior
-    .orElse(transferBehavior)
-    .orElse {
-      case BfrTransferBehavior.NextProcessTick(event) =>
-        transferTarget match {
-          case Some(target)
-            if event == transferEvent && ntuProcessingRequest && event == TransferBehavior.Event.Charging =>
-            HandleChargingOps(target)
-          case Some(target)
-            if event == transferEvent && ntuProcessingRequest && event == TransferBehavior.Event.Discharging =>
-            HandleDischargingEvent(target)
-          case Some(target)
-            if event == transferEvent && !ntuProcessingRequest =>
-            TryStopChargingEvent(target)
-          case _ => ;
-            TryStopChargingEvent(ChargeTransferObject)
-        }
-    }
+  def bfrBehavior: Receive =
+    storageBehavior
+      .orElse(transferBehavior)
+      .orElse {
+        case BfrTransferBehavior.NextProcessTick(event) =>
+          transferTarget match {
+            case Some(target)
+                if event == transferEvent && ntuProcessingRequest && event == TransferBehavior.Event.Charging =>
+              HandleChargingOps(target)
+            case Some(target)
+                if event == transferEvent && ntuProcessingRequest && event == TransferBehavior.Event.Discharging =>
+              HandleDischargingEvent(target)
+            case Some(target) if event == transferEvent && !ntuProcessingRequest =>
+              TryStopChargingEvent(target)
+            case _ => ;
+              TryStopChargingEvent(ChargeTransferObject)
+          }
+      }
 
   def UpdateNtuUI(vehicle: Vehicle with NtuContainer): Unit = {
     getNtuContainer() match {
@@ -136,12 +139,11 @@ trait BfrTransferBehavior
   def HandleChargingOps(target: TransferContainer): Boolean = {
     ntuProcessingRequest = false
     getNtuContainer() match {
-      case Some(siphon: NtuSiphon)
-        if siphon.NtuCapacitor < siphon.MaxNtuCapacitor =>
+      case Some(siphon: NtuSiphon) if siphon.NtuCapacitor < siphon.MaxNtuCapacitor =>
         //charging
         transferTarget = Some(target)
         transferEvent = TransferBehavior.Event.Charging
-        val max = siphon.NtuCapacitor
+        val max     = siphon.NtuCapacitor
         val fromMax = siphon.MaxNtuCapacitor - max
         target match {
           case _: WarpGate =>
@@ -194,8 +196,7 @@ trait BfrTransferBehavior
     ntuProcessingRequest = false
     val obj = ChargeTransferObject
     getNtuContainer() match {
-      case Some(siphon)
-        if siphon.NtuCapacitor > 0 =>
+      case Some(siphon) if siphon.NtuCapacitor > 0 =>
         transferTarget = Some(target)
         transferEvent = TransferBehavior.Event.Discharging
         target.Actor ! Ntu.Offer(obj)
@@ -213,7 +214,7 @@ trait BfrTransferBehavior
   }
 
   def WithdrawAndTransmit(vehicle: Vehicle, maxRequested: Float): Any = {
-    val chargeable      = ChargeTransferObject
+    val chargeable = ChargeTransferObject
     val chargeToDeposit = getNtuContainer() match {
       case Some(siphon) =>
         var chargeToDeposit = Math.min(Math.min(siphon.NtuCapacitor, 100), maxRequested)
@@ -252,12 +253,13 @@ trait BfrTransferBehavior
       case Some(siphon) =>
         if (transferEvent == TransferBehavior.Event.Discharging) {
           val capacitor = siphon.NtuCapacitor
-          val bonus = System.currentTimeMillis()%2
+          val bonus     = System.currentTimeMillis() % 2
           val (chargeBase, chargeToDeposit): (Float, Float) = if (min == 0) {
             transferTarget match {
               case Some(silo: ResourceSilo) =>
                 // silos would charge from 0-30% in a full siphon's payload according to the wiki
-                val calcChargeBase = scala.math.min(scala.math.min(silo.MaxNtuCapacitor * 0.325f / siphon.MaxNtuCapacitor, capacitor), max)
+                val calcChargeBase =
+                  scala.math.min(scala.math.min(silo.MaxNtuCapacitor * 0.325f / siphon.MaxNtuCapacitor, capacitor), max)
                 (calcChargeBase, calcChargeBase + bonus)
               case _ =>
                 (0f, 0)
@@ -290,9 +292,9 @@ object BfrTransferBehavior {
 }
 
 class NtuSiphon(
-                 val equipment: Tool,
-                 private val definition: ObjectDefinition with NtuContainerDefinition
-               ) extends NtuContainer {
+    val equipment: Tool,
+    private val definition: ObjectDefinition with NtuContainerDefinition
+) extends NtuContainer {
   def Faction: PlanetSideEmpire.Value = equipment.Faction
 
   def storageGUID: PlanetSideGUID = equipment.AmmoSlot.Box.GUID
@@ -309,9 +311,9 @@ class NtuSiphon(
 
   def Actor: ActorRef = null
 
-  override def GUID : PlanetSideGUID = equipment.GUID
+  override def GUID: PlanetSideGUID = equipment.GUID
 
-  override def GUID_=(guid : PlanetSideGUID): PlanetSideGUID = equipment.GUID
+  override def GUID_=(guid: PlanetSideGUID): PlanetSideGUID = equipment.GUID
 
   override def Position: Vector3 = Vector3.Zero
 

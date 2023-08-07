@@ -15,11 +15,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 trait AggravatedBehavior {
-  _ : Actor with Damageable =>
+  _: Actor with Damageable =>
   private val entryIdToEntry: mutable.LongMap[AggravatedBehavior.Entry] =
     mutable.LongMap.empty[AggravatedBehavior.Entry]
   private val aggravationToTimer: mutable.LongMap[Cancellable] =
     mutable.LongMap.empty[Cancellable]
+
   /** ongoing flag to indicate whether the target is being afflicted by any form of aggravated damage */
   private var ongoingAggravated: Boolean = false
 
@@ -28,14 +29,14 @@ trait AggravatedBehavior {
   def TryAggravationEffectActivate(data: DamageResult): Option[AggravatedDamage] = {
     (data.interaction.cause, data.interaction.cause.source.Aggravated) match {
       case (o: ProjectileReason, Some(damage))
-        if data.interaction.cause.source.AllDamageTypes.contains(DamageType.Aggravated) &&
-           damage.info.exists(_.damage_type == AggravatedDamage.basicDamageType(data.interaction.resolution)) &&
-           damage.effect_type != Aura.Nothing &&
-           (o.projectile.quality == ProjectileQuality.AggravatesTarget ||
-            damage.targets.exists(validation => validation.test(AggravatedObject))) =>
+          if data.interaction.cause.source.AllDamageTypes.contains(DamageType.Aggravated) &&
+            damage.info.exists(_.damage_type == AggravatedDamage.basicDamageType(data.interaction.resolution)) &&
+            damage.effect_type != Aura.Nothing &&
+            (o.projectile.quality == ProjectileQuality.AggravatesTarget ||
+              damage.targets.exists(validation => validation.test(AggravatedObject))) =>
         TryAggravationEffectActivate(damage, data.interaction)
       case (_: DamageReason, Some(damage))
-        if damage.effect_type != Aura.Nothing &&
+          if damage.effect_type != Aura.Nothing &&
             damage.targets.exists(validation => validation.test(AggravatedObject)) =>
         TryAggravationEffectActivate(damage, data.interaction)
       case _ =>
@@ -44,26 +45,24 @@ trait AggravatedBehavior {
   }
 
   private def TryAggravationEffectActivate(
-                                            aggravation: AggravatedDamage,
-                                            data: DamageInteraction
-                                          ): Option[AggravatedDamage] = {
+      aggravation: AggravatedDamage,
+      data: DamageInteraction
+  ): Option[AggravatedDamage] = {
     val effect = aggravation.effect_type
-    if(CheckForUniqueUnqueuedCause(data.cause)) {
+    if (CheckForUniqueUnqueuedCause(data.cause)) {
       val sameEffect = entryIdToEntry.values.filter(entry => entry.effect == effect)
-      if(sameEffect.isEmpty || sameEffect.nonEmpty && aggravation.cumulative_damage_degrade) {
+      if (sameEffect.isEmpty || sameEffect.nonEmpty && aggravation.cumulative_damage_degrade) {
         SetupAggravationEntry(aggravation, data)
         Some(aggravation)
-      }
-      else {
+      } else {
         None
       }
-    }
-    else {
+    } else {
       None
     }
   }
 
-  private def CheckForUniqueUnqueuedCause(cause : DamageReason): Boolean = {
+  private def CheckForUniqueUnqueuedCause(cause: DamageReason): Boolean = {
     !entryIdToEntry.values.exists { entry => entry.data.cause.same(cause) }
   }
 
@@ -72,11 +71,11 @@ trait AggravatedBehavior {
     aggravation.info.find(_.damage_type == AggravatedDamage.basicDamageType(data.resolution)) match {
       case Some(info) =>
         //setup effect
-        val timing = aggravation.timing
+        val timing   = aggravation.timing
         val duration = timing.duration
         val id = data.cause match {
           case o: ProjectileReason => o.projectile.id
-          case _ => data.hitTime
+          case _                   => data.hitTime
         }
         //setup timer data
         val (tick: Long, iterations: Int) = timing.ticks match {
@@ -89,19 +88,22 @@ trait AggravatedBehavior {
             (1000L, (duration / 1000).toInt)
         }
         //quality per tick
-        val totalPower = (duration.toFloat / info.infliction_rate).toInt - 1
+        val totalPower          = (duration.toFloat / info.infliction_rate).toInt - 1
         val averagePowerPerTick = totalPower.toFloat / iterations
-        val lastTickRemainder = totalPower - averagePowerPerTick * iterations
+        val lastTickRemainder   = totalPower - averagePowerPerTick * iterations
         val qualityPerTick: List[Float] = if (lastTickRemainder > 0) {
           0f +: List.fill[Float](iterations - 1)(averagePowerPerTick) :+ (lastTickRemainder + averagePowerPerTick)
-        }
-        else {
+        } else {
           0f +: List.fill[Float](iterations)(averagePowerPerTick)
         }
         //pair id with entry
         PairIdWithAggravationEntry(id, effect, tick, data, data.target, qualityPerTick)
         //pair id with timer
-        aggravationToTimer += id -> context.system.scheduler.scheduleOnce(tick milliseconds, self, AggravatedBehavior.Aggravate(id, iterations))
+        aggravationToTimer += id -> context.system.scheduler.scheduleOnce(
+          tick milliseconds,
+          self,
+          AggravatedBehavior.Aggravate(id, iterations)
+        )
         ongoingAggravated = true
         true
       case _ =>
@@ -110,13 +112,13 @@ trait AggravatedBehavior {
   }
 
   private def PairIdWithAggravationEntry(
-                                          id: Long,
-                                          effect: Aura,
-                                          retime: Long,
-                                          data: DamageInteraction,
-                                          target: SourceEntry,
-                                          powerOffset: List[Float]
-                                        ): AggravatedBehavior.Entry = {
+      id: Long,
+      effect: Aura,
+      retime: Long,
+      data: DamageInteraction,
+      target: SourceEntry,
+      powerOffset: List[Float]
+  ): AggravatedBehavior.Entry = {
     val cause = data.cause
     val aggravatedDamageInfo = DamageInteraction(
       target,
@@ -137,19 +139,19 @@ trait AggravatedBehavior {
       RetimeEventAndPerformAggravation(id, iteration, None)
   }
 
-  private def RetimeEventAndPerformAggravation(id: Long, iteration: Int, time: Option[Long]) : Unit = {
+  private def RetimeEventAndPerformAggravation(id: Long, iteration: Int, time: Option[Long]): Unit = {
     RetimeAggravation(id, iteration - 1, time) match {
       case Some(entry) =>
         PerformAggravation(entry, iteration)
-      case _  => ;
+      case _ => ;
     }
   }
 
   private def RetimeAggravation(
-                                 id: Long,
-                                 iteration: Int,
-                                 time: Option[Long]
-                               ): Option[AggravatedBehavior.Entry] = {
+      id: Long,
+      iteration: Int,
+      time: Option[Long]
+  ): Option[AggravatedBehavior.Entry] = {
     CleanupAggravationTimer(id)
     entryIdToEntry.get(id) match {
       case out @ Some(oldEntry) =>
@@ -179,7 +181,7 @@ trait AggravatedBehavior {
     //remove and cancel timer
     aggravationToTimer.remove(id) match {
       case Some(timer) => timer.cancel()
-      case _ => ;
+      case _           => ;
     }
   }
 

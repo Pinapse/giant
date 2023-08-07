@@ -5,6 +5,4 @@ package net.psforever.objects.serverobject.terminals.capture
   * and that it is interested in status updates about that capture terminal, for example mountables to kick players out once the CC is hacked
   * @see CaptureTerminalAwareBehavior
   */
-trait CaptureTerminalAware {
-
-}
+trait CaptureTerminalAware {}

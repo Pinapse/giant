@@ -15,16 +15,16 @@ trait CargoBehavior {
   def CargoObject: Vehicle
 
   def endAllCargoOperations(): Unit = {
-    val obj = CargoObject
+    val obj  = CargoObject
     val zone = obj.Zone
     zone.GUID(isMounting) match {
-      case Some(v : Vehicle) => v.Actor ! CargoBehavior.EndCargoMounting(obj.GUID)
-      case _ => ;
+      case Some(v: Vehicle) => v.Actor ! CargoBehavior.EndCargoMounting(obj.GUID)
+      case _                => ;
     }
     isMounting = None
     zone.GUID(isDismounting) match {
       case Some(v: Vehicle) => v.Actor ! CargoBehavior.EndCargoDismounting(obj.GUID)
-      case _ => ;
+      case _                => ;
     }
     isDismounting = None
     startCargoDismountingNoCleanup(bailed = false)
@@ -52,10 +52,10 @@ trait CargoBehavior {
     val obj = CargoObject
     obj.Zone.GUID(carrier_guid) match {
       case Some(carrier: Vehicle)
-        if isMounting.isEmpty && isDismounting.isEmpty && (carrier.CargoHolds.get(mountPoint) match {
-          case Some(hold) => !hold.isOccupied
-          case _ => false
-        }) =>
+          if isMounting.isEmpty && isDismounting.isEmpty && (carrier.CargoHolds.get(mountPoint) match {
+            case Some(hold) => !hold.isOccupied
+            case _          => false
+          }) =>
         isMounting = Some(carrier_guid)
         carrier.Actor ! CarrierBehavior.CheckCargoMounting(obj.GUID, mountPoint, 0)
       case _ => ;
@@ -72,15 +72,17 @@ trait CargoBehavior {
 
   def startCargoDismountingNoCleanup(bailed: Boolean): Boolean = {
     val obj = CargoObject
-    obj.Zone.GUID(obj.MountedIn)
-      .collect { case carrier: Vehicle =>
-        (carrier, carrier.CargoHolds.find { case (_, hold) => hold.occupant.contains(obj) })
+    obj.Zone
+      .GUID(obj.MountedIn)
+      .collect {
+        case carrier: Vehicle =>
+          (carrier, carrier.CargoHolds.find { case (_, hold) => hold.occupant.contains(obj) })
       }
-      .collect { case (carrier, Some((mountPoint, _)))
-        if isDismounting.isEmpty && isMounting.isEmpty =>
-        isDismounting = obj.MountedIn
-        carrier.Actor ! CarrierBehavior.CheckCargoDismount(obj.GUID, mountPoint, 0, bailed)
-        true
+      .collect {
+        case (carrier, Some((mountPoint, _))) if isDismounting.isEmpty && isMounting.isEmpty =>
+          isDismounting = obj.MountedIn
+          carrier.Actor ! CarrierBehavior.CheckCargoDismount(obj.GUID, mountPoint, 0, bailed)
+          true
       }
       .nonEmpty
   }

@@ -16,17 +16,15 @@ import scodec.codecs._
   * @param guid the target entity's global unique identifier
   * @param damage the amount of damsge being simulated
   */
-final case class AggravatedDamageMessage(guid : PlanetSideGUID,
-                                         damage : Long)
-  extends PlanetSideGamePacket {
+final case class AggravatedDamageMessage(guid: PlanetSideGUID, damage: Long) extends PlanetSideGamePacket {
   type Packet = AggravatedDamageMessage
   def opcode = GamePacketOpcode.AggravatedDamageMessage
   def encode = AggravatedDamageMessage.encode(this)
 }
 
 object AggravatedDamageMessage extends Marshallable[AggravatedDamageMessage] {
-  implicit val codec : Codec[AggravatedDamageMessage] = (
+  implicit val codec: Codec[AggravatedDamageMessage] = (
     ("guid" | PlanetSideGUID.codec) ::
       ("damage" | uint32L)
-    ).as[AggravatedDamageMessage]
+  ).as[AggravatedDamageMessage]
 }

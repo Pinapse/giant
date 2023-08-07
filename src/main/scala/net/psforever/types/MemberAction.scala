@@ -9,7 +9,7 @@ object MemberAction extends Enumeration {
   type Type = Value
 
   val InitializeFriendList, AddFriend, RemoveFriend, UpdateFriend, InitializeIgnoreList, AddIgnoredPlayer,
-  RemoveIgnoredPlayer = Value
+      RemoveIgnoredPlayer = Value
 
   implicit val codec: Codec[MemberAction.Value] = PacketHelpers.createEnumerationCodec(this, uint(bits = 3))
 }

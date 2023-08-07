@@ -12,6 +12,7 @@ import net.psforever.objects.vital.resolution.{DamageAndResistance, ResolutionCa
   * The base reason does not convey any specific requirements in regards to the interaction being described.
   */
 trait DamageReason {
+
   /**
     * An indication about how the damage was or will be processed.
     */

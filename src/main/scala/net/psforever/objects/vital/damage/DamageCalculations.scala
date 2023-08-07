@@ -11,17 +11,17 @@ object DamageCalculations {
   type Selector = DamageProfile => Int
 
   //raw damage selectors
-  def AgainstNothing(profile : DamageProfile) : Int = 0
+  def AgainstNothing(profile: DamageProfile): Int = 0
 
-  def AgainstExoSuit(profile : DamageProfile) : Int = profile.Damage0
+  def AgainstExoSuit(profile: DamageProfile): Int = profile.Damage0
 
-  def AgainstVehicle(profile : DamageProfile) : Int = profile.Damage1
+  def AgainstVehicle(profile: DamageProfile): Int = profile.Damage1
 
-  def AgainstAircraft(profile : DamageProfile) : Int = profile.Damage2
+  def AgainstAircraft(profile: DamageProfile): Int = profile.Damage2
 
-  def AgainstMaxSuit(profile : DamageProfile) : Int = profile.Damage3
+  def AgainstMaxSuit(profile: DamageProfile): Int = profile.Damage3
 
-  def AgainstBfr(profile : DamageProfile) : Int = profile.Damage4
+  def AgainstBfr(profile: DamageProfile): Int = profile.Damage4
 
   /**
     * Get the damage value.
@@ -29,7 +29,7 @@ object DamageCalculations {
     * @param data     na
     * @return the raw damage value
     */
-  def Raw(selector: DamageProfile => Int, data: DamageInteraction) : Int = {
+  def Raw(selector: DamageProfile => Int, data: DamageInteraction): Int = {
     selector(data.cause.source)
   }
 
@@ -40,16 +40,16 @@ object DamageCalculations {
     * @param data     the interaction being processed
     * @return         the accumulated damage value
     */
-  def WithModifiers(selector: DamageProfile => Int, data: DamageInteraction) : Int = {
-    val cause = data.cause
+  def WithModifiers(selector: DamageProfile => Int, data: DamageInteraction): Int = {
+    val cause  = data.cause
     val source = cause.source
     val target = data.target
     //base damage + static modifiers
     val staticModifiers = cause.staticModifiers ++
-                          (if (source.UseDamage1Subtract) List(target.Modifiers.Subtract) else Nil)
+      (if (source.UseDamage1Subtract) List(target.Modifiers.Subtract) else Nil)
     //unstructured modifiers (their ordering is intentional)
     val unstructuredModifiers = cause.unstructuredModifiers ++
-                                source.Modifiers ++ target.Definition.Modifiers
+      source.Modifiers ++ target.Definition.Modifiers
     //apply
     var damage = selector(source) + staticModifiers.foldLeft(0)(_ + selector(_))
     unstructuredModifiers.foreach { mod => damage = mod.calculate(damage, data) }

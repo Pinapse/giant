@@ -127,9 +127,11 @@ class LoginActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], conne
 
     // https://stackoverflow.com/a/46332228
     // hash password (like the launcher sends)
-    val hashedPassword = MessageDigest.getInstance("SHA-256")
+    val hashedPassword = MessageDigest
+      .getInstance("SHA-256")
       .digest(saltedPassword.getBytes("UTF-8"))
-      .map("%02x".format(_)).mkString
+      .map("%02x".format(_))
+      .mkString
 
     // bcrypt hash for DB storage
     val bcryptedPassword = hashedPassword.bcryptBounded(bcryptRounds)
@@ -172,7 +174,7 @@ class LoginActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], conne
 
             // generate bcrypted passwords
             val bcryptedPassword = generateNewPassword(username, password)
-            val passhash = password.bcryptBounded(bcryptRounds)
+            val passhash         = password.bcryptBounded(bcryptRounds)
 
             // save bcrypted password hash to DB
             ctx.run(
@@ -195,14 +197,12 @@ class LoginActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], conne
 
       login <- accountOption match {
         case Some(account) =>
-
           // remember: this is the in client "StagingTest" login handling
           // the password is send in clear and needs to be checked against the "old" (only bcrypted) passhash
           // if there ever is a way to update the password in the future passhash and password need be updated
           (account.inactive, password.isBcryptedBounded(account.passhash)) match {
 
             case (false, true) =>
-
               accountIntermediary ! StoreAccountData(newToken, Account(account.id, account.username, account.gm))
               val future = ctx.run(
                 query[persistence.Login].insert(
@@ -263,7 +263,6 @@ class LoginActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], conne
       accountOption <- accountsExact.headOption match {
 
         case Some(account) =>
-
           // token expires after 2 hours
           // new connections and players leaving a world server will return to desktop
           if (LocalDateTime.now().isAfter(account.tokenCreated.get.plusHours(2))) {
@@ -283,15 +282,14 @@ class LoginActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], conne
           (account.inactive, account.token.getOrElse("") == token) match {
 
             case (false, true) =>
-
               accountIntermediary ! StoreAccountData(newToken, Account(account.id, account.username, account.gm))
               val future = ctx.run(
                 query[persistence.Login].insert(
-                  _.accountId -> lift(account.id),
-                  _.ipAddress -> lift(ipAddress),
+                  _.accountId         -> lift(account.id),
+                  _.ipAddress         -> lift(ipAddress),
                   _.canonicalHostname -> lift(canonicalHostName),
-                  _.hostname -> lift(hostName),
-                  _.port -> lift(port)
+                  _.hostname          -> lift(hostName),
+                  _.port              -> lift(port)
                 )
               )
 
@@ -457,7 +455,7 @@ class LoginActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], conne
   }
 
   def generateToken() = {
-    val r = new scala.util.Random
+    val r  = new scala.util.Random
     val sb = new StringBuilder
     for (_ <- 1 to 31) {
       sb.append(r.nextPrintableChar())

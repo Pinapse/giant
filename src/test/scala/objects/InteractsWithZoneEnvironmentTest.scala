@@ -28,7 +28,7 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
   "InteractsWithZoneEnvironment" should {
     "not interact with any environment when it does not encroach any environment" in {
       val testProbe = TestProbe()
-      val obj = InteractsWithZoneEnvironmentTest.testObject()
+      val obj       = InteractsWithZoneEnvironmentTest.testObject()
       obj.Zone = testZone
       obj.Actor = testProbe.ref
 
@@ -39,17 +39,17 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
     "acknowledge interaction when moved into the critical region of a registered environment object (just once)" in {
       val testProbe = TestProbe()
-      val obj = InteractsWithZoneEnvironmentTest.testObject()
+      val obj       = InteractsWithZoneEnvironmentTest.testObject()
       obj.Zone = testZone
       obj.Actor = testProbe.ref
 
-      obj.Position = Vector3(1,1,-2)
+      obj.Position = Vector3(1, 1, -2)
       obj.zoneInteractions()
       val msg = testProbe.receiveOne(max = 250 milliseconds)
       assert(
         msg match {
           case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-          case _ => false
+          case _                                   => false
         }
       )
       obj.zoneInteractions()
@@ -58,27 +58,27 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
     "acknowledge ceasation of interaction when moved out of a previous occupied the critical region (just once)" in {
       val testProbe = TestProbe()
-      val obj = InteractsWithZoneEnvironmentTest.testObject()
+      val obj       = InteractsWithZoneEnvironmentTest.testObject()
       obj.Zone = testZone
       obj.Actor = testProbe.ref
 
-      obj.Position = Vector3(1,1,-2)
+      obj.Position = Vector3(1, 1, -2)
       obj.zoneInteractions()
       val msg1 = testProbe.receiveOne(max = 250 milliseconds)
       assert(
         msg1 match {
           case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-          case _ => false
+          case _                                   => false
         }
       )
 
-      obj.Position = Vector3(1,1,1)
+      obj.Position = Vector3(1, 1, 1)
       obj.zoneInteractions()
       val msg2 = testProbe.receiveOne(max = 250 milliseconds)
       assert(
         msg2 match {
           case EscapeFromEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-          case _ => false
+          case _                              => false
         }
       )
       obj.zoneInteractions()
@@ -87,27 +87,27 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
     "transition between two different critical regions when the regions that the same attribute" in {
       val testProbe = TestProbe()
-      val obj = InteractsWithZoneEnvironmentTest.testObject()
+      val obj       = InteractsWithZoneEnvironmentTest.testObject()
       obj.Zone = testZone
       obj.Actor = testProbe.ref
 
-      obj.Position = Vector3(7,7,-2)
+      obj.Position = Vector3(7, 7, -2)
       obj.zoneInteractions()
       val msg1 = testProbe.receiveOne(max = 250 milliseconds)
       assert(
         msg1 match {
           case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-          case _ => false
+          case _                                   => false
         }
       )
 
-      obj.Position = Vector3(12,7,-2)
+      obj.Position = Vector3(12, 7, -2)
       obj.zoneInteractions()
       val msg2 = testProbe.receiveOne(max = 250 milliseconds)
       assert(
         msg2 match {
           case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool2)
-          case _ => false
+          case _                                   => false
         }
       )
       assert(pool1.attribute == pool2.attribute)
@@ -115,33 +115,33 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
     "transition between two different critical regions when the regions have different attributes" in {
       val testProbe = TestProbe()
-      val obj = InteractsWithZoneEnvironmentTest.testObject()
+      val obj       = InteractsWithZoneEnvironmentTest.testObject()
       obj.Zone = testZone
       obj.Actor = testProbe.ref
 
-      obj.Position = Vector3(7,7,-2)
+      obj.Position = Vector3(7, 7, -2)
       obj.zoneInteractions()
       val msg1 = testProbe.receiveOne(max = 250 milliseconds)
       assert(
         msg1 match {
           case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-          case _ => false
+          case _                                   => false
         }
       )
 
-      obj.Position = Vector3(7,12,-2)
+      obj.Position = Vector3(7, 12, -2)
       obj.zoneInteractions()
       val msgs = testProbe.receiveN(2, max = 250 milliseconds)
       assert(
         msgs.head match {
           case EscapeFromEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-          case _ => false
+          case _                              => false
         }
       )
       assert(
         msgs(1) match {
           case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool3)
-          case _ => false
+          case _                                   => false
         }
       )
       assert(pool1.attribute != pool3.attribute)
@@ -150,17 +150,17 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
   "when interactions are disallowed, end any current interaction" in {
     val testProbe = TestProbe()
-    val obj = InteractsWithZoneEnvironmentTest.testObject()
+    val obj       = InteractsWithZoneEnvironmentTest.testObject()
     obj.Zone = testZone
     obj.Actor = testProbe.ref
 
-    obj.Position = Vector3(1,1,-2)
+    obj.Position = Vector3(1, 1, -2)
     obj.zoneInteractions()
     val msg1 = testProbe.receiveOne(max = 250 milliseconds)
     assert(
       msg1 match {
         case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-        case _ => false
+        case _                                   => false
       }
     )
 
@@ -168,7 +168,7 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
     val msg2 = testProbe.receiveOne(max = 250 milliseconds)
     msg2 match {
       case EscapeFromEnvironment(o, b, _) => assert((o eq obj) && (b eq pool1))
-      case _ => assert( false)
+      case _                              => assert(false)
     }
     obj.zoneInteractions()
     testProbe.expectNoMessage(max = 500 milliseconds)
@@ -176,12 +176,12 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
   "when interactions are allowed, after having been disallowed, engage in any detected interaction" in {
     val testProbe = TestProbe()
-    val obj = InteractsWithZoneEnvironmentTest.testObject()
+    val obj       = InteractsWithZoneEnvironmentTest.testObject()
     obj.Zone = testZone
     obj.Actor = testProbe.ref
 
     obj.allowInteraction = false
-    obj.Position = Vector3(1,1,-2)
+    obj.Position = Vector3(1, 1, -2)
     obj.zoneInteractions()
     testProbe.expectNoMessage(max = 500 milliseconds)
 
@@ -190,7 +190,7 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
     assert(
       msg1 match {
         case InteractingWithEnvironment(o, b, _) => (o eq obj) && (b eq pool1)
-        case _ => false
+        case _                                   => false
       }
     )
   }
@@ -198,16 +198,15 @@ class InteractsWithZoneEnvironmentTest extends ActorTest {
 
 object InteractsWithZoneEnvironmentTest {
   def testObject(): PlanetSideServerObject with InteractsWithZone = {
-    new PlanetSideServerObject
-      with InteractsWithZone
-      with Vitality {
+    new PlanetSideServerObject with InteractsWithZone with Vitality {
       interaction(new InteractWithEnvironment())
       def Faction: PlanetSideEmpire.Value = PlanetSideEmpire.VS
-      def DamageModel = null
-      def Definition: ObjectDefinition with VitalityDefinition = new ObjectDefinition(objectId = 0) with VitalityDefinition {
-        Damageable = true
-        DrownAtMaxDepth = true
-      }
+      def DamageModel                     = null
+      def Definition: ObjectDefinition with VitalityDefinition =
+        new ObjectDefinition(objectId = 0) with VitalityDefinition {
+          Damageable = true
+          DrownAtMaxDepth = true
+        }
     }
   }
 }

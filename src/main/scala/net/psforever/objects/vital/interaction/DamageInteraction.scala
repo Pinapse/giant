@@ -19,20 +19,22 @@ import net.psforever.types.Vector3
   *                defaults to `System.currentTimeMills()` at object creation
   */
 final case class DamageInteraction(
-                                    target: SourceEntry,
-                                    hitPos: Vector3,
-                                    cause: DamageReason,
-                                    resolution: DamageResolution.Value,
-                                    hitTime: Long = System.currentTimeMillis()
-                                  ) {
+    target: SourceEntry,
+    hitPos: Vector3,
+    cause: DamageReason,
+    resolution: DamageResolution.Value,
+    hitTime: Long = System.currentTimeMillis()
+) {
+
   /**
     * If the cause of the original interaction can be attributed to some agency.
     * @return a connection between offender, victim, and method
     */
-  def adversarial: Option[Adversarial] = cause.adversary match {
-    case Some(adversity) => Some(Adversarial(adversity, target, cause.attribution))
-    case None            => None
-  }
+  def adversarial: Option[Adversarial] =
+    cause.adversary match {
+      case Some(adversity) => Some(Adversarial(adversity, target, cause.attribution))
+      case None            => None
+    }
 
   /**
     * Process the primary parameters from the interaction
@@ -63,6 +65,7 @@ final case class DamageInteraction(
 }
 
 object DamageInteraction {
+
   /**
     * Overloaded constructor for an interaction.
     * Shuffle the order of parameters; let time default.
@@ -72,7 +75,12 @@ object DamageInteraction {
     * @param hitPos the coordinate location where the damage was inflicted
     * @return a `DamageInteraction` object
     */
-  def apply(resolution: DamageResolution.Value, target: SourceEntry, cause: DamageReason, hitPos: Vector3): DamageInteraction = {
+  def apply(
+      resolution: DamageResolution.Value,
+      target: SourceEntry,
+      cause: DamageReason,
+      hitPos: Vector3
+  ): DamageInteraction = {
     DamageInteraction(
       target,
       hitPos,

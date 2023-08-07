@@ -30,23 +30,29 @@ import scala.concurrent.duration._
   * The consequences of losing NTU do not apply in this case;
   * the field tower is considered to have unlimited, unshared NTU.
   */
-trait AmenityAutoRepair
-  extends NtuStorageBehavior {
+trait AmenityAutoRepair extends NtuStorageBehavior {
   _: Damageable with RepairableEntity with Actor =>
+
   /** a dedicated reference to self that facilitates in receiving `NtuCommand.Grant` messages for auto-repair operation */
   private lazy val ntuGrantActorRef: TypedActorRef[NtuCommand.Grant] =
     new ClassicActorRefOps(self).toTyped[NtuCommand.Grant]
+
   /** the function that initializes auto-repair operations, if those operations have not yet started */
-  private var autoRepairStartFunc: ()=>Unit = startAutoRepairIfStopped
+  private var autoRepairStartFunc: () => Unit = startAutoRepairIfStopped
+
   /** the timer for requests for auto-repair-actionable resource deposits (NTU) */
-  private var autoRepairTimer: Cancellable  = Default.Cancellable
+  private var autoRepairTimer: Cancellable = Default.Cancellable
+
   /** indicate the current state of the task assignment;
     * `None` means no auto-repair operations;
     * `Some(0L)` means previous auto-repair task completed;
-    * `Some(time)` means that an auto-repair task is or was queued to occur at `time` */
+    * `Some(time)` means that an auto-repair task is or was queued to occur at `time`
+    */
   private var autoRepairQueueTask: Option[Long] = None
+
   /** repair can only occur in integer increments, so any non-integer portion of incremental repairs accumulates;
-    * once above a whole number, that number is extracted and applied to the base repair value */
+    * once above a whole number, that number is extracted and applied to the base repair value
+    */
   private var autoRepairOverflow: Float = 0f
 
   def AutoRepairObject: Amenity
@@ -60,17 +66,17 @@ trait AmenityAutoRepair
   }
 
   //nothing special
-  def HandleNtuOffer(sender: ActorRef, src: NtuContainer): Unit = { }
+  def HandleNtuOffer(sender: ActorRef, src: NtuContainer): Unit = {}
 
   /**
     * Stop the auto-repair timer.
     */
-  def StopNtuBehavior(sender : ActorRef) : Unit = {
+  def StopNtuBehavior(sender: ActorRef): Unit = {
     stopAutoRepair()
   }
 
   //nothing special
-  def HandleNtuRequest(sender: ActorRef, min: Float, max: Float): Unit = { }
+  def HandleNtuRequest(sender: ActorRef, min: Float, max: Float): Unit = {}
 
   /**
     * When reports of an NTU provision is returned to the requesting amenity,
@@ -79,13 +85,13 @@ trait AmenityAutoRepair
     * auto-repair executes a single tick.
     * @see `RepairableAmenity`
     */
-  def HandleNtuGrant(sender : ActorRef, src : NtuContainer, amount : Float) : Unit = {
+  def HandleNtuGrant(sender: ActorRef, src: NtuContainer, amount: Float): Unit = {
     val obj = AutoRepairObject
     obj.Definition.autoRepair match {
-      case Some(repair : AutoRepairStats) if obj.Health < obj.Definition.MaxHealth =>
+      case Some(repair: AutoRepairStats) if obj.Health < obj.Definition.MaxHealth =>
         autoRepairTimer.cancel()
         val modifiedRepairAmount = repair.amount * Config.app.game.amenityAutorepairRate
-        val wholeRepairAmount = modifiedRepairAmount.toInt
+        val wholeRepairAmount    = modifiedRepairAmount.toInt
         val overflowRepairAmount = modifiedRepairAmount - wholeRepairAmount
         val finalRepairAmount = if (autoRepairOverflow + overflowRepairAmount < 1) {
           autoRepairOverflow = autoRepairOverflow + overflowRepairAmount
@@ -99,7 +105,7 @@ trait AmenityAutoRepair
         PerformRepairs(obj, finalRepairAmount)
         obj.LogActivity(RepairFromAmenityAutoRepair(finalRepairAmount))
         val currentTime = System.currentTimeMillis()
-        val taskTime = currentTime - autoRepairQueueTask.getOrElse(currentTime)
+        val taskTime    = currentTime - autoRepairQueueTask.getOrElse(currentTime)
         autoRepairQueueTask = Some(0L)
         trySetupAutoRepairSubsequent(taskTime)
       case _ =>
@@ -141,7 +147,7 @@ trait AmenityAutoRepair
     */
   private def stopAutoRepairFunctionality(): Unit = {
     stopAutoRepair()
-    autoRepairStartFunc = ()=>{}
+    autoRepairStartFunc = () => {}
   }
 
   /**
@@ -151,7 +157,7 @@ trait AmenityAutoRepair
     */
   private def startAutoRepairIfStopped(): Unit = {
     val stallTime: Long = 15000L
-    if(autoRepairQueueTask.isEmpty || stallDetection(stallTime)) {
+    if (autoRepairQueueTask.isEmpty || stallDetection(stallTime)) {
       trySetupAutoRepairInitial()
     }
   }
@@ -204,12 +210,12 @@ trait AmenityAutoRepair
     !(before || autoRepairQueueTask.isEmpty)
   }
 
-/**
-  * Cancel any attempts at auto-repair
-  * by stopping any currently processing repair timer
-  * The operation can be resumed.
-  * @see `stopAutoRepairFunctionality`
-  */
+  /**
+    * Cancel any attempts at auto-repair
+    * by stopping any currently processing repair timer
+    * The operation can be resumed.
+    * @see `stopAutoRepairFunctionality`
+    */
   final def stopAutoRepair(): Unit = {
     autoRepairTimer.cancel()
     autoRepairOverflow = 0
@@ -255,22 +261,22 @@ trait AmenityAutoRepair
     }
   }
 
-    /**
-      * As long as setup information regarding the auto-repair process can be provided,
-      * perform the setup for the auto-repair operation.
-      * @see `BuildingActor.Ntu`
-      * @see `NtuCommand.Request`
-      * @see `scheduleOnce`
-      * @param delay the delay before the message is sent (ms)
-      * @param drain the amount of NTU being levied as a cost for auto-repair operation
-      *              (the responding entity determines how to satisfy this cost)
-      */
+  /**
+    * As long as setup information regarding the auto-repair process can be provided,
+    * perform the setup for the auto-repair operation.
+    * @see `BuildingActor.Ntu`
+    * @see `NtuCommand.Request`
+    * @see `scheduleOnce`
+    * @param delay the delay before the message is sent (ms)
+    * @param drain the amount of NTU being levied as a cost for auto-repair operation
+    *              (the responding entity determines how to satisfy this cost)
+    */
   private def setupAutoRepair(delay: Long, drain: Float): Unit = {
     import scala.concurrent.ExecutionContext.Implicits.global
     autoRepairTimer.cancel()
     autoRepairQueueTask = Some(System.currentTimeMillis() + delay)
     val modifiedDrain = drain * Config.app.game.amenityAutorepairDrainRate //doubled intentionally
-    autoRepairTimer = if(AutoRepairObject.Owner == Building.NoBuilding) {
+    autoRepairTimer = if (AutoRepairObject.Owner == Building.NoBuilding) {
       //without an owner, auto-repair freely
       context.system.scheduler.scheduleOnce(
         delay milliseconds,

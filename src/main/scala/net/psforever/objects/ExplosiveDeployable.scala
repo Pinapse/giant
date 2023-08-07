@@ -25,9 +25,7 @@ import net.psforever.services.local.{LocalAction, LocalServiceMessage}
 
 import scala.concurrent.duration._
 
-class ExplosiveDeployable(cdef: ExplosiveDeployableDefinition)
-  extends Deployable(cdef)
-    with JammableUnit {
+class ExplosiveDeployable(cdef: ExplosiveDeployableDefinition) extends Deployable(cdef) with JammableUnit {
 
   override def Definition: ExplosiveDeployableDefinition = cdef
 }
@@ -36,8 +34,7 @@ object ExplosiveDeployable {
   final case class TriggeredBy(obj: PlanetSideServerObject)
 }
 
-class ExplosiveDeployableDefinition(private val objectId: Int)
-  extends DeployableDefinition(objectId) {
+class ExplosiveDeployableDefinition(private val objectId: Int) extends DeployableDefinition(objectId) {
   Name = "explosive_deployable"
   DeployCategory = DeployableCategory.Mines
   Model = SimpleResolutions.calculate
@@ -55,8 +52,7 @@ class ExplosiveDeployableDefinition(private val objectId: Int)
   }
 
   override def Initialize(obj: Deployable, context: ActorContext) = {
-    obj.Actor =
-      context.actorOf(Props(classOf[MineDeployableControl], obj), PlanetSideServerObject.UniqueActorName(obj))
+    obj.Actor = context.actorOf(Props(classOf[MineDeployableControl], obj), PlanetSideServerObject.UniqueActorName(obj))
   }
 }
 
@@ -67,9 +63,9 @@ object ExplosiveDeployableDefinition {
 }
 
 abstract class ExplosiveDeployableControl(mine: ExplosiveDeployable)
-  extends Actor
-  with DeployableBehavior
-  with Damageable {
+    extends Actor
+    with DeployableBehavior
+    with Damageable {
   def DeployableObject = mine
   def DamageableObject = mine
 
@@ -83,8 +79,8 @@ abstract class ExplosiveDeployableControl(mine: ExplosiveDeployable)
       .orElse(takesDamage)
 
   override protected def PerformDamage(
-    target: Target,
-    applyDamageTo: Output
+      target: Target,
+      applyDamageTo: Output
   ): Unit = {
     if (mine.CanDamage) {
       val originalHealth = mine.Health
@@ -112,14 +108,15 @@ abstract class ExplosiveDeployableControl(mine: ExplosiveDeployable)
     */
   def CanDetonate(obj: Vitality with FactionAffinity, damage: Int, data: DamageInteraction): Boolean = {
     !mine.Destroyed && (if (damage == 0 && data.cause.source.SympatheticExplosion) {
-      Damageable.CanDamageOrJammer(mine, damage = 1, data)
-    } else {
-      Damageable.CanDamageOrJammer(mine, damage, data)
-    })
+                          Damageable.CanDamageOrJammer(mine, damage = 1, data)
+                        } else {
+                          Damageable.CanDamageOrJammer(mine, damage, data)
+                        })
   }
 }
 
 object ExplosiveDeployableControl {
+
   /**
     * na
     * @param target na
@@ -134,7 +131,7 @@ object ExplosiveDeployableControl {
     } else if (target.Health == 0) {
       DestructionAwareness(target, cause)
     } else if (!target.Jammed && Damageable.CanJammer(target, cause.interaction)) {
-      if ( {
+      if ({
         target.Jammed = cause.interaction.cause match {
           case o: ProjectileReason =>
             val radius = o.projectile.profile.DamageRadius
@@ -142,8 +139,7 @@ object ExplosiveDeployableControl {
           case _ =>
             true
         }
-      }
-      ) {
+      }) {
         if (target.Definition.DetonateOnJamming) {
           explodes(target, cause)
         }
@@ -176,7 +172,7 @@ object ExplosiveDeployableControl {
     * @param cause na
     */
   def DestructionAwareness(target: ExplosiveDeployable, cause: DamageResult): Unit = {
-    val zone = target.Zone
+    val zone        = target.Zone
     val attribution = DamageableEntity.attributionTo(cause, target.Zone)
     Deployables.AnnounceDestroyDeployable(
       target,
@@ -204,7 +200,9 @@ object ExplosiveDeployableControl {
     * @param obj a game entity that explodes
     * @return a function that resolves a potential target as detected
     */
-  def detectionForExplosiveSource(obj: PlanetSideGameObject): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
+  def detectionForExplosiveSource(
+      obj: PlanetSideGameObject
+  ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
     val up = Vector3.relativeUp(obj.Orientation) //check relativeUp; rotate as little as necessary!
     val g1 = obj.Definition.Geometry(obj)
     detectTarget(g1, up)
@@ -231,15 +229,14 @@ object ExplosiveDeployableControl {
     *        `false`, otherwise
     */
   def detectTarget(
-                    g1: VolumetricGeometry,
-                    up: Vector3
-                  )
-                  (
-                    obj1: PlanetSideGameObject,
-                    obj2: PlanetSideGameObject,
-                    maxDistance: Float
-                  ) : Boolean = {
-    val g2 = obj2.Definition.Geometry(obj2)
+      g1: VolumetricGeometry,
+      up: Vector3
+  )(
+      obj1: PlanetSideGameObject,
+      obj2: PlanetSideGameObject,
+      maxDistance: Float
+  ): Boolean = {
+    val g2  = obj2.Definition.Geometry(obj2)
     val dir = g2.center.asVector3 - g1.center.asVector3
     //val scalar = Vector3.ScalarProjection(dir, up)
     val point1 = g1.pointOnOutside(dir).asVector3
@@ -253,8 +250,7 @@ object ExplosiveDeployableControl {
   }
 }
 
-class MineDeployableControl(mine: ExplosiveDeployable)
-  extends ExplosiveDeployableControl(mine) {
+class MineDeployableControl(mine: ExplosiveDeployable) extends ExplosiveDeployableControl(mine) {
 
   def receive: Receive =
     commonMineBehavior
@@ -263,10 +259,12 @@ class MineDeployableControl(mine: ExplosiveDeployable)
           setTriggered(Some(obj), delay = 200)
 
         case MineDeployableControl.Triggered() =>
-          explodes(testForTriggeringTarget(
-            mine,
-            mine.Definition.innateDamage.map { _.DamageRadius }.getOrElse(mine.Definition.triggerRadius)
-          ))
+          explodes(
+            testForTriggeringTarget(
+              mine,
+              mine.Definition.innateDamage.map { _.DamageRadius }.getOrElse(mine.Definition.triggerRadius)
+            )
+          )
 
         case _ => ;
       }
@@ -279,9 +277,9 @@ class MineDeployableControl(mine: ExplosiveDeployable)
 
   def testForTriggeringTarget(mine: ExplosiveDeployable, range: Float): Option[PlanetSideServerObject] = {
     val position = mine.Position
-    val faction = mine.Faction
-    val range2 = range * range
-    val sector = mine.Zone.blockMap.sector(position, range)
+    val faction  = mine.Faction
+    val range2   = range * range
+    val sector   = mine.Zone.blockMap.sector(position, range)
     (sector.livePlayerList ++ sector.vehicleList)
       .find { thing => thing.Faction != faction && Vector3.DistanceSquared(thing.Position, position) < range2 }
   }
@@ -324,13 +322,12 @@ object MineDeployableControl {
     val deployableSource = DeployableSource(mine)
     val blame = mine.OwnerName match {
       case Some(name) =>
-        val(charId, exosuit, seatedIn): (Long, ExoSuitType.Value, Option[(SourceEntry, Int)]) = mine.Zone
-          .LivePlayers
+        val (charId, exosuit, seatedIn): (Long, ExoSuitType.Value, Option[(SourceEntry, Int)]) = mine.Zone.LivePlayers
           .find { _.Name.equals(name) } match {
           case Some(player) =>
             //if the owner is alive in the same zone as the mine, use data from their body to create the source
             (player.CharId, player.ExoSuit, PlayerSource.mountableAndSeat(player))
-          case None         =>
+          case None =>
             //if the owner is as dead as a corpse or is not in the same zone as the mine, use defaults
             (0L, ExoSuitType.Standard, None)
         }

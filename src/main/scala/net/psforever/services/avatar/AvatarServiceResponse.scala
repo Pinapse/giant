@@ -11,13 +11,16 @@ import net.psforever.packet.PlanetSideGamePacket
 import net.psforever.packet.game.objectcreate.ConstructorData
 import net.psforever.packet.game.ObjectCreateMessage
 import net.psforever.types.{ExoSuitType, PlanetSideEmpire, PlanetSideGUID, TransactionType, Vector3}
-import net.psforever.services.GenericEventBusMsg
+import net.psforever.services.GenericGuidEventBusMsg
 
 final case class AvatarServiceResponse(
     channel: String,
     avatar_guid: PlanetSideGUID,
     replyMessage: AvatarResponse.Response
-) extends GenericEventBusMsg
+) extends GenericGuidEventBusMsg {
+  def inner                = replyMessage
+  def guid: PlanetSideGUID = avatar_guid
+}
 
 object AvatarResponse {
   sealed trait Response
@@ -117,11 +120,11 @@ object AvatarResponse {
       old_inventory: List[(Equipment, PlanetSideGUID)],
       inventory: List[InventoryItem],
       drop: List[InventoryItem]
-  ) extends Response
+  )                                  extends Response
   final case class DropSpecialItem() extends Response
 
   final case class TeardownConnection() extends Response
   //  final case class PlayerStateShift(itemID : PlanetSideGUID) extends Response
-  final case class UseKit(kit_guid: PlanetSideGUID, kit_objid: Int) extends Response
+  final case class UseKit(kit_guid: PlanetSideGUID, kit_objid: Int)  extends Response
   final case class KitNotUsed(kit_guid: PlanetSideGUID, msg: String) extends Response
 }

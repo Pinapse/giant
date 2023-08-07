@@ -9,29 +9,30 @@ import net.psforever.types.{DriveState, PlanetSideEmpire, Vector3}
 final case class UniqueVehicle(spawnTime: Long, originalOwnerName: String) extends SourceUniqueness
 
 final case class VehicleSource(
-                                Definition: VehicleDefinition,
-                                Faction: PlanetSideEmpire.Value,
-                                health: Int,
-                                shields: Int,
-                                Position: Vector3,
-                                Orientation: Vector3,
-                                Velocity: Option[Vector3],
-                                deployed: DriveState.Value,
-                                occupants: List[SourceEntry],
-                                Modifiers: ResistanceProfile,
-                                unique: UniqueVehicle
-                              ) extends SourceWithHealthEntry with SourceWithShieldsEntry {
-  def Name: String                  = SourceEntry.NameFormat(Definition.Name)
-  def Health: Int                   = health
-  def Shields: Int                  = shields
-  def total: Int                    = health + shields
+    Definition: VehicleDefinition,
+    Faction: PlanetSideEmpire.Value,
+    health: Int,
+    shields: Int,
+    Position: Vector3,
+    Orientation: Vector3,
+    Velocity: Option[Vector3],
+    deployed: DriveState.Value,
+    occupants: List[SourceEntry],
+    Modifiers: ResistanceProfile,
+    unique: UniqueVehicle
+) extends SourceWithHealthEntry
+    with SourceWithShieldsEntry {
+  def Name: String = SourceEntry.NameFormat(Definition.Name)
+  def Health: Int  = health
+  def Shields: Int = shields
+  def total: Int   = health + shields
 }
 
 object VehicleSource {
   def apply(obj: Vehicle): VehicleSource = {
     val faction = obj.HackedBy match {
       case Some(o) => o.player.Faction
-      case _ => obj.Faction
+      case _       => obj.Faction
     }
     val vehicle = VehicleSource(
       obj.Definition,
@@ -47,17 +48,18 @@ object VehicleSource {
       UniqueVehicle(
         obj.History.headOption match {
           case Some(entry) => entry.time
-          case None => 0L
+          case None        => 0L
         },
         obj.OriginalOwnerName.getOrElse("none")
       )
     )
     vehicle.copy(occupants = {
-      obj.Seats.map { case (seatNumber, seat) =>
-        seat.occupant match {
-          case Some(p) => PlayerSource.inSeat(p, vehicle, seatNumber) //shallow
-          case _ => PlayerSource.Nobody
-        }
+      obj.Seats.map {
+        case (seatNumber, seat) =>
+          seat.occupant match {
+            case Some(p) => PlayerSource.inSeat(p, vehicle, seatNumber) //shallow
+            case _       => PlayerSource.Nobody
+          }
       }.toList
     })
   }

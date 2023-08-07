@@ -110,7 +110,7 @@ object AvatarConverter {
   }
 
   def MakeCharacterData(obj: Player): (Boolean, Boolean) => CharacterData = {
-    val avatar = obj.avatar
+    val avatar       = obj.avatar
     val uniformStyle = avatar.br.uniformStyle
     val cosmetics = if (BattleRank.showCosmetics(uniformStyle)) {
       avatar.decoration.cosmetics
@@ -193,8 +193,8 @@ object AvatarConverter {
   def MakeDetailedInventoryData(obj: Player): InventoryData = {
     InventoryData(
       MakeHolsters(obj, BuildDetailedEquipment) ++
-       MakeFifthSlot(obj) ++
-       MakeInventory(obj)
+        MakeFifthSlot(obj) ++
+        MakeInventory(obj)
     )
   }
 
@@ -241,15 +241,27 @@ object AvatarConverter {
   private def MakeFifthSlot(obj: Player): List[InternalSlot] = {
     obj.Slot(slot = 5).Equipment match {
       case Some(equip) =>
-        List(InternalSlot(
-          equip.Definition.ObjectId,
-          equip.GUID,
-          5,
-          DetailedLockerContainerData(
-            CommonFieldData(PlanetSideEmpire.NEUTRAL, bops=false, alternate=false, v1=true, None, jammered=false, None, None, PlanetSideGUID(0)),
-            None
+        List(
+          InternalSlot(
+            equip.Definition.ObjectId,
+            equip.GUID,
+            5,
+            DetailedLockerContainerData(
+              CommonFieldData(
+                PlanetSideEmpire.NEUTRAL,
+                bops = false,
+                alternate = false,
+                v1 = true,
+                None,
+                jammered = false,
+                None,
+                None,
+                PlanetSideGUID(0)
+              ),
+              None
+            )
           )
-        ))
+        )
       case _ =>
         Nil
     }

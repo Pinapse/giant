@@ -29,9 +29,9 @@ class AutoRepairRequestNtuTest extends FreedContextActorTest {
   ServiceManager.boot
   val player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
   player.Spawn()
-  val weapon = new Tool(GlobalDefinitions.suppressor)
+  val weapon   = new Tool(GlobalDefinitions.suppressor)
   val terminal = new Terminal(AutoRepairTest.terminal_definition)
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 10))
+  val guid     = new NumberPoolHub(new MaxNumberSource(max = 10))
   val zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}
     GUID(guid)
@@ -90,9 +90,9 @@ class AutoRepairRequestNtuRepeatTest extends FreedContextActorTest {
   ServiceManager.boot
   val player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
   player.Spawn()
-  val weapon = new Tool(GlobalDefinitions.suppressor)
+  val weapon   = new Tool(GlobalDefinitions.suppressor)
   val terminal = new Terminal(AutoRepairTest.terminal_definition)
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 10))
+  val guid     = new NumberPoolHub(new MaxNumberSource(max = 10))
   val zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}
     GUID(guid)
@@ -154,9 +154,9 @@ class AutoRepairNoRequestNtuTest extends FreedContextActorTest {
   ServiceManager.boot
   val player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
   player.Spawn()
-  val weapon = new Tool(GlobalDefinitions.suppressor)
+  val weapon   = new Tool(GlobalDefinitions.suppressor)
   val terminal = new Terminal(AutoRepairTest.terminal_definition)
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 10))
+  val guid     = new NumberPoolHub(new MaxNumberSource(max = 10))
   val zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}
     GUID(guid)
@@ -212,9 +212,9 @@ class AutoRepairRestoreRequestNtuTest extends FreedContextActorTest {
   ServiceManager.boot
   val player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
   player.Spawn()
-  val weapon = new Tool(GlobalDefinitions.suppressor)
+  val weapon   = new Tool(GlobalDefinitions.suppressor)
   val terminal = new Terminal(AutoRepairTest.terminal_definition)
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 10))
+  val guid     = new NumberPoolHub(new MaxNumberSource(max = 10))
   val zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}
     GUID(guid)
@@ -267,7 +267,7 @@ class AutoRepairRestoreRequestNtuTest extends FreedContextActorTest {
       val buildingMsg = buildingProbe.receiveOne(max = 600 milliseconds)
       assert(buildingMsg match {
         case BuildingActor.Ntu(NtuCommand.Request(_, _)) => true
-        case _                                               => false
+        case _                                           => false
       })
     }
   }
@@ -277,9 +277,9 @@ class AutoRepairRepairWithNtuTest extends FreedContextActorTest {
   ServiceManager.boot
   val player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
   player.Spawn()
-  val weapon = new Tool(GlobalDefinitions.suppressor)
+  val weapon   = new Tool(GlobalDefinitions.suppressor)
   val terminal = new Terminal(AutoRepairTest.terminal_definition)
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 10))
+  val guid     = new NumberPoolHub(new MaxNumberSource(max = 10))
   val zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}
     GUID(guid)
@@ -339,9 +339,9 @@ class AutoRepairRepairWithNtuUntilDoneTest extends FreedContextActorTest {
   ServiceManager.boot
   val player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
   player.Spawn()
-  val weapon = new Tool(GlobalDefinitions.suppressor)
+  val weapon   = new Tool(GlobalDefinitions.suppressor)
   val terminal = new Terminal(AutoRepairTest.terminal_definition)
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 10))
+  val guid     = new NumberPoolHub(new MaxNumberSource(max = 10))
   val zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}
     GUID(guid)
@@ -388,7 +388,7 @@ class AutoRepairRepairWithNtuUntilDoneTest extends FreedContextActorTest {
       avatarProbe.receiveOne(max = 200 milliseconds) //health update event
       assert(terminal.Health < terminal.MaxHealth)
       var i = 0
-      while(terminal.Health < terminal.MaxHealth && i < 100) {
+      while (terminal.Health < terminal.MaxHealth && i < 100) {
         i += 1 //safety counter
         val buildingMsg = buildingProbe.receiveOne(max = 1000 milliseconds)
         buildingMsg match {

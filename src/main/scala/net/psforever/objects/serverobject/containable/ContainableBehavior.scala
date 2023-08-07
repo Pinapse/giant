@@ -138,11 +138,11 @@ trait ContainableBehavior {
   /* Functions (item transfer) */
 
   protected def ContainableMoveItem(
-                                   destination: PlanetSideServerObject with Container,
-                                   equipment: Equipment,
-                                   destSlot: Int,
-                                   msg: Any
-                                 ) : Unit = {
+      destination: PlanetSideServerObject with Container,
+      equipment: Equipment,
+      destSlot: Int,
+      msg: Any
+  ): Unit = {
     if (ContainableBehavior.TestPutItemInSlot(destination, equipment, destSlot).nonEmpty) { //test early, before we try to move the item
       val source = ContainerObject
       val item   = equipment
@@ -379,8 +379,7 @@ object ContainableBehavior {
       item: Equipment
   ): (Option[Int], Option[Equipment]) = {
     source.Find(item) match {
-      case slot @ Some(index)
-        if ContainableBehavior.PermitEquipmentExtract(source, item, index)=>
+      case slot @ Some(index) if ContainableBehavior.PermitEquipmentExtract(source, item, index) =>
         source.Slot(index).Equipment = None
         if (source.Slot(index).Equipment.isEmpty) {
           (slot, Some(item))
@@ -410,8 +409,7 @@ object ContainableBehavior {
       slot: Int
   ): (Option[Int], Option[Equipment]) = {
     source.Slot(slot).Equipment match {
-      case Some(thing)
-        if ContainableBehavior.PermitEquipmentExtract(source, thing, slot) =>
+      case Some(thing) if ContainableBehavior.PermitEquipmentExtract(source, thing, slot) =>
         if ((source.Slot(slot).Equipment = None).isEmpty) {
           (Some(slot), Some(thing))
         } else {
@@ -515,7 +513,8 @@ object ContainableBehavior {
   def TryPutItemAway(destination: PlanetSideServerObject with Container, item: Equipment): Option[Int] = {
     destination.Fit(item) match {
       case out @ Some(dest)
-          if ContainableBehavior.PermitEquipmentStow(destination, item, dest) && (destination.Slot(dest).Equipment = item)
+          if ContainableBehavior.PermitEquipmentStow(destination, item, dest) && (destination.Slot(dest).Equipment =
+            item)
             .contains(item) =>
         out
       case _ =>
@@ -595,10 +594,10 @@ object ContainableBehavior {
     *        `false`, otherwise
     */
   def PermitEquipmentExtract(
-                              source: PlanetSideServerObject with Container,
-                              equipment: Equipment,
-                              slot: Int
-                            ): Boolean = {
+      source: PlanetSideServerObject with Container,
+      equipment: Equipment,
+      slot: Int
+  ): Boolean = {
     source match {
       case v: Vehicle if v.VisibleSlots.contains(slot) =>
         //can not remove equipment slot items if vehicle is jammed
@@ -620,23 +619,21 @@ object ContainableBehavior {
     *        `false`, otherwise
     */
   def PermitEquipmentStow(
-                           destination: PlanetSideServerObject with Container,
-                           equipment: Equipment,
-                           dest: Int
-                         ): Boolean = {
+      destination: PlanetSideServerObject with Container,
+      equipment: Equipment,
+      dest: Int
+  ): Boolean = {
     import net.psforever.objects.{BoomerTrigger, Player}
     equipment match {
       case _: BoomerTrigger =>
         //a BoomerTrigger can only be stowed in a player's holsters or inventory
         //this is only a requirement until they, and their Boomer explosive complement, are cleaned-up properly
         destination.isInstanceOf[Player]
-      case weapon: Tool
-        if weapon.Size == EquipmentSize.BFRArmWeapon || weapon.Size == EquipmentSize.BFRGunnerWeapon =>
+      case weapon: Tool if weapon.Size == EquipmentSize.BFRArmWeapon || weapon.Size == EquipmentSize.BFRGunnerWeapon =>
         //Battleframe weaponry must be placed in an appropriate equipment mount spot, or held in the player's free hand
         //if in the vehicle slots, then the vehicle must not be jammed
         destination match {
-          case v: Vehicle
-            if GlobalDefinitions.isBattleFrameVehicle(v.Definition) =>
+          case v: Vehicle if GlobalDefinitions.isBattleFrameVehicle(v.Definition) =>
             v.VisibleSlots.contains(dest) && !v.Jammed
           case _: Player =>
             dest == Player.FreeHandSlot

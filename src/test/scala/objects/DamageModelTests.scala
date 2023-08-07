@@ -269,7 +269,7 @@ class DamageCalculationsTests extends Specification {
       Vector3(2, 2, 0),
       Vector3.Zero
     )
-    val minDamageBase = charge_weapon.Projectile.Charging.get.min.Damage0
+    val minDamageBase    = charge_weapon.Projectile.Charging.get.min.Damage0
     val chargeBaseDamage = charge_weapon.Projectile.Damage0
 
     "charge (none)" in {
@@ -301,7 +301,8 @@ class DamageCalculationsTests extends Specification {
         ),
         Vector3(15, 0, 0)
       )
-      /*val damage = */SpikerChargeDamage.calculate(chargeBaseDamage, rescprojectile)
+      /*val damage = */
+      SpikerChargeDamage.calculate(chargeBaseDamage, rescprojectile)
       ok
     }
 
@@ -316,7 +317,8 @@ class DamageCalculationsTests extends Specification {
         ),
         Vector3(15, 0, 0)
       )
-      /*val damage = */SpikerChargeDamage.calculate(chargeBaseDamage, rescprojectile)
+      /*val damage = */
+      SpikerChargeDamage.calculate(chargeBaseDamage, rescprojectile)
       ok
     }
 

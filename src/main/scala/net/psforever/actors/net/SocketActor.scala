@@ -19,6 +19,7 @@ import scala.collection.mutable
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.{DurationDouble, DurationInt}
 import scala.util.Random
+import io.prometheus.client.Counter
 
 /** SocketActor creates a UDP socket, receives packets and forwards them to MiddlewareActor
   * There is only one SocketActor, but each connected client gets its own MiddlewareActor
@@ -44,7 +45,7 @@ object SocketActor {
       case Udp.Bound(_) =>
         ref ! Bound(sender())
 
-      case Udp.CommandFailed(_:Udp.Bind) =>
+      case Udp.CommandFailed(_: Udp.Bind) =>
         context.system.terminate()
     }
   }
@@ -95,6 +96,23 @@ object SocketActor {
         case message: Udp.Event   => UdpEventMessage(message)
       }
   }
+
+  final val socketActorIncomingPackets =
+    Counter
+      .build()
+      .name("socket_actor_incoming_packets")
+      .help("The number of packets that SocketActor received.")
+      .register()
+  final val socketActorIncomingBytes =
+    Counter.build().name("socket_actor_incoming_bytes").help("The bytes that SocketActor received.").register()
+  final val socketActorOutgoingPackets =
+    Counter
+      .build()
+      .name("socket_actor_outgoing_packets")
+      .help("The number of packets that SocketActor sent.")
+      .register()
+  final val socketActorOutgoingBytes =
+    Counter.build().name("socket_actor_outgoing_bytes").help("The bytes that SocketActor sent.").register()
 }
 
 class SocketActor(
@@ -140,15 +158,15 @@ class SocketActor(
     packetActors.keys.foreach(addr => {
       packetActors.get(addr) match {
         case Some(child) =>
-          if(
+          if (
             (incomingTimes.get(addr) match {
-              case Some(time) =>  now - time > Config.app.network.session.inboundGraceTime.toMillis
+              case Some(time) => now - time > Config.app.network.session.inboundGraceTime.toMillis
               case _          => false
             }) ||
             (outgoingTimes.get(addr) match {
-              case Some(time) =>  now - time > Config.app.network.session.outboundGraceTime.toMillis
-            case _            => false
-          })
+              case Some(time) => now - time > Config.app.network.session.outboundGraceTime.toMillis
+              case _          => false
+            })
           ) {
             context.self ! StopChild(child)
           }
@@ -191,6 +209,8 @@ class SocketActor(
                   packetActors(remote) = ref
                   ref
               }
+              socketActorIncomingPackets.inc()
+              socketActorIncomingBytes.inc(data.length)
               ref ! MiddlewareActor.Receive(data.toByteVector)
               Behaviors.same
 
@@ -201,8 +221,10 @@ class SocketActor(
 
         case UdpCommandMessage(message) =>
           message match {
-            case Udp.Send(_, remote, _) =>
+            case Udp.Send(data, remote, _) =>
               outgoingTimes(remote) = System.currentTimeMillis()
+              socketActorOutgoingPackets.inc()
+              socketActorOutgoingBytes.inc(data.length)
             case _ => ()
           }
           socket ! message

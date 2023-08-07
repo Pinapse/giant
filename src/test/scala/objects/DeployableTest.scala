@@ -310,27 +310,30 @@ class ShieldGeneratorDeployableTest extends Specification {
 }
 
 class ExplosiveDeployableJammerTest extends ActorTest {
-  val guid = new NumberPoolHub(new MaxNumberSource(10))
+  val guid        = new NumberPoolHub(new MaxNumberSource(10))
   val eventsProbe = new TestProbe(system)
 
-  val j_mine = Deployables.Make(DeployedItem.jammer_mine)().asInstanceOf[ExplosiveDeployable] //guid=1
-  val avatar1 = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player1 = Player(avatar1) //guid=3
-  val avatar2 = Avatar(0, "TestCharacter2", PlanetSideEmpire.NC, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player2 = Player(avatar2) //guid=4
-  val weapon = Tool(GlobalDefinitions.jammer_grenade) //guid=5
+  val j_mine         = Deployables.Make(DeployedItem.jammer_mine)().asInstanceOf[ExplosiveDeployable] //guid=1
+  val avatar1        = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player1        = Player(avatar1)                                                                //guid=3
+  val avatar2        = Avatar(0, "TestCharacter2", PlanetSideEmpire.NC, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player2        = Player(avatar2)                                                                //guid=4
+  val weapon         = Tool(GlobalDefinitions.jammer_grenade)                                         //guid=5
   val deployableList = new mutable.ListBuffer[Deployable]()
   val zone = new Zone("test", new ZoneMap("test"), 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools() = {}
     GUID(guid)
-    override def Activity: ActorRef = eventsProbe.ref
+    override def Activity: ActorRef     = eventsProbe.ref
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
-    override def Players = List(avatar1, avatar2)
-    override def LivePlayers = List(player1, player2)
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
+    override def Players                = List(avatar1, avatar2)
+    override def LivePlayers            = List(player1, player2)
   }
   player1.Spawn()
   player2.Spawn()
@@ -363,21 +366,27 @@ class ExplosiveDeployableJammerTest extends ActorTest {
       assert(!j_mine.Destroyed)
 
       j_mine.Actor ! Vitality.Damage(applyDamageToJ)
-      val eventMsgs  = eventsProbe.receiveN(2, 200 milliseconds)
+      val eventMsgs = eventsProbe.receiveN(2, 200 milliseconds)
       eventMsgs.head match {
         case LocalServiceMessage(
-          "NC",
-          LocalAction.DeployableMapIcon(
-            ValidPlanetSideGUID(0),
-            DeploymentAction.Dismiss,
-            DeployableInfo(ValidPlanetSideGUID(1), DeployableIcon.DisruptorMine, Vector3.Zero, ValidPlanetSideGUID(0))
-          )
-        ) => ;
+              "NC",
+              LocalAction.DeployableMapIcon(
+                ValidPlanetSideGUID(0),
+                DeploymentAction.Dismiss,
+                DeployableInfo(
+                  ValidPlanetSideGUID(1),
+                  DeployableIcon.DisruptorMine,
+                  Vector3.Zero,
+                  ValidPlanetSideGUID(0)
+                )
+              )
+            ) =>
+          ;
         case _ => assert(false, "")
       }
       eventMsgs(1) match {
         case AvatarServiceMessage("test", AvatarAction.Destroy(PlanetSideGUID(1), _, Service.defaultPlayerGUID, _)) => ;
-        case _ => assert(false, "")
+        case _                                                                                                      => assert(false, "")
       }
       assert(j_mine.Destroyed)
     }
@@ -385,29 +394,32 @@ class ExplosiveDeployableJammerTest extends ActorTest {
 }
 
 class ExplosiveDeployableJammerExplodeTest extends ActorTest {
-  val guid = new NumberPoolHub(new MaxNumberSource(10))
-  val eventsProbe = new TestProbe(system)
+  val guid         = new NumberPoolHub(new MaxNumberSource(10))
+  val eventsProbe  = new TestProbe(system)
   val player1Probe = new TestProbe(system)
   val player2Probe = new TestProbe(system)
 
-  val h_mine = Deployables.Make(DeployedItem.he_mine)().asInstanceOf[ExplosiveDeployable] //guid=2
-  val avatar1 = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player1 = Player(avatar1) //guid=3
-  val avatar2 = Avatar(0, "TestCharacter2", PlanetSideEmpire.NC, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player2 = Player(avatar2) //guid=4
-  val weapon = Tool(GlobalDefinitions.jammer_grenade) //guid=5
+  val h_mine         = Deployables.Make(DeployedItem.he_mine)().asInstanceOf[ExplosiveDeployable] //guid=2
+  val avatar1        = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player1        = Player(avatar1)                                                            //guid=3
+  val avatar2        = Avatar(0, "TestCharacter2", PlanetSideEmpire.NC, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player2        = Player(avatar2)                                                            //guid=4
+  val weapon         = Tool(GlobalDefinitions.jammer_grenade)                                     //guid=5
   val deployableList = new mutable.ListBuffer[Deployable]()
   val zone = new Zone("test", new ZoneMap("test"), 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools() = {}
     GUID(guid)
-    override def Activity: ActorRef = eventsProbe.ref
+    override def Activity: ActorRef     = eventsProbe.ref
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
-    override def Players = List(avatar1, avatar2)
-    override def LivePlayers = List(player1, player2)
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
+    override def Players                = List(avatar1, avatar2)
+    override def LivePlayers            = List(player1, player2)
 
     this.actor = new TestProbe(system).ref.toTyped[ZoneActor.Command]
   }
@@ -415,7 +427,7 @@ class ExplosiveDeployableJammerExplodeTest extends ActorTest {
   player1.Actor = player1Probe.ref
   avatar2.deployables.AddOverLimit(h_mine) //cram it down your throat
   player2.Spawn()
-  player2.Position = Vector3(10,0,0)
+  player2.Position = Vector3(10, 0, 0)
   player2.Actor = player2Probe.ref
   guid.register(h_mine, 2)
   guid.register(player1, 3)
@@ -429,8 +441,8 @@ class ExplosiveDeployableJammerExplodeTest extends ActorTest {
   zone.blockMap.addTo(player1)
   zone.blockMap.addTo(player2)
 
-  val pSource     = PlayerSource(player1)
-  val projectile  = weapon.Projectile
+  val pSource    = PlayerSource(player1)
+  val projectile = weapon.Projectile
   val resolved = DamageInteraction(
     SourceEntry(h_mine),
     ProjectileReason(
@@ -449,34 +461,36 @@ class ExplosiveDeployableJammerExplodeTest extends ActorTest {
 
       h_mine.Actor ! Vitality.Damage(applyDamageToH)
       val eventMsgs = eventsProbe.receiveN(4, 200 milliseconds)
-      val p1Msgs = player1Probe.receiveN(1, 200 milliseconds)
-      val p2Msgs = player2Probe.receiveN(1, 200 milliseconds)
+      val p1Msgs    = player1Probe.receiveN(1, 200 milliseconds)
+      val p2Msgs    = player2Probe.receiveN(1, 200 milliseconds)
       eventMsgs.head match {
         case Zone.HotSpot.Conflict(target, attacker, _)
-          if (target.Definition eq h_mine.Definition) && (attacker eq pSource) => ;
+            if (target.Definition eq h_mine.Definition) && (attacker eq pSource) =>
+          ;
         case _ => assert(false, "")
       }
       eventMsgs(1) match {
-        case LocalServiceMessage("test", LocalAction.Detonate(PlanetSideGUID(2), target))
-          if target eq h_mine => ;
-        case _ => assert(false, "")
+        case LocalServiceMessage("test", LocalAction.Detonate(PlanetSideGUID(2), target)) if target eq h_mine => ;
+        case _                                                                                                => assert(false, "")
       }
       eventMsgs(2) match {
         case LocalServiceMessage(
-          "NC",
-          LocalAction.DeployableMapIcon(
-            PlanetSideGUID(0),
-            DeploymentAction.Dismiss,
-            DeployableInfo(PlanetSideGUID(2), DeployableIcon.HEMine, _, PlanetSideGUID(0))
-          )
-        )  => ;
+              "NC",
+              LocalAction.DeployableMapIcon(
+                PlanetSideGUID(0),
+                DeploymentAction.Dismiss,
+                DeployableInfo(PlanetSideGUID(2), DeployableIcon.HEMine, _, PlanetSideGUID(0))
+              )
+            ) =>
+          ;
         case _ => assert(false, "")
       }
       eventMsgs(3) match {
         case AvatarServiceMessage(
-          "test",
-          AvatarAction.Destroy(PlanetSideGUID(2), PlanetSideGUID(3), Service.defaultPlayerGUID, Vector3.Zero)
-        ) => ;
+              "test",
+              AvatarAction.Destroy(PlanetSideGUID(2), PlanetSideGUID(3), Service.defaultPlayerGUID, Vector3.Zero)
+            ) =>
+          ;
         case _ => assert(false, "")
       }
       p1Msgs.head match {
@@ -493,35 +507,38 @@ class ExplosiveDeployableJammerExplodeTest extends ActorTest {
 }
 
 class ExplosiveDeployableDestructionTest extends ActorTest {
-  val guid = new NumberPoolHub(new MaxNumberSource(10))
-  val eventsProbe = new TestProbe(system)
+  val guid         = new NumberPoolHub(new MaxNumberSource(10))
+  val eventsProbe  = new TestProbe(system)
   val player1Probe = new TestProbe(system)
   val player2Probe = new TestProbe(system)
 
-  val h_mine = Deployables.Make(DeployedItem.he_mine)().asInstanceOf[ExplosiveDeployable] //guid=2
-  val avatar1 = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player1 = Player(avatar1) //guid=3
-  val avatar2 = Avatar(0, "TestCharacter2", PlanetSideEmpire.NC, CharacterSex.Male, 0, CharacterVoice.Mute)
-  val player2 = Player(avatar2) //guid=4
-  val weapon = Tool(GlobalDefinitions.suppressor) //guid=5
+  val h_mine         = Deployables.Make(DeployedItem.he_mine)().asInstanceOf[ExplosiveDeployable] //guid=2
+  val avatar1        = Avatar(0, "TestCharacter1", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player1        = Player(avatar1)                                                            //guid=3
+  val avatar2        = Avatar(0, "TestCharacter2", PlanetSideEmpire.NC, CharacterSex.Male, 0, CharacterVoice.Mute)
+  val player2        = Player(avatar2)                                                            //guid=4
+  val weapon         = Tool(GlobalDefinitions.suppressor)                                         //guid=5
   val deployableList = new mutable.ListBuffer[Deployable]()
   val zone = new Zone("test", new ZoneMap("test"), 0) {
-    private val deployables = system.actorOf(Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()), name = "test-zone-deployables")
+    private val deployables = system.actorOf(
+      Props(classOf[ZoneDeployableActor], this, deployableList, mutable.HashMap[Int, Int]()),
+      name = "test-zone-deployables"
+    )
 
     override def SetupNumberPools() = {}
     GUID(guid)
-    override def Activity: ActorRef = eventsProbe.ref
+    override def Activity: ActorRef     = eventsProbe.ref
     override def AvatarEvents: ActorRef = eventsProbe.ref
-    override def LocalEvents: ActorRef = eventsProbe.ref
-    override def Deployables: ActorRef = deployables
-    override def Players = List(avatar1, avatar2)
-    override def LivePlayers = List(player1, player2)
+    override def LocalEvents: ActorRef  = eventsProbe.ref
+    override def Deployables: ActorRef  = deployables
+    override def Players                = List(avatar1, avatar2)
+    override def LivePlayers            = List(player1, player2)
   }
   player1.Spawn()
   player1.Actor = player1Probe.ref
   avatar2.deployables.AddOverLimit(h_mine) //cram it down your throat
   player2.Spawn()
-  player2.Position = Vector3(10,0,0)
+  player2.Position = Vector3(10, 0, 0)
   player2.Actor = player2Probe.ref
   guid.register(h_mine, 2)
   guid.register(player1, 3)
@@ -558,30 +575,32 @@ class ExplosiveDeployableDestructionTest extends ActorTest {
       assert(!h_mine.Destroyed)
 
       h_mine.Actor ! Vitality.Damage(applyDamageTo)
-      val eventMsgs  = eventsProbe.receiveN(3, 200 milliseconds)
+      val eventMsgs = eventsProbe.receiveN(3, 200 milliseconds)
       player1Probe.expectNoMessage(200 milliseconds)
       val p2Msgs = player2Probe.receiveN(1, 200 milliseconds)
       eventMsgs.head match {
         case LocalServiceMessage(
-          "NC",
-          LocalAction.DeployableMapIcon(
-            PlanetSideGUID(0),
-            DeploymentAction.Dismiss,
-            DeployableInfo(PlanetSideGUID(2), DeployableIcon.HEMine, _, PlanetSideGUID(0))
-          )
-        )  => ;
+              "NC",
+              LocalAction.DeployableMapIcon(
+                PlanetSideGUID(0),
+                DeploymentAction.Dismiss,
+                DeployableInfo(PlanetSideGUID(2), DeployableIcon.HEMine, _, PlanetSideGUID(0))
+              )
+            ) =>
+          ;
         case _ => assert(false, "")
       }
       eventMsgs(1) match {
         case AvatarServiceMessage(
-          "test",
-          AvatarAction.Destroy(PlanetSideGUID(2), PlanetSideGUID(3), Service.defaultPlayerGUID, Vector3.Zero)
-        ) => ;
+              "test",
+              AvatarAction.Destroy(PlanetSideGUID(2), PlanetSideGUID(3), Service.defaultPlayerGUID, Vector3.Zero)
+            ) =>
+          ;
         case _ => assert(false, "")
       }
       eventMsgs(2) match {
         case LocalServiceMessage("test", LocalAction.TriggerEffect(_, "detonate_damaged_mine", PlanetSideGUID(2))) => ;
-        case _ => assert(false, "")
+        case _                                                                                                     => assert(false, "")
       }
       p2Msgs.head match {
         case Player.LoseDeployable(_) => ;

@@ -54,6 +54,7 @@ class AccountPersistenceService extends Actor {
 
   /** squad service event hook */
   var squad: ActorRef = ActorRef.noSender
+
   /** galaxy service event hook */
   var galaxy: ActorRef = ActorRef.noSender
 
@@ -161,7 +162,10 @@ class AccountPersistenceService extends Actor {
     */
   def CreateNewPlayerToken(name: String): ActorRef = {
     val ref =
-      context.actorOf(Props(classOf[PersistenceMonitor], name, squad, galaxy), s"${NextPlayerIndex(name)}_${name.hashCode()}")
+      context.actorOf(
+        Props(classOf[PersistenceMonitor], name, squad, galaxy),
+        s"${NextPlayerIndex(name)}_${name.hashCode()}"
+      )
     accounts += name -> ref
     ref
   }
@@ -238,10 +242,11 @@ object AccountPersistenceService {
   * @param squadService a hook into the `SquadService` event system
   */
 class PersistenceMonitor(
-                          name: String,
-                          squadService: ActorRef,
-                          galaxyService: ActorRef
-                        ) extends Actor {
+    name: String,
+    squadService: ActorRef,
+    galaxyService: ActorRef
+) extends Actor {
+
   /** the last-reported zone of this player */
   var inZone: Zone = Zone.Nowhere
 
@@ -398,7 +403,7 @@ class PersistenceMonitor(
         AvatarLogout(avatar)
 
       case _ =>
-        //user stalled during initial session, or was caught in between zone transfer
+      //user stalled during initial session, or was caught in between zone transfer
     }
   }
 

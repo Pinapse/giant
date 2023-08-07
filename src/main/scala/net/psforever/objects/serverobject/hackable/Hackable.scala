@@ -72,14 +72,14 @@ trait Hackable {
 
 object Hackable {
   final case class HackInfo(
-                             player: PlayerSource,
-                            hackerGUID: PlanetSideGUID,
-                            hackStartTime: Long,
-                            hackDuration: Long
-                           ) {
-    def hackerName: String = player.Name
+      player: PlayerSource,
+      hackerGUID: PlanetSideGUID,
+      hackStartTime: Long,
+      hackDuration: Long
+  ) {
+    def hackerName: String                    = player.Name
     def hackerFaction: PlanetSideEmpire.Value = player.Faction
-    def hackerPos: Vector3 = player.Position
+    def hackerPos: Vector3                    = player.Position
 
     def Duration(time: Long): HackInfo = HackInfo(player, hackerGUID, hackStartTime, time)
   }

@@ -24,19 +24,19 @@ import scodec.codecs._
   * @param msg the number indexes of the message to be displayed by the client
   */
 final case class OffshoreVehicleMessage(
-                                         player_guid: PlanetSideGUID,
-                                         vehicle_guid: PlanetSideGUID,
-                                         msg: Int
-                                       ) extends PlanetSideGamePacket {
+    player_guid: PlanetSideGUID,
+    vehicle_guid: PlanetSideGUID,
+    msg: Int
+) extends PlanetSideGamePacket {
   type Packet = OffshoreVehicleMessage
   def opcode = GamePacketOpcode.OffshoreVehicleMessage
   def encode = OffshoreVehicleMessage.encode(this)
 }
 
 object OffshoreVehicleMessage extends Marshallable[OffshoreVehicleMessage] {
-  implicit val codec : Codec[OffshoreVehicleMessage] = (
+  implicit val codec: Codec[OffshoreVehicleMessage] = (
     ("player_guid" | PlanetSideGUID.codec) ::
-    ("vehicle_guid" | PlanetSideGUID.codec) ::
-    ("msg" | uint2L)
+      ("vehicle_guid" | PlanetSideGUID.codec) ::
+      ("msg" | uint2L)
   ).as[OffshoreVehicleMessage]
 }

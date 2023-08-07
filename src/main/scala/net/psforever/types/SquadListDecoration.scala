@@ -12,15 +12,14 @@ object SquadListDecoration extends Enumeration {
   val SearchResult  = Value(3)
 
   implicit val codec = uint(bits = 3).xmap[SquadListDecoration.Value](
-    {
-      value =>
-        if (value < 4) {
-          SquadListDecoration(value)
-        } else if (value < 7) {
-          SquadListDecoration.Available
-        } else {
-          SquadListDecoration.NotAvailable
-        }
+    { value =>
+      if (value < 4) {
+        SquadListDecoration(value)
+      } else if (value < 7) {
+        SquadListDecoration.Available
+      } else {
+        SquadListDecoration.NotAvailable
+      }
     },
     _.id
   )

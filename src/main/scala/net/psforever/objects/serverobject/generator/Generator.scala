@@ -24,7 +24,7 @@ class Generator(private val gdef: GeneratorDefinition) extends Amenity {
     Condition
   }
 
-  override def Destroyed_=(state : Boolean) : Boolean = {
+  override def Destroyed_=(state: Boolean): Boolean = {
     val isDestroyed = super.Destroyed_=(state)
     condition = if (isDestroyed) {
       PlanetSideGeneratorState.Destroyed

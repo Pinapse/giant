@@ -23,8 +23,7 @@ import scala.util.{Failure, Success}
   * @see `SpecificNumberSource`
   * @param numbers the numbers used as unique identifiers
   */
-class LocallyRegisteredInventory(numbers: Iterable[Int])
-  extends GridInventory {
+class LocallyRegisteredInventory(numbers: Iterable[Int]) extends GridInventory {
   private val hub: NumberPoolHub = {
     val numHub = new NumberPoolHub(SpecificNumberSource(numbers))
     //only one pool composed of all of the numbers; randomized selection
@@ -33,7 +32,7 @@ class LocallyRegisteredInventory(numbers: Iterable[Int])
   }
 
   override def Insert(start: Int, obj: Equipment): Boolean = {
-    if(!obj.HasGUID) {
+    if (!obj.HasGUID) {
       registerEquipment(obj) match {
         case true if super.Insert(start, obj) =>
           true
@@ -43,14 +42,13 @@ class LocallyRegisteredInventory(numbers: Iterable[Int])
         case _ =>
           false
       }
-    }
-    else {
+    } else {
       false
     }
   }
 
   override def InsertQuickly(start: Int, obj: Equipment): Boolean = {
-    if(!obj.HasGUID) {
+    if (!obj.HasGUID) {
       registerEquipment(obj) match {
         case true if super.InsertQuickly(start, obj) =>
           true
@@ -60,8 +58,7 @@ class LocallyRegisteredInventory(numbers: Iterable[Int])
         case _ =>
           false
       }
-    }
-    else {
+    } else {
       false
     }
   }
@@ -93,16 +90,17 @@ class LocallyRegisteredInventory(numbers: Iterable[Int])
   private def registerEquipment(obj: Equipment): Boolean = {
     obj match {
       case tool: Tool => registerTool(tool)
-      case _ => registerObject(obj)
+      case _          => registerObject(obj)
     }
   }
 
   private def registerTool(obj: Tool): Boolean = {
     val parts = obj +: obj.AmmoSlots.map { _.Box }
     val tasks = parts.map { part => hub.register(part, "internal") }
-    if(tasks.exists(o => o.isInstanceOf[Failure[Int]])) {
-      tasks.zipWithIndex.collect { case (Success(_), index) =>
-        unregisterEquipment(parts(index))
+    if (tasks.exists(o => o.isInstanceOf[Failure[Int]])) {
+      tasks.zipWithIndex.collect {
+        case (Success(_), index) =>
+          unregisterEquipment(parts(index))
       }
       false
     } else {
@@ -117,7 +115,7 @@ class LocallyRegisteredInventory(numbers: Iterable[Int])
   private def unregisterEquipment(obj: Equipment): Boolean = {
     obj match {
       case tool: Tool => unregisterTool(tool)
-      case _ => unregisterObject(obj)
+      case _          => unregisterObject(obj)
     }
   }
 

@@ -58,28 +58,28 @@ class Player(var avatar: Avatar)
   private var backpackAccess: Option[PlanetSideGUID] = None
   private var carrying: Option[SpecialCarry]         = None
 
-  private var facingYawUpper: Float       = 0f
-  private var crouching: Boolean          = false
-  private var jumping: Boolean            = false
-  private var cloaked: Boolean            = false
-  private var afk: Boolean                = false
-  private var zoning: Zoning.Method       = Zoning.Method.None
+  private var facingYawUpper: Float = 0f
+  private var crouching: Boolean    = false
+  private var jumping: Boolean      = false
+  private var cloaked: Boolean      = false
+  private var afk: Boolean          = false
+  private var zoning: Zoning.Method = Zoning.Method.None
 
   private var vehicleSeated: Option[PlanetSideGUID] = None
 
   Continent = "home2" //the zone id
 
-  var spectator: Boolean                 = false
-  var silenced: Boolean                  = false
-  var death_by: Int                      = 0
-  var lastShotSeq_time: Int              = -1
+  var spectator: Boolean    = false
+  var silenced: Boolean     = false
+  var death_by: Int         = 0
+  var lastShotSeq_time: Int = -1
 
   /** From PlanetsideAttributeMessage */
   var PlanetsideAttribute: Array[Long] = Array.ofDim(120)
 
   val squadLoadouts = new LoadoutManager(10)
 
-  var resistArmMotion: (Player,Int)=>Boolean = Player.neverRestrict
+  var resistArmMotion: (Player, Int) => Boolean = Player.neverRestrict
 
   //init
   Health = 0       //player health is artificially managed as a part of their lifecycle; start entity as dead
@@ -211,15 +211,17 @@ class Player(var avatar: Avatar)
     * @see `InventoryItem`
     * @return a list of items that would be found in a proper inventory
     */
-  def HolsterItems(): List[InventoryItem] = holsters
-    .zipWithIndex
-    .collect {
-      case (slot: EquipmentSlot, index: Int) =>
-        slot.Equipment match {
-          case Some(item) => Some(InventoryItem(item, index))
-          case None => None
-        }
-    }.flatten.toList
+  def HolsterItems(): List[InventoryItem] =
+    holsters.zipWithIndex
+      .collect {
+        case (slot: EquipmentSlot, index: Int) =>
+          slot.Equipment match {
+            case Some(item) => Some(InventoryItem(item, index))
+            case None       => None
+          }
+      }
+      .flatten
+      .toList
 
   def Inventory: GridInventory = inventory
 
@@ -315,7 +317,7 @@ class Player(var avatar: Avatar)
     }
   }
 
-  def ResistArmMotion(func: (Player,Int)=>Boolean): Unit = {
+  def ResistArmMotion(func: (Player, Int) => Boolean): Unit = {
     resistArmMotion = func
   }
 
@@ -626,9 +628,9 @@ object Player {
 }
 
 private class InteractWithMinesUnlessSpectating(
-                                                 private val obj: Player,
-                                                 override val range: Float
-                                               ) extends InteractWithMines(range) {
+    private val obj: Player,
+    override val range: Float
+) extends InteractWithMines(range) {
   override def interaction(sector: SectorPopulation, target: InteractsWithZone): Unit = {
     if (!obj.spectator) {
       super.interaction(sector, target)

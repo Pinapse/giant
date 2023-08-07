@@ -41,7 +41,7 @@ class SpawnTubeControl(tube: SpawnTube)
         case _ => ;
       }
 
-  override protected def DamageAwareness(target : Target, cause : DamageResult, amount : Any) : Unit = {
+  override protected def DamageAwareness(target: Target, cause: DamageResult, amount: Any): Unit = {
     tryAutoRepair()
     super.DamageAwareness(target, cause, amount)
   }
@@ -55,9 +55,9 @@ class SpawnTubeControl(tube: SpawnTube)
     }
   }
 
-  override def PerformRepairs(target : Target, amount : Int) : Int = {
+  override def PerformRepairs(target: Target, amount: Int): Int = {
     val newHealth = super.PerformRepairs(target, amount)
-    if(newHealth == target.Definition.MaxHealth) {
+    if (newHealth == target.Definition.MaxHealth) {
       stopAutoRepair()
     }
     newHealth
@@ -71,7 +71,7 @@ class SpawnTubeControl(tube: SpawnTube)
     }
   }
 
-  override def tryAutoRepair() : Boolean = {
+  override def tryAutoRepair(): Boolean = {
     isPowered && super.tryAutoRepair()
   }
 

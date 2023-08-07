@@ -33,7 +33,7 @@ import net.psforever.objects.equipment.{Equipment, EquipmentSlot}
 import net.psforever.objects.inventory.{Container, InventoryItem}
 import net.psforever.objects.loadouts.{InfantryLoadout, Loadout, VehicleLoadout}
 import net.psforever.objects.locker.LockerContainer
-import net.psforever.objects.sourcing.{PlayerSource,SourceWithHealthEntry}
+import net.psforever.objects.sourcing.{PlayerSource, SourceWithHealthEntry}
 import net.psforever.objects.vital.projectile.ProjectileReason
 import net.psforever.objects.vital.{DamagingActivity, HealFromImplant, HealingActivity, SpawningActivity, Vitality}
 import net.psforever.packet.game.objectcreate.{BasicCharacterData, ObjectClass, RibbonBars}
@@ -398,12 +398,12 @@ object AvatarActor {
       //all mechanized exo-suits
       val faction = name.take(2)
       (if (faction.equals("nc")) {
-        Seq(GlobalDefinitions.nchev_scattercannon, GlobalDefinitions.nchev_falcon, GlobalDefinitions.nchev_sparrow)
-      } else if (faction.equals("vs")) {
-        Seq(GlobalDefinitions.vshev_quasar, GlobalDefinitions.vshev_comet, GlobalDefinitions.vshev_starfire)
-      } else {
-        Seq(GlobalDefinitions.trhev_dualcycler, GlobalDefinitions.trhev_pounder, GlobalDefinitions.trhev_burster)
-      }).map { tdef => (tdef, tdef.Descriptor) }
+         Seq(GlobalDefinitions.nchev_scattercannon, GlobalDefinitions.nchev_falcon, GlobalDefinitions.nchev_sparrow)
+       } else if (faction.equals("vs")) {
+         Seq(GlobalDefinitions.vshev_quasar, GlobalDefinitions.vshev_comet, GlobalDefinitions.vshev_starfire)
+       } else {
+         Seq(GlobalDefinitions.trhev_dualcycler, GlobalDefinitions.trhev_pounder, GlobalDefinitions.trhev_burster)
+       }).map { tdef => (tdef, tdef.Descriptor) }
     } else if ((name.matches(".+_gunner") || name.matches(".+_flight")) && Config.app.game.sharedBfrCooldown) {
       //all battleframe robotics vehicles
       definition match {
@@ -1344,7 +1344,7 @@ class AvatarActor(
           Behaviors.same
 
         case SaveLoadout(player, loadoutType, label, number) =>
-          log.info(s"${player.Name} wishes to save a favorite $loadoutType loadout as #${number + 1}")
+          log.trace(s"${player.Name} wishes to save a favorite $loadoutType loadout as #${number + 1}")
           val name = label.getOrElse(s"missing_loadout_${number + 1}")
           val (lineNo, result): (Int, Future[Loadout]) = loadoutType match {
             case LoadoutType.Infantry =>
@@ -1387,7 +1387,7 @@ class AvatarActor(
           Behaviors.same
 
         case DeleteLoadout(player, loadoutType, number) =>
-          log.info(s"${player.Name} wishes to delete a favorite $loadoutType loadout - #${number + 1}")
+          log.trace(s"${player.Name} wishes to delete a favorite $loadoutType loadout - #${number + 1}")
           import ctx._
           val (lineNo: Int, result) = loadoutType match {
             case LoadoutType.Infantry if avatar.loadouts.suit(number).nonEmpty =>
@@ -1447,7 +1447,7 @@ class AvatarActor(
           Behaviors.same
 
         case UpdatePurchaseTime(definition, time) =>
-          var theTimes = avatar.cooldowns.purchase
+          var theTimes                = avatar.cooldowns.purchase
           var updateTheTimes: Boolean = false
           AvatarActor
             .resolveSharedPurchaseTimeNames(AvatarActor.resolvePurchaseTimeName(avatar.faction, definition))
@@ -2590,25 +2590,23 @@ class AvatarActor(
 
   def refreshPurchaseTimes(keys: Set[String]): Unit = {
     var keysToDrop: Seq[String] = Nil
-    val faction = avatar.faction
+    val faction                 = avatar.faction
     keys.foreach { key =>
-      avatar
-        .cooldowns
-        .purchase
+      avatar.cooldowns.purchase
         .find { case (name, _) => name.equals(key) }
-        .flatMap { case (name, purchaseTime) =>
-          val secondsSincePurchase = Seconds.secondsBetween(purchaseTime, LocalDateTime.now()).getSeconds
-          Avatar
-            .purchaseCooldowns
-            .find(_._1.Descriptor.equals(name))
-            .collect {
-              case (obj, cooldown) =>
-                (obj, cooldown.toSeconds - secondsSincePurchase)
-            }
-          .orElse {
-            keysToDrop = keysToDrop :+ key //key indicates cooldown, but no cooldown delay
-            None
-          }
+        .flatMap {
+          case (name, purchaseTime) =>
+            val secondsSincePurchase = Seconds.secondsBetween(purchaseTime, LocalDateTime.now()).getSeconds
+            Avatar.purchaseCooldowns
+              .find(_._1.Descriptor.equals(name))
+              .collect {
+                case (obj, cooldown) =>
+                  (obj, cooldown.toSeconds - secondsSincePurchase)
+              }
+              .orElse {
+                keysToDrop = keysToDrop :+ key //key indicates cooldown, but no cooldown delay
+                None
+              }
         }
         .collect {
           case (obj, remainingTime) if remainingTime > 0 =>
@@ -2971,19 +2969,20 @@ class AvatarActor(
   }
 
   def createAvatar(
-                    account: Account,
-                    name: String,
-                    sex: CharacterSex,
-                    empire: PlanetSideEmpire.Value,
-                    head: Int,
-                    voice: CharacterVoice.Value
-                  ): Unit = {
+      account: Account,
+      name: String,
+      sex: CharacterSex,
+      empire: PlanetSideEmpire.Value,
+      head: Int,
+      voice: CharacterVoice.Value
+  ): Unit = {
     import ctx._
-    ctx.run(
-      query[persistence.Avatar]
-        .filter(_.name ilike lift(name))
-        .map(a => (a.accountId, a.deleted, a.created))
-    )
+    ctx
+      .run(
+        query[persistence.Avatar]
+          .filter(_.name ilike lift(name))
+          .map(a => (a.accountId, a.deleted, a.created))
+      )
       .onComplete {
         case Success(foundCharacters) if foundCharacters.size == 1 =>
           testFoundCharacters(
@@ -3013,12 +3012,15 @@ class AvatarActor(
   }
 
   private def testFoundCharacters(
-                                   account: Account,
-                                   name: String,
-                                   foundCharacters: IterableOnce[(Int, Boolean, Long)]): Unit = {
+      account: Account,
+      name: String,
+      foundCharacters: IterableOnce[(Int, Boolean, Long)]
+  ): Unit = {
     val foundCharactersIterator = foundCharacters.iterator
-    if (foundCharactersIterator.exists { case (_, deleted, _ ) => !deleted } ||
-      foundCharactersIterator.exists { case (accountId, _, _) => accountId != account.id }) {
+    if (
+      foundCharactersIterator.exists { case (_, deleted, _) => !deleted } ||
+      foundCharactersIterator.exists { case (accountId, _, _) => accountId != account.id }
+    ) {
       //send "char already exists"
       sessionActor ! SessionActor.SendResponse(ActionResultMessage.Fail(error = 1))
     } else {
@@ -3029,16 +3031,16 @@ class AvatarActor(
   }
 
   private def actuallyCreateNewCharacter(
-                                          accountId: Int,
-                                          accountName: String,
-                                          name: String,
-                                          sex: CharacterSex,
-                                          empire: PlanetSideEmpire.Value,
-                                          head: Int,
-                                          voice: CharacterVoice.Value,
-                                          bep: Long = Config.app.game.newAvatar.br.experience,
-                                          cep: Long = Config.app.game.newAvatar.cr.experience
-                                        ): Future[Boolean] = {
+      accountId: Int,
+      accountName: String,
+      name: String,
+      sex: CharacterSex,
+      empire: PlanetSideEmpire.Value,
+      head: Int,
+      voice: CharacterVoice.Value,
+      bep: Long = Config.app.game.newAvatar.br.experience,
+      cep: Long = Config.app.game.newAvatar.cr.experience
+  ): Future[Boolean] = {
     val output: Promise[Boolean] = Promise[Boolean]()
     import ctx._
     val result = for {
@@ -3070,10 +3072,10 @@ class AvatarActor(
   }
 
   private def reactivateCharacter(
-                                   accountId: Int,
-                                   accountName: String,
-                                   characterName: String
-                                 ): Future[Boolean] = {
+      accountId: Int,
+      accountName: String,
+      characterName: String
+  ): Future[Boolean] = {
     val output: Promise[Boolean] = Promise[Boolean]()
     import ctx._
     val result = for {

@@ -361,9 +361,9 @@ class NumberPoolHub(private val source: NumberSource) {
     * @return the number associated with this object
     */
   def unregister_GetMonitorFromObject(
-                                       obj: IdentifiableEntity,
-                                       msg: String = "can not find this object"
-                                     ): Try[Int] = {
+      obj: IdentifiableEntity,
+      msg: String = "can not find this object"
+  ): Try[Int] = {
     source.get(obj) match {
       case Some(key) =>
         val number = key.GUID

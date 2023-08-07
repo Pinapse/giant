@@ -27,7 +27,7 @@ class ResourceSiloControl(resourceSilo: ResourceSilo)
     with NtuStorageBehavior {
   def FactionObject: FactionAffinity = resourceSilo
 
-  private[this] val log               = org.log4s.getLogger
+  private[this] val log                             = org.log4s.getLogger
   var panelAnimationFunc: (ActorRef, Float) => Unit = PanelAnimation
 
   def receive: Receive = {
@@ -35,11 +35,11 @@ class ResourceSiloControl(resourceSilo: ResourceSilo)
       resourceSilo.Owner match {
         case building: Building =>
           UpdateChargeLevel(amount = 0)
-          building.Actor ! (if (resourceSilo.NtuCapacitor <= 0f ) {
-            BuildingActor.NtuDepleted()
-          } else {
-            BuildingActor.SuppliedWithNtu()
-          })
+          building.Actor ! (if (resourceSilo.NtuCapacitor <= 0f) {
+                              BuildingActor.NtuDepleted()
+                            } else {
+                              BuildingActor.SuppliedWithNtu()
+                            })
         case _ => ;
       }
       context.become(Processing)
@@ -52,26 +52,26 @@ class ResourceSiloControl(resourceSilo: ResourceSilo)
       .orElse(storageBehavior)
       .orElse {
         case CommonMessages.Use(player, _) =>
-          val siloFaction = resourceSilo.Faction
+          val siloFaction   = resourceSilo.Faction
           val playerFaction = player.Faction
           resourceSilo.Zone.Vehicles.find(v => v.PassengerInSeat(player).contains(0)) match {
             case Some(vehicle) =>
               (if (GlobalDefinitions.isBattleFrameVehicle(vehicle.Definition)) {
-                //bfr's discharge into friendly silos and charge from enemy and neutral silos
-                if (siloFaction == playerFaction) {
-                  Some(TransferBehavior.Discharging(Ntu.Nanites))
-                } else if (resourceSilo.MaxNtuCapacitor * 0.4f < resourceSilo.NtuCapacitor) {
-                  //the bfr never drains below 40%
-                  Some(TransferBehavior.Charging(Ntu.Nanites))
-                } else {
-                  None
-                }
-              } else if(siloFaction == PlanetSideEmpire.NEUTRAL || siloFaction == playerFaction) {
-                //ants discharge into neutral and friendly silos
-                Some(TransferBehavior.Discharging(Ntu.Nanites))
-              } else {
-                None
-              }) match {
+                 //bfr's discharge into friendly silos and charge from enemy and neutral silos
+                 if (siloFaction == playerFaction) {
+                   Some(TransferBehavior.Discharging(Ntu.Nanites))
+                 } else if (resourceSilo.MaxNtuCapacitor * 0.4f < resourceSilo.NtuCapacitor) {
+                   //the bfr never drains below 40%
+                   Some(TransferBehavior.Charging(Ntu.Nanites))
+                 } else {
+                   None
+                 }
+               } else if (siloFaction == PlanetSideEmpire.NEUTRAL || siloFaction == playerFaction) {
+                 //ants discharge into neutral and friendly silos
+                 Some(TransferBehavior.Discharging(Ntu.Nanites))
+               } else {
+                 None
+               }) match {
                 case Some(msg) =>
                   context.system.scheduler.scheduleOnce(
                     delay = 1000 milliseconds,
@@ -146,11 +146,11 @@ class ResourceSiloControl(resourceSilo: ResourceSilo)
     */
   def HandleNtuOffer(sender: ActorRef, src: NtuContainer): Unit = {
     sender ! (if (resourceSilo.NtuCapacitor < resourceSilo.MaxNtuCapacitor) {
-      Ntu.Request(0, resourceSilo.MaxNtuCapacitor - resourceSilo.NtuCapacitor)
-    } else {
-      StopNtuBehavior(sender)
-      Ntu.Request(0, 0)
-    })
+                Ntu.Request(0, resourceSilo.MaxNtuCapacitor - resourceSilo.NtuCapacitor)
+              } else {
+                StopNtuBehavior(sender)
+                Ntu.Request(0, 0)
+              })
   }
 
   /**
@@ -197,25 +197,26 @@ class ResourceSiloControl(resourceSilo: ResourceSilo)
     // do not let the trigger charge go to waste, but also do not let the silo be filled
     // attempting to return it to the source may sabotage an ongoing transfer process
     val amount = (if (trigger > 0) {
-      // panel glow & orb particles on
-      val zone = resourceSilo.Zone
-      zone.VehicleEvents ! VehicleServiceMessage(
-        zone.id,
-        VehicleAction.PlanetsideAttribute(Service.defaultPlayerGUID, resourceSilo.GUID, 49, 1)
-      )
-      math.min(resourceSilo.MaxNtuCapacitor - currentlyHas, trigger)
-    } else if (trigger < 0) {
-      // no change to animation state
-      if (currentlyHas > -trigger) { trigger } else { -currentlyHas }
-    } else {
-      // panel glow & orb particles off
-      val zone = resourceSilo.Zone
-      zone.VehicleEvents ! VehicleServiceMessage(
-        zone.id,
-        VehicleAction.PlanetsideAttribute(Service.defaultPlayerGUID, resourceSilo.GUID, 49, 0)
-      )
-      0
-    }) * 0.9f
+                    // panel glow & orb particles on
+                    val zone = resourceSilo.Zone
+                    zone.VehicleEvents ! VehicleServiceMessage(
+                      zone.id,
+                      VehicleAction.PlanetsideAttribute(Service.defaultPlayerGUID, resourceSilo.GUID, 49, 1)
+                    )
+                    math.min(resourceSilo.MaxNtuCapacitor - currentlyHas, trigger)
+                  } else if (trigger < 0) {
+                    // no change to animation state
+                    if (currentlyHas > -trigger) { trigger }
+                    else { -currentlyHas }
+                  } else {
+                    // panel glow & orb particles off
+                    val zone = resourceSilo.Zone
+                    zone.VehicleEvents ! VehicleServiceMessage(
+                      zone.id,
+                      VehicleAction.PlanetsideAttribute(Service.defaultPlayerGUID, resourceSilo.GUID, 49, 0)
+                    )
+                    0
+                  }) * 0.9f
     UpdateChargeLevel(amount)
   }
 

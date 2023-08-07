@@ -37,9 +37,9 @@ final case class DrowningTarget(guid: PlanetSideGUID, progress: Float, condition
   *                the player must be mounted in the vehicle (at start time)
   */
 final case class OxygenStateMessage(
-                                     player: DrowningTarget,
-                                     vehicle: Option[DrowningTarget]
-                                   ) extends PlanetSideGamePacket {
+    player: DrowningTarget,
+    vehicle: Option[DrowningTarget]
+) extends PlanetSideGamePacket {
   type Packet = OxygenStateMessage
   def opcode = GamePacketOpcode.OxygenStateMessage
   def encode = OxygenStateMessage.encode(this)
@@ -58,65 +58,65 @@ object DrowningTarget {
 
 object OxygenStateMessage extends Marshallable[OxygenStateMessage] {
   def apply(
-             player_guid: PlanetSideGUID
-           ): OxygenStateMessage =
+      player_guid: PlanetSideGUID
+  ): OxygenStateMessage =
     OxygenStateMessage(DrowningTarget(player_guid), None)
 
   def apply(
-             player_guid: PlanetSideGUID,
-             progress: Float
-           ): OxygenStateMessage =
+      player_guid: PlanetSideGUID,
+      progress: Float
+  ): OxygenStateMessage =
     OxygenStateMessage(DrowningTarget(player_guid, progress), None)
 
   def apply(
-             player: DrowningTarget
-           ): OxygenStateMessage =
+      player: DrowningTarget
+  ): OxygenStateMessage =
     OxygenStateMessage(player, None)
 
   def apply(
-             player_guid: PlanetSideGUID,
-             player_progress: Float,
-             vehicle_guid: PlanetSideGUID,
-             vehicle_progress: Float
-           ): OxygenStateMessage =
+      player_guid: PlanetSideGUID,
+      player_progress: Float,
+      vehicle_guid: PlanetSideGUID,
+      vehicle_progress: Float
+  ): OxygenStateMessage =
     OxygenStateMessage(
       DrowningTarget(player_guid, player_progress),
       Some(DrowningTarget(vehicle_guid, vehicle_progress))
     )
 
   def apply(
-             player_guid: PlanetSideGUID,
-             player_progress: Float,
-             vehicle_guid: PlanetSideGUID
-           ): OxygenStateMessage =
+      player_guid: PlanetSideGUID,
+      player_progress: Float,
+      vehicle_guid: PlanetSideGUID
+  ): OxygenStateMessage =
     OxygenStateMessage(
       DrowningTarget(player_guid, player_progress),
       Some(DrowningTarget(vehicle_guid))
     )
 
   def recover(
-                  player_guid: PlanetSideGUID,
-                  progress: Float
-                ): OxygenStateMessage =
+      player_guid: PlanetSideGUID,
+      progress: Float
+  ): OxygenStateMessage =
     OxygenStateMessage(DrowningTarget.recover(player_guid, progress), None)
 
   def recoverVehicle(
-                   player_guid: PlanetSideGUID,
-                   player_progress: Float,
-                   vehicle_guid: PlanetSideGUID,
-                   vehicle_progress: Float
-                 ): OxygenStateMessage =
+      player_guid: PlanetSideGUID,
+      player_progress: Float,
+      vehicle_guid: PlanetSideGUID,
+      vehicle_progress: Float
+  ): OxygenStateMessage =
     OxygenStateMessage(
       DrowningTarget(player_guid, player_progress),
       Some(DrowningTarget.recover(vehicle_guid, vehicle_progress))
     )
 
   def recover(
-               player_guid: PlanetSideGUID,
-               player_progress: Float,
-               vehicle_guid: PlanetSideGUID,
-               vehicle_progress: Float
-          ): OxygenStateMessage =
+      player_guid: PlanetSideGUID,
+      player_progress: Float,
+      vehicle_guid: PlanetSideGUID,
+      vehicle_progress: Float
+  ): OxygenStateMessage =
     OxygenStateMessage(
       DrowningTarget.recover(player_guid, player_progress),
       Some(DrowningTarget.recover(vehicle_guid, vehicle_progress))
@@ -133,11 +133,11 @@ object OxygenStateMessage extends Marshallable[OxygenStateMessage] {
         204.8f,
         11
       ) :: //hackish: 2^11 == 2047, so it should be 204.7; but, 204.8 allows decode == encode
-    OxygenState.codec
-    ).as[DrowningTarget]
+      OxygenState.codec
+  ).as[DrowningTarget]
 
   implicit val codec: Codec[OxygenStateMessage] = (
     ("player" | oxygen_deprivation_codec) ::
       optional(bool, "vehicle" | oxygen_deprivation_codec)
-    ).as[OxygenStateMessage]
+  ).as[OxygenStateMessage]
 }

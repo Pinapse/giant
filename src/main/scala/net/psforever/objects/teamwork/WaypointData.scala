@@ -11,7 +11,7 @@ class WaypointData() {
   var pos: Vector3     = Vector3.z(1) //a waypoint with a non-zero z-coordinate will flag as not getting drawn
 }
 
-object WaypointData{
+object WaypointData {
   def apply(zone_number: Int, pos: Vector3): WaypointData = {
     val data = new WaypointData()
     data.zone_number = zone_number

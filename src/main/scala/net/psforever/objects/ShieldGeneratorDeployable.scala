@@ -104,7 +104,7 @@ class ShieldGeneratorControl(gen: ShieldGeneratorDeployable)
   override protected def DamageAwareness(target: Damageable.Target, cause: DamageResult, amount: Any): Unit = {
     val (damageToHealth, damageToShields) = amount match {
       case (a: Int, b: Int) => (a, b)
-      case _ => (0, 0)
+      case _                => (0, 0)
     }
     super.DamageAwareness(target, cause, damageToHealth)
     ShieldGeneratorControl.DamageAwareness(gen, cause, damageToShields > 0)

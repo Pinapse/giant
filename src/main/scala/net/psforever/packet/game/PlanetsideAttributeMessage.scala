@@ -217,11 +217,19 @@ object PlanetsideAttributeMessage extends Marshallable[PlanetsideAttributeMessag
     PlanetsideAttributeMessage(guid, attribute_type, attribute_value.guid)
   }
 
-  def apply(guid: PlanetSideGUID, attribute_type: PlanetsideAttributeEnum, attribute_value: Int): PlanetsideAttributeMessage = {
+  def apply(
+      guid: PlanetSideGUID,
+      attribute_type: PlanetsideAttributeEnum,
+      attribute_value: Int
+  ): PlanetsideAttributeMessage = {
     PlanetsideAttributeMessage(guid, attribute_type.id, attribute_value.toLong)
   }
 
-  def apply(guid: PlanetSideGUID, attribute_type: PlanetsideAttributeEnum, attribute_value: Long): PlanetsideAttributeMessage = {
+  def apply(
+      guid: PlanetSideGUID,
+      attribute_type: PlanetsideAttributeEnum,
+      attribute_value: Long
+  ): PlanetsideAttributeMessage = {
     PlanetsideAttributeMessage(guid, attribute_type.id, attribute_value)
   }
 

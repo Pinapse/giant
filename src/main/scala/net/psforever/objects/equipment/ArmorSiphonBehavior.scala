@@ -28,19 +28,21 @@ object ArmorSiphonBehavior {
     def SiphonableObject: Vehicle
 
     val siphoningBehavior: Receive = {
-      case CommonMessages.Use(player, Some(item : Tool))
-        if GlobalDefinitions.isBattleFrameArmorSiphon(item.Definition) && player.Faction != DamageableObject.Faction =>
-        val obj = SiphonableObject
-        val zone = obj.Zone
+      case CommonMessages.Use(player, Some(item: Tool))
+          if GlobalDefinitions.isBattleFrameArmorSiphon(
+            item.Definition
+          ) && player.Faction != DamageableObject.Faction =>
+        val obj   = SiphonableObject
+        val zone  = obj.Zone
         val iguid = item.GUID
         //see Damageable.takesDamage
         zone.Vehicles.find { v =>
-          v.Weapons.values.exists { slot => slot.Equipment.nonEmpty && slot.Equipment.get.GUID == iguid}
+          v.Weapons.values.exists { slot => slot.Equipment.nonEmpty && slot.Equipment.get.GUID == iguid }
         } match {
           case Some(v: Vehicle) if v.CanDamage =>
             //remember: we are the vehicle being siphoned; we need the vehicle doing the siphoning
             val before = item.Magazine
-            val after = item.Discharge()
+            val after  = item.Discharge()
             if (before > after) {
               v.Actor ! ArmorSiphonBehavior.Recharge(iguid)
               PerformDamage(
@@ -61,7 +63,8 @@ object ArmorSiphonBehavior {
     _: Actor =>
     def SiphoningObject: Vehicle
 
-    private val siphonRecharge: mutable.HashMap[PlanetSideGUID, Cancellable] = mutable.HashMap[PlanetSideGUID, Cancellable]()
+    private val siphonRecharge: mutable.HashMap[PlanetSideGUID, Cancellable] =
+      mutable.HashMap[PlanetSideGUID, Cancellable]()
 
     def repairPostStop(): Unit = {
       siphonRecharge.keys.foreach { endSiphonRecharge }
@@ -69,13 +72,12 @@ object ArmorSiphonBehavior {
 
     val siphonRepairBehavior: Receive = {
       case RepairedByArmorSiphon(cause, amount) =>
-        val obj = SiphoningObject
+        val obj    = SiphoningObject
         val before = obj.Health
         cause.cause match {
-          case asr: ArmorSiphonReason
-            if before < obj.MaxHealth =>
+          case asr: ArmorSiphonReason if before < obj.MaxHealth =>
             val after = obj.Health += amount
-            if(before < after) {
+            if (before < after) {
               obj.LogActivity(RepairFromArmorSiphon(asr.siphon.Definition, VehicleSource(obj), before - after))
               val zone = obj.Zone
               zone.VehicleEvents ! VehicleServiceMessage(
@@ -89,39 +91,48 @@ object ArmorSiphonBehavior {
       case ArmorSiphonBehavior.Recharge(guid) =>
         siphonRecharge.remove(guid) match {
           case Some(timer) => timer.cancel()
-          case None => ;
+          case None        => ;
         }
         val obj = SiphoningObject
         obj.Weapons.values.find { slot => slot.Equipment.nonEmpty && slot.Equipment.get.GUID == guid } match {
           case Some(siphonSlot) =>
             val siphon = siphonSlot.Equipment.get.asInstanceOf[Tool]
-            val zone = obj.Zone
+            val zone   = obj.Zone
             //update current charge level
             zone.VehicleEvents ! VehicleServiceMessage(
               obj.Actor.toString,
-              VehicleAction.SendResponse(Service.defaultPlayerGUID, QuantityUpdateMessage(siphon.AmmoSlot.Box.GUID, siphon.Magazine))
+              VehicleAction.SendResponse(
+                Service.defaultPlayerGUID,
+                QuantityUpdateMessage(siphon.AmmoSlot.Box.GUID, siphon.Magazine)
+              )
             )
-            siphonRecharge.put(guid, context.system.scheduler.scheduleWithFixedDelay(
-              initialDelay = 3000 milliseconds,
-              delay = 200 milliseconds,
-              self,
-              SiphonOwner.Recharge(guid)
-            ))
+            siphonRecharge.put(
+              guid,
+              context.system.scheduler.scheduleWithFixedDelay(
+                initialDelay = 3000 milliseconds,
+                delay = 200 milliseconds,
+                self,
+                SiphonOwner.Recharge(guid)
+              )
+            )
           case _ => ;
         }
 
       case SiphonOwner.Recharge(guid) =>
-        val obj = SiphoningObject
+        val obj  = SiphoningObject
         val zone = obj.Zone
         obj.Weapons.values.find { slot => slot.Equipment.nonEmpty && slot.Equipment.get.GUID == guid } match {
           case Some(slot: EquipmentSlot) =>
             val siphon = slot.Equipment.get.asInstanceOf[Tool]
             val before = siphon.Magazine
-            val after = siphon.Magazine = before + 1
+            val after  = siphon.Magazine = before + 1
             if (after > before) {
               zone.VehicleEvents ! VehicleServiceMessage(
                 obj.Actor.toString,
-                VehicleAction.SendResponse(Service.defaultPlayerGUID, QuantityUpdateMessage(siphon.AmmoSlot.Box.GUID, after))
+                VehicleAction.SendResponse(
+                  Service.defaultPlayerGUID,
+                  QuantityUpdateMessage(siphon.AmmoSlot.Box.GUID, after)
+                )
               )
               if (after == siphon.MaxMagazine) {
                 endSiphonRecharge(guid)
@@ -136,7 +147,7 @@ object ArmorSiphonBehavior {
     def endSiphonRecharge(guid: PlanetSideGUID): Unit = {
       siphonRecharge.remove(guid) match {
         case Some(c) => c.cancel()
-        case None => ;
+        case None    => ;
       }
     }
   }

@@ -13,10 +13,12 @@ class GUIDTaskRegisterAmmoTest extends ActorTest {
     val obj             = AmmoBox(GlobalDefinitions.energy_cell)
 
     assert(!obj.HasGUID)
-    TaskWorkflow.execute(TaskBundle(
-      new GUIDTaskTest.RegisterTestTask(probe.ref),
-      GUIDTask.registerEquipment(uns, obj)
-    ))
+    TaskWorkflow.execute(
+      TaskBundle(
+        new GUIDTaskTest.RegisterTestTask(probe.ref),
+        GUIDTask.registerEquipment(uns, obj)
+      )
+    )
     probe.expectMsg(5.second, scala.util.Success(true))
     assert(obj.HasGUID)
   }

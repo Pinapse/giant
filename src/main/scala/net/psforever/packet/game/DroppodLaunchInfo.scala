@@ -16,22 +16,22 @@ import shapeless.{::, HNil}
   * @param xypos where in the zone (relative to the ground) the player will be placed
   */
 final case class DroppodLaunchInfo(
-                                    guid: PlanetSideGUID,
-                                    zone_number: Int,
-                                    xypos: Vector3
-                                  )
+    guid: PlanetSideGUID,
+    zone_number: Int,
+    xypos: Vector3
+)
 
 object DroppodLaunchInfo {
   val codec: Codec[DroppodLaunchInfo] = (
     ("guid" | PlanetSideGUID.codec) ::
-    ("zone_number" | uint16L) ::
-    (floatL :: floatL).narrow[Vector3](
-      {
-        case x :: y :: HNil => Successful(Vector3(x, y, 0))
-      },
-      {
-        case Vector3(x, y, _) => x :: y :: HNil
-      }
-    )
-    ).as[DroppodLaunchInfo]
+      ("zone_number" | uint16L) ::
+      (floatL :: floatL).narrow[Vector3](
+        {
+          case x :: y :: HNil => Successful(Vector3(x, y, 0))
+        },
+        {
+          case Vector3(x, y, _) => x :: y :: HNil
+        }
+      )
+  ).as[DroppodLaunchInfo]
 }

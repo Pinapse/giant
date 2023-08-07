@@ -13,11 +13,9 @@ import net.psforever.types.PlanetSideEmpire
   * The inventory of this object is accessed indirectly using a game world `Locker` object (`mb_locker`) as a proxy.
   * The `Player` class refers to it as the "fifth slot".
   */
-class LockerContainer(inventory: GridInventory)
-  extends PlanetSideServerObject
-  with Container {
+class LockerContainer(inventory: GridInventory) extends PlanetSideServerObject with Container {
   private var faction: PlanetSideEmpire.Value = PlanetSideEmpire.NEUTRAL
-  private val inv: GridInventory = inventory
+  private val inv: GridInventory              = inventory
 
   def Faction: PlanetSideEmpire.Value = faction
 
@@ -34,6 +32,7 @@ class LockerContainer(inventory: GridInventory)
 }
 
 object LockerContainer {
+
   /**
     * Overloaded constructor for the standard Infantry locker container of size 30x20.
     * @return a `LockerContainer` object

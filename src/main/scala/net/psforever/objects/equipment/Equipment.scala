@@ -15,10 +15,7 @@ import net.psforever.types.PlanetSideEmpire
   * and, special carried (like a lattice logic unit);
   * and, dropped on the ground in the game world and render where it was deposited.
   */
-abstract class Equipment
-  extends PlanetSideGameObject
-  with FactionAffinity
-  with BlockMapEntity {
+abstract class Equipment extends PlanetSideGameObject with FactionAffinity with BlockMapEntity {
   private var faction: PlanetSideEmpire.Value = PlanetSideEmpire.NEUTRAL
 
   def Faction: PlanetSideEmpire.Value = faction

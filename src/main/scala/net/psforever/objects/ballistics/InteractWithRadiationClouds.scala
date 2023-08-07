@@ -18,9 +18,10 @@ case object RadiationInteraction extends ZoneInteractionType
   * that may be emitted in the game environment for a limited amount of time.
   */
 class InteractWithRadiationClouds(
-                                   val range: Float,
-                                   private val user: Option[Player]
-                                 ) extends ZoneInteraction {
+    val range: Float,
+    private val user: Option[Player]
+) extends ZoneInteraction {
+
   /**
     * radiation clouds that, though detected, are skipped from affecting the target;
     * in between interaction tests, a memory of the clouds that were tested last are retained and
@@ -41,20 +42,17 @@ class InteractWithRadiationClouds(
       case t: Vitality =>
         val position = target.Position
         //collect all projectiles in sector/range
-        val projectiles = sector
-          .projectileList
-          .filter { cloud =>
-            val radius = cloud.Definition.DamageRadius
-            cloud.Definition.radiation_cloud && Zone.distanceCheck(target, cloud, radius * radius)
-          }
-          .distinct
+        val projectiles = sector.projectileList.filter { cloud =>
+          val radius = cloud.Definition.DamageRadius
+          cloud.Definition.radiation_cloud && Zone.distanceCheck(target, cloud, radius * radius)
+        }.distinct
         val notSkipped = projectiles.filterNot { t => skipTargets.contains(t.GUID) }
         skipTargets = notSkipped.map { _.GUID }
         if (notSkipped.nonEmpty) {
           //isolate one of each type of projectile
           notSkipped
-            .foldLeft(Nil: List[Projectile]) {
-              (acc, next) => if (acc.exists { _.profile == next.profile }) acc else next :: acc
+            .foldLeft(Nil: List[Projectile]) { (acc, next) =>
+              if (acc.exists { _.profile == next.profile }) acc else next :: acc
             }
             .foreach { projectile =>
               t.Actor ! Vitality.Damage(

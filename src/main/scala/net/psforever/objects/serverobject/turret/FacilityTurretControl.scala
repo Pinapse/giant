@@ -105,15 +105,14 @@ class FacilityTurretControl(turret: FacilityTurret)
                 weapon.Magazine += 1
                 val seat = turret.Seat(0).get
                 seat.occupant match {
-                  case Some(player : Player) =>
+                  case Some(player: Player) =>
                     turret.Zone.LocalEvents ! LocalServiceMessage(
                       turret.Zone.id,
                       LocalAction.RechargeVehicleWeapon(player.GUID, turret.GUID, weapon.GUID)
                     )
                   case _ => ;
                 }
-              }
-              else if (weapon.Magazine == weapon.MaxMagazine && weaponAmmoRechargeTimer != Default.Cancellable) {
+              } else if (weapon.Magazine == weapon.MaxMagazine && weaponAmmoRechargeTimer != Default.Cancellable) {
                 weaponAmmoRechargeTimer.cancel()
                 weaponAmmoRechargeTimer = Default.Cancellable
               }
@@ -130,13 +129,14 @@ class FacilityTurretControl(turret: FacilityTurret)
       }
 
   override protected def mountTest(
-                                    obj: PlanetSideServerObject with Mountable,
-                                    seatNumber: Int,
-                                    player: Player): Boolean = {
+      obj: PlanetSideServerObject with Mountable,
+      seatNumber: Int,
+      player: Player
+  ): Boolean = {
     (!turret.Definition.FactionLocked || player.Faction == obj.Faction) && !obj.Destroyed
   }
 
-  override protected def DamageAwareness(target: Damageable.Target, cause: DamageResult, amount: Any) : Unit = {
+  override protected def DamageAwareness(target: Damageable.Target, cause: DamageResult, amount: Any): Unit = {
     tryAutoRepair()
     super.DamageAwareness(target, cause, amount)
   }
@@ -152,9 +152,9 @@ class FacilityTurretControl(turret: FacilityTurret)
     events ! AvatarServiceMessage(zoneId, AvatarAction.PlanetsideAttributeToAll(tguid, 51, 1))
   }
 
-  override def PerformRepairs(target : Damageable.Target, amount : Int) : Int = {
+  override def PerformRepairs(target: Damageable.Target, amount: Int): Int = {
     val newHealth = super.PerformRepairs(target, amount)
-    if(newHealth == target.Definition.MaxHealth) {
+    if (newHealth == target.Definition.MaxHealth) {
       stopAutoRepair()
     }
     newHealth
@@ -170,15 +170,15 @@ class FacilityTurretControl(turret: FacilityTurret)
     events ! AvatarServiceMessage(zoneId, AvatarAction.PlanetsideAttributeToAll(tguid, 51, 0))
   }
 
-  override def tryAutoRepair() : Boolean = {
+  override def tryAutoRepair(): Boolean = {
     isPowered && super.tryAutoRepair()
   }
 
   def powerTurnOffCallback(): Unit = {
     stopAutoRepair()
     //kick all occupants
-    val guid = turret.GUID
-    val zone = turret.Zone
+    val guid   = turret.GUID
+    val zone   = turret.Zone
     val zoneId = zone.id
     val events = zone.VehicleEvents
     turret.Seats.values.foreach(seat =>
@@ -187,7 +187,7 @@ class FacilityTurretControl(turret: FacilityTurret)
           seat.unmount(player)
           player.VehicleSeated = None
           if (player.HasGUID) {
-            events ! VehicleServiceMessage(zoneId, VehicleAction.KickPassenger(player.GUID, 4, unk2=false, guid))
+            events ! VehicleServiceMessage(zoneId, VehicleAction.KickPassenger(player.GUID, 4, unk2 = false, guid))
           }
         case None => ;
       }

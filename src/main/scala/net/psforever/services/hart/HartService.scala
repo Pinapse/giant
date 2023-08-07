@@ -15,12 +15,13 @@ import scala.collection.concurrent.TrieMap
   * @see `HartTimer`
   */
 class HartService extends Actor {
+
   /** key - a zone id; value - the manager for that zone's HART system */
   val zoneTimers: TrieMap[String, ActorRef] = TrieMap[String, ActorRef]()
 
   def receive: Receive = {
-    case out : HartTimer.PairWith =>
-      val zone = out.zone
+    case out: HartTimer.PairWith =>
+      val zone    = out.zone
       val channel = zone.id
       (zoneTimers.get(channel) match {
         case Some(o) =>
@@ -42,7 +43,7 @@ class HartService extends Actor {
     case out: HartTimer.MessageToHartInZone =>
       zoneTimers.get(out.inZone) match {
         case Some(o) => o ! out
-        case _ =>
+        case _       =>
       }
 
     case _ => ;

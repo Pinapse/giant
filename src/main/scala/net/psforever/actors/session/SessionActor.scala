@@ -33,6 +33,7 @@ import net.psforever.services.vehicle.VehicleServiceResponse
 import net.psforever.services.{CavernRotationService, ServiceManager, InterstellarClusterService => ICS}
 import net.psforever.types._
 import net.psforever.util.Config
+import io.prometheus.client.Gauge
 
 object SessionActor {
   sealed trait Command
@@ -106,6 +107,9 @@ object SessionActor {
       bundle: Iterable[Iterable[PlanetSideGamePacket]],
       delay: Long
   )
+
+  final val sessionActorAlive =
+    Gauge.build().name("session_actor_alive").help("Number of alive SessionActors.").register()
 }
 
 class SessionActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], connectionId: String, sessionId: Long)
@@ -121,10 +125,12 @@ class SessionActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], con
   ServiceManager.serviceManager ! Lookup("galaxy")
   ServiceManager.serviceManager ! Lookup("squad")
   ServiceManager.receptionist ! Receptionist.Find(ICS.InterstellarClusterServiceKey, context.self)
+  SessionActor.sessionActorAlive.inc()
 
   override def postStop(): Unit = {
     //normally, the player avatar persists a minute or so after disconnect; we are subject to the SessionReaper
     //TODO put any temporary values back into the avatar
+    SessionActor.sessionActorAlive.dec()
     sessionFuncs.stop()
   }
 
@@ -199,7 +205,7 @@ class SessionActor(middlewareActor: typed.ActorRef[MiddlewareActor.Command], con
 
     case Zone.Population.PlayerHasLeft(zone, Some(tplayer)) =>
       if (tplayer.isAlive) {
-        log.info(s"${tplayer.Name} has left zone ${zone.id}")
+        log.debug(s"${tplayer.Name} has left zone ${zone.id}")
       }
 
     case Zone.Population.PlayerCanNotSpawn(zone, tplayer) =>

@@ -16,15 +16,16 @@ import net.psforever.objects.vital.{NoResistanceSelection, SimpleResolutions, Vi
   * @param body a representative of an element of the environment
   * @param against for the purposes of damage, what kind of target is being acted upon
   */
-final case class EnvironmentReason(body: PieceOfEnvironment, against: DamageCalculations.Selector) extends DamageReason {
+final case class EnvironmentReason(body: PieceOfEnvironment, against: DamageCalculations.Selector)
+    extends DamageReason {
   def resolution: DamageResolution.Value = DamageResolution.Environmental
 
   def source: DamageProperties = EnvironmentReason.selectDamage(body)
 
   def same(test: DamageReason): Boolean = {
     test match {
-      case o : EnvironmentReason => body == o.body //TODO eq
-      case _ => false
+      case o: EnvironmentReason => body == o.body //TODO eq
+      case _                    => false
     }
   }
 
@@ -34,6 +35,7 @@ final case class EnvironmentReason(body: PieceOfEnvironment, against: DamageCalc
 }
 
 object EnvironmentReason {
+
   /**
     * Overloaded constructor.
     * @param body a representative of an element of the environment
@@ -44,17 +46,19 @@ object EnvironmentReason {
     EnvironmentReason(body, target.DamageModel.DamageUsing)
 
   /** variable, no resisting, quick and simple */
-  def drm(against: DamageCalculations.Selector) = new DamageResistanceModel {
-    DamageUsing = against
-    ResistUsing = NoResistanceSelection
-    Model = SimpleResolutions.calculate
-  }
+  def drm(against: DamageCalculations.Selector) =
+    new DamageResistanceModel {
+      DamageUsing = against
+      ResistUsing = NoResistanceSelection
+      Model = SimpleResolutions.calculate
+    }
 
   /** The flags for calculating an absence of environment damage. */
-  private val noDamage = new DamageProperties { }
+  private val noDamage = new DamageProperties {}
+
   /** The flags for calculating lava-based environment damage. */
   private val lavaDamage = new DamageProperties {
-    Damage0 = 5 //20 dps per 250ms
+    Damage0 = 5  //20 dps per 250ms
     Damage1 = 37 //150 dps per 250ms
     Damage2 = 12 //50 dps per 250ms
     Damage3 = 12 //50 dps per 250ms
@@ -75,7 +79,7 @@ object EnvironmentReason {
   def selectDamage(environment: PieceOfEnvironment): DamageProperties = {
     environment.attribute match {
       case EnvironmentAttribute.Lava => lavaDamage
-      case _ => noDamage
+      case _                         => noDamage
     }
   }
 }

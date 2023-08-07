@@ -11,15 +11,14 @@ import net.psforever.types.Vector3
   * @param p the point of origin
   * @param d the direction
   */
-final case class Line(p: Point, d: Vector3)
-  extends Geometry3D
-  with geometry.Line {
+final case class Line(p: Point, d: Vector3) extends Geometry3D with geometry.Line {
   def center: Point = p
 
   def moveCenter(point: geometry.Point): Geometry3D = Line(Point(point), d)
 }
 
 object Line {
+
   /**
     * An overloaded constructor that uses individual coordinates.
     * @param x the 'x' coordinate of the position
@@ -29,7 +28,7 @@ object Line {
     * @return a `Line` entity
     */
   def apply(x: Float, y: Float, z: Float, d: Vector3): Line = {
-    Line(Point(x,y,z), d)
+    Line(Point(x, y, z), d)
   }
 
   /**

@@ -12,7 +12,22 @@ class FrameVehicleStateMessageTest extends Specification {
 
   "decode" in {
     PacketCoding.decodePacket(string).require match {
-      case FrameVehicleStateMessage(guid, unk1, pos, ang, vel, unk2, unk3, unk4, crouched, airborne, ascending, ftime, u9, uA) =>
+      case FrameVehicleStateMessage(
+            guid,
+            unk1,
+            pos,
+            ang,
+            vel,
+            unk2,
+            unk3,
+            unk4,
+            crouched,
+            airborne,
+            ascending,
+            ftime,
+            u9,
+            uA
+          ) =>
         guid mustEqual PlanetSideGUID(433)
         unk1 mustEqual 0
         pos mustEqual Vector3(6518.5234f, 1918.6719f, 16.296875f)

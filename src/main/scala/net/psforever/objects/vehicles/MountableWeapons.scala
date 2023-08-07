@@ -5,9 +5,7 @@ import net.psforever.objects.PlanetSideGameObject
 import net.psforever.objects.equipment.Equipment
 import net.psforever.objects.serverobject.mount.Mountable
 
-trait MountableWeapons
-  extends MountedWeapons
-  with Mountable {
+trait MountableWeapons extends MountedWeapons with Mountable {
   this: PlanetSideGameObject =>
 
   /**
@@ -18,7 +16,8 @@ trait MountableWeapons
   def WeaponControlledFromSeat(seatNumber: Int): Set[Equipment] = {
     Definition
       .asInstanceOf[MountableWeaponsDefinition]
-      .controlledWeapons().get(seatNumber) match {
+      .controlledWeapons()
+      .get(seatNumber) match {
       case Some(wepNumbers) if seats.get(seatNumber).nonEmpty => wepNumbers.flatMap { controlledWeapon }
       case _                                                  => Set.empty
     }

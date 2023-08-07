@@ -1104,12 +1104,12 @@ object SquadDetailDefinitionUpdateMessage extends Marshallable[SquadDetailDefini
       */
     private def modifyCodedPadValue(code: Int, bitsOverByte: StreamLengthToken): StreamLengthToken = {
       code match {
-        case 0 => bitsOverByte.Add(1)         //additional 1u
+        case 0 => bitsOverByte.Add(1)                //additional 1u
         case 1 => bitsOverByte.Length = 0            //byte-aligned string; padding zero'd
         case 2 => bitsOverByte.Length = 0            //byte-aligned string; padding zero'd
         case 3 => bitsOverByte                       //32u = no added padding
         case 4 => bitsOverByte.Length = 0            //byte-aligned string; padding zero'd
-        case 5 => bitsOverByte.Add(6)         //46u = 5*8u + 6u = additional 6u
+        case 5 => bitsOverByte.Add(6)                //46u = 5*8u + 6u = additional 6u
         case _ => bitsOverByte.Length = Int.MinValue //wildly incorrect
       }
     }

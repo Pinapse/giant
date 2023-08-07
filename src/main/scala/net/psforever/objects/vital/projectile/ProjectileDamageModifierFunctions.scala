@@ -81,7 +81,11 @@ according to 2012 standards of the Youtube video series by TheLegendaryNarwhal.
   */
 case object InfantryAggravatedDirect extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int =
-    ProjectileDamageModifierFunctions.baseAggravatedFormula(DamageResolution.AggravatedDirect, DamageType.Direct)(damage, data, cause)
+    ProjectileDamageModifierFunctions.baseAggravatedFormula(DamageResolution.AggravatedDirect, DamageType.Direct)(
+      damage,
+      data,
+      cause
+    )
 }
 
 /**
@@ -90,7 +94,11 @@ case object InfantryAggravatedDirect extends ProjectileDamageModifiers.Mod {
   */
 case object InfantryAggravatedSplash extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int =
-    ProjectileDamageModifierFunctions.baseAggravatedFormula(DamageResolution.AggravatedSplash, DamageType.Splash)(damage, data, cause)
+    ProjectileDamageModifierFunctions.baseAggravatedFormula(DamageResolution.AggravatedSplash, DamageType.Splash)(
+      damage,
+      data,
+      cause
+    )
 }
 
 /**
@@ -100,7 +108,10 @@ case object InfantryAggravatedSplash extends ProjectileDamageModifiers.Mod {
   */
 case object InfantryAggravatedDirectBurn extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int =
-    ProjectileDamageModifierFunctions.baseAggravatedBurnFormula(DamageResolution.AggravatedDirectBurn, DamageType.Direct)(damage, data, cause)
+    ProjectileDamageModifierFunctions.baseAggravatedBurnFormula(
+      DamageResolution.AggravatedDirectBurn,
+      DamageType.Direct
+    )(damage, data, cause)
 }
 
 /**
@@ -110,7 +121,10 @@ case object InfantryAggravatedDirectBurn extends ProjectileDamageModifiers.Mod {
   */
 case object InfantryAggravatedSplashBurn extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int =
-    ProjectileDamageModifierFunctions.baseAggravatedBurnFormula(DamageResolution.AggravatedSplashBurn, DamageType.Splash)(damage, data, cause)
+    ProjectileDamageModifierFunctions.baseAggravatedBurnFormula(
+      DamageResolution.AggravatedSplashBurn,
+      DamageType.Splash
+    )(damage, data, cause)
 }
 
 /**
@@ -119,9 +133,11 @@ case object InfantryAggravatedSplashBurn extends ProjectileDamageModifiers.Mod {
   */
 case object FireballAggravatedBurn extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int = {
-    if (damage > 0 &&
-        (data.resolution == DamageResolution.AggravatedDirectBurn ||
-         data.resolution == DamageResolution.AggravatedSplashBurn)) {
+    if (
+      damage > 0 &&
+      (data.resolution == DamageResolution.AggravatedDirectBurn ||
+      data.resolution == DamageResolution.AggravatedSplashBurn)
+    ) {
       //add resist to offset resist subtraction later
       1 + cause.damageModel.ResistUsing(data)(data)
     } else {
@@ -138,8 +154,10 @@ case object FireballAggravatedBurn extends ProjectileDamageModifiers.Mod {
   */
 case object StarfireAggravated extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int = {
-    if (cause.resolution == DamageResolution.AggravatedDirect &&
-        cause.projectile.quality == ProjectileQuality.AggravatesTarget) {
+    if (
+      cause.resolution == DamageResolution.AggravatedDirect &&
+      cause.projectile.quality == ProjectileQuality.AggravatesTarget
+    ) {
       data.cause.source.Aggravated match {
         case Some(aggravation) =>
           aggravation.info.find(_.damage_type == DamageType.Direct) match {
@@ -192,8 +210,10 @@ case object StarfireAggravatedBurn extends ProjectileDamageModifiers.Mod {
   */
 case object CometAggravated extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int = {
-    if (cause.resolution == DamageResolution.AggravatedDirect &&
-        cause.projectile.quality == ProjectileQuality.AggravatesTarget) {
+    if (
+      cause.resolution == DamageResolution.AggravatedDirect &&
+      cause.projectile.quality == ProjectileQuality.AggravatesTarget
+    ) {
       data.cause.source.Aggravated match {
         case Some(aggravation) =>
           aggravation.info.find(_.damage_type == DamageType.Direct) match {
@@ -254,8 +274,9 @@ case object SpikerChargeDamage extends ProjectileDamageModifiers.Mod {
     (projectile.fire_mode, projectile.profile.Charging) match {
       case (_: ChargeFireModeDefinition, Some(info: ChargeDamage)) =>
         val chargeQuality = math.max(0f, math.min(projectile.quality.mod, 1f))
-        val min = cause.damageModel.DamageUsing(info.min)
-        val range = if (damage > min) { damage - min } else { min - damage }
+        val min           = cause.damageModel.DamageUsing(info.min)
+        val range = if (damage > min) { damage - min }
+        else { min - damage }
         min + (range * chargeQuality).toInt
       case _ =>
         damage
@@ -271,7 +292,7 @@ case object SpikerChargeDamage extends ProjectileDamageModifiers.Mod {
   */
 case object FlakHit extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int = {
-    if(cause.resolution == DamageResolution.Hit) {
+    if (cause.resolution == DamageResolution.Hit) {
       ProjectileDamageModifierFunctions.distanceDegradeFunction(damage, data, cause)
     } else {
       damage
@@ -288,7 +309,7 @@ case object FlakHit extends ProjectileDamageModifiers.Mod {
   */
 case object FlakBurst extends ProjectileDamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int = {
-    if(cause.resolution == DamageResolution.Splash) {
+    if (cause.resolution == DamageResolution.Splash) {
       DamageModifierFunctions.radialDegradeFunction(damage, data, cause)
     } else {
       damage
@@ -316,16 +337,16 @@ case object MeleeBoosted extends ProjectileDamageModifiers.Mod {
   */
 case object FlailDistanceDamageBoost extends ProjectileDamageModifiers.Mod {
   override def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int = {
-    val projectile = cause.projectile
-    val profile = projectile.profile
-    val distance   = Vector3.Distance(data.hitPos.xy, projectile.shot_origin.xy)
-    val distanceNoDegrade = profile.DistanceNoDegrade
+    val projectile           = cause.projectile
+    val profile              = projectile.profile
+    val distance             = Vector3.Distance(data.hitPos.xy, projectile.shot_origin.xy)
+    val distanceNoDegrade    = profile.DistanceNoDegrade
     val distanceNoMultiplier = 600f - distanceNoDegrade
     if (distance > profile.DistanceMax) {
       0
     } else if (distance >= distanceNoDegrade) {
       damage + (damage * (profile.DegradeMultiplier - 1) *
-                math.min(distance - distanceNoDegrade, distanceNoMultiplier) / distanceNoMultiplier).toInt
+        math.min(distance - distanceNoDegrade, distanceNoMultiplier) / distanceNoMultiplier).toInt
     } else {
       damage
     }
@@ -356,6 +377,7 @@ case object ShieldAgainstRadiation extends ProjectileDamageModifiers.Mod {
 
 /* Functions */
 object ProjectileDamageModifierFunctions {
+
   /**
     * The input value degrades (lessens)
     * the further the distance between the point of origin (`shot_origin`)
@@ -396,16 +418,17 @@ object ProjectileDamageModifierFunctions {
     * @return the modified damage
     */
   def baseAggravatedFormula(
-                             resolution: DamageResolution.Value,
-                             damageType : DamageType.Value
-                           )
-                           (
-                             damage: Int,
-                             data: DamageInteraction,
-                             cause: ProjectileReason
-                           ): Int = {
-    if (cause.resolution == resolution &&
-        cause.projectile.quality == ProjectileQuality.AggravatesTarget) {
+      resolution: DamageResolution.Value,
+      damageType: DamageType.Value
+  )(
+      damage: Int,
+      data: DamageInteraction,
+      cause: ProjectileReason
+  ): Int = {
+    if (
+      cause.resolution == resolution &&
+      cause.projectile.quality == ProjectileQuality.AggravatesTarget
+    ) {
       (data.cause.source.Aggravated, data.target) match {
         case (Some(aggravation), p: PlayerSource) =>
           val aggravatedDamage = aggravation.info.find(_.damage_type == damageType) match {
@@ -414,7 +437,7 @@ object ProjectileDamageModifierFunctions {
             case _ =>
               damage toFloat
           }
-          if(p.ExoSuit == ExoSuitType.MAX) {
+          if (p.ExoSuit == ExoSuitType.MAX) {
             (aggravatedDamage * aggravation.max_factor) toInt
           } else {
             aggravatedDamage toInt
@@ -445,14 +468,13 @@ object ProjectileDamageModifierFunctions {
     * @return the modified damage
     */
   def baseAggravatedBurnFormula(
-                                 resolution: DamageResolution.Value,
-                                 damageType : DamageType.Value
-                               )
-                               (
-                                 damage: Int,
-                                 data: DamageInteraction,
-                                 cause: ProjectileReason
-                               ): Int = {
+      resolution: DamageResolution.Value,
+      damageType: DamageType.Value
+  )(
+      damage: Int,
+      data: DamageInteraction,
+      cause: ProjectileReason
+  ): Int = {
     if (data.resolution == resolution) {
       (data.cause.source.Aggravated, data.target) match {
         case (Some(aggravation), p: PlayerSource) =>

@@ -23,7 +23,7 @@ trait DamageableEntity extends Damageable {
     * @param msg the message for the damage log
     */
   protected def DamageLog(msg: String): Unit = {
-    damageLog.info(msg)
+    damageLog.trace(msg)
   }
 
   /**
@@ -169,8 +169,7 @@ object DamageableEntity {
         AvatarAction.PlanetsideAttributeToAll(target.GUID, 0, target.Health)
       )
       true
-    }
-    else {
+    } else {
       false
     }
   }
@@ -194,9 +193,9 @@ object DamageableEntity {
     target.Actor ! JammableUnit.ClearJammeredSound()
     target.Actor ! JammableUnit.ClearJammeredStatus()
     //
-    val zone   = target.Zone
-    val zoneId = zone.id
-    val tguid  = target.GUID
+    val zone        = target.Zone
+    val zoneId      = zone.id
+    val tguid       = target.GUID
     val attribution = attributionTo(cause, target.Zone)
     zone.AvatarEvents ! AvatarServiceMessage(zoneId, AvatarAction.PlanetsideAttributeToAll(tguid, 0, target.Health))
     zone.AvatarEvents ! AvatarServiceMessage(

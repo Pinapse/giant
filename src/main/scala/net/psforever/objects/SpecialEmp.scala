@@ -20,8 +20,10 @@ import net.psforever.types.{PlanetSideEmpire, Vector3}
   * (not intigated by any specific thing the client does).
   */
 object SpecialEmp {
+
   /** A defaulted emp definition.
-    * Any projectile definition can be used. */
+    * Any projectile definition can be used.
+    */
   final val emp = new DamageWithPosition {
     CausesDamageType = DamageType.Splash
     SympatheticExplosion = true
@@ -79,13 +81,12 @@ object SpecialEmp {
     * @return a `DamageInteraction` object
     */
   def createEmpInteraction(
-                            empEffect: DamageWithPosition,
-                            position: Vector3
-                          )
-                          (
-                            source: PlanetSideGameObject with FactionAffinity with Vitality,
-                            target: PlanetSideGameObject with FactionAffinity with Vitality
-                          ): DamageInteraction = {
+      empEffect: DamageWithPosition,
+      position: Vector3
+  )(
+      source: PlanetSideGameObject with FactionAffinity with Vitality,
+      target: PlanetSideGameObject with FactionAffinity with Vitality
+  ): DamageInteraction = {
     DamageInteraction(
       SourceEntry(target),
       EmpReason(source, empEffect, target),
@@ -107,10 +108,10 @@ object SpecialEmp {
     * @return a function that determines if two game entities are near enough to each other
     */
   def prepareDistanceCheck(
-                     owner: PlanetSideGameObject,
-                     position: Vector3,
-                     faction: PlanetSideEmpire.Value
-                   ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
+      owner: PlanetSideGameObject,
+      position: Vector3,
+      faction: PlanetSideEmpire.Value
+  ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
     distanceCheck(new PlanetSideServerObject with OwnableByPlayer {
       Owner = Some(owner.GUID)
       OwnerName = owner match {
@@ -119,7 +120,7 @@ object SpecialEmp {
         case _                  => ""
       }
       Position = position
-      def Faction = faction
+      def Faction    = faction
       def Definition = proxy_definition
     })
   }
@@ -138,13 +139,12 @@ object SpecialEmp {
     *        `false`, otherwise
     */
   def distanceCheck(
-                     proxy: PlanetSideGameObject
-                   )
-                   (
-                     obj1: PlanetSideGameObject,
-                     obj2: PlanetSideGameObject,
-                     maxDistance: Float
-                   ): Boolean = {
+      proxy: PlanetSideGameObject
+  )(
+      obj1: PlanetSideGameObject,
+      obj2: PlanetSideGameObject,
+      maxDistance: Float
+  ): Boolean = {
     Zone.distanceCheck(proxy, obj2, maxDistance)
   }
 
@@ -161,15 +161,13 @@ object SpecialEmp {
     *         since only boomer explosives are returned, this second list can be ignored
     */
   def findAllBoomers(
-                      range: Float
-                    )
-                    (
-                      zone: Zone,
-                      obj: PlanetSideGameObject with FactionAffinity with Vitality,
-                      properties: DamageWithPosition
-                    ): List[PlanetSideServerObject with Vitality] = {
-    zone
-      .blockMap
+      range: Float
+  )(
+      zone: Zone,
+      obj: PlanetSideGameObject with FactionAffinity with Vitality,
+      properties: DamageWithPosition
+  ): List[PlanetSideServerObject with Vitality] = {
+    zone.blockMap
       .sector(obj.Position, range)
       .deployableList
       .collect { case o: BoomerDeployable if !o.Destroyed && (o ne obj) => o }

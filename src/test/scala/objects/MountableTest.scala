@@ -79,14 +79,13 @@ object MountableTest {
     seats += 0 -> new Seat(new SeatDefinition())
     GUID = PlanetSideGUID(1) //eh whatever
     def Faction = PlanetSideEmpire.TR
-    def Definition = new ObjectDefinition(1) with MountableDefinition {
-      MountPoints += 0 -> MountInfo(0)
-    }
+    def Definition =
+      new ObjectDefinition(1) with MountableDefinition {
+        MountPoints += 0 -> MountInfo(0)
+      }
   }
 
-  class MountableTestControl(obj: PlanetSideServerObject with Mountable)
-      extends Actor
-      with MountableBehavior {
+  class MountableTestControl(obj: PlanetSideServerObject with Mountable) extends Actor with MountableBehavior {
     override def MountableObject = obj
 
     def receive: Receive = mountBehavior.orElse(dismountBehavior)

@@ -8,8 +8,9 @@ import net.psforever.services.local.{LocalAction, LocalServiceMessage}
 
 import scala.util.{Failure, Success}
 
-object CaptureTerminals {import scala.concurrent.duration._
-  private val log = org.log4s.getLogger("CaptureTerminals")
+object CaptureTerminals {
+  import scala.concurrent.duration._
+  private val log                       = org.log4s.getLogger("CaptureTerminals")
   private implicit val timeout: Timeout = 1.second
 
   /**
@@ -30,9 +31,9 @@ object CaptureTerminals {import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
     ask(target.Actor, CommonMessages.Hack(hackingPlayer, target)).mapTo[Boolean].onComplete {
       case Success(_) =>
-        val zone = target.Zone
-        val zoneid = zone.id
-        val events = zone.LocalEvents
+        val zone        = target.Zone
+        val zoneid      = zone.id
+        val events      = zone.LocalEvents
         val isResecured = hackingPlayer.Faction == target.Faction
         events ! LocalServiceMessage(
           zoneid,

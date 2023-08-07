@@ -11,27 +11,30 @@ import net.psforever.packet.PlanetSideGamePacket
 import net.psforever.packet.game.objectcreate.ConstructorData
 import net.psforever.packet.game.ObjectCreateMessage
 import net.psforever.types.{BailType, DriveState, PlanetSideGUID, Vector3}
-import net.psforever.services.GenericEventBusMsg
+import net.psforever.services.GenericGuidEventBusMsg
 
 final case class VehicleServiceResponse(
     channel: String,
     avatar_guid: PlanetSideGUID,
     replyMessage: VehicleResponse.Response
-) extends GenericEventBusMsg
+) extends GenericGuidEventBusMsg {
+  override def inner                = replyMessage
+  override def guid: PlanetSideGUID = avatar_guid
+}
 
 object VehicleResponse {
   trait Response
 
   final case class ChangeAmmo(
-                               weapon_guid: PlanetSideGUID,
-                               weapon_slot: Int,
-                               old_ammo_guid: PlanetSideGUID,
-                               ammo_id: Int,
-                               ammo_guid: PlanetSideGUID,
-                               ammo_data: ConstructorData
-                             )                                                             extends Response
-  final case class ChangeFireState_Start(weapon_guid: PlanetSideGUID)   extends Response
-  final case class ChangeFireState_Stop(weapon_guid: PlanetSideGUID)    extends Response
+      weapon_guid: PlanetSideGUID,
+      weapon_slot: Int,
+      old_ammo_guid: PlanetSideGUID,
+      ammo_id: Int,
+      ammo_guid: PlanetSideGUID,
+      ammo_data: ConstructorData
+  )                                                                                        extends Response
+  final case class ChangeFireState_Start(weapon_guid: PlanetSideGUID)                      extends Response
+  final case class ChangeFireState_Stop(weapon_guid: PlanetSideGUID)                       extends Response
   final case class ChildObjectState(object_guid: PlanetSideGUID, pitch: Float, yaw: Float) extends Response
   final case class ConcealPlayer(player_guid: PlanetSideGUID)                              extends Response
   final case class DeployRequest(
@@ -58,9 +61,9 @@ object VehicleResponse {
       unk8: Int,
       unk9: Long,
       unkA: Long
-  ) extends Response
-  final case class GenericObjectAction(guid: PlanetSideGUID, action: Int)   extends Response
-  final case class HitHint(source_guid: PlanetSideGUID)                     extends Response
+  )                                                                       extends Response
+  final case class GenericObjectAction(guid: PlanetSideGUID, action: Int) extends Response
+  final case class HitHint(source_guid: PlanetSideGUID)                   extends Response
   final case class InventoryState(
       obj: PlanetSideGameObject,
       parent_guid: PlanetSideGUID,

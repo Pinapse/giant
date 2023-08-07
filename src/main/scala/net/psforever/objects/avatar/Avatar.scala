@@ -17,55 +17,55 @@ import scala.concurrent.duration._
 
 object Avatar {
   val purchaseCooldowns: Map[BasicDefinition, FiniteDuration] = Map(
-    GlobalDefinitions.ams                   -> 5.minutes,
-    GlobalDefinitions.ant                   -> 4.minutes,
-    GlobalDefinitions.apc_nc                -> 5.minutes,
-    GlobalDefinitions.apc_tr                -> 5.minutes,
-    GlobalDefinitions.apc_vs                -> 5.minutes,
-    GlobalDefinitions.aphelion_flight       -> 15.minutes, //Temporarily - Default is 25 minutes
-    GlobalDefinitions.aphelion_gunner       -> 15.minutes, //Temporarily - Default is 25 minutes
-    GlobalDefinitions.aurora                -> 5.minutes,
-    GlobalDefinitions.battlewagon           -> 5.minutes,
-    GlobalDefinitions.colossus_flight       -> 15.minutes, //Temporarily - Default is 25 minutes
-    GlobalDefinitions.colossus_gunner       -> 15.minutes, //Temporarily - Default is 25 minutes
-    GlobalDefinitions.dropship              -> 5.minutes,
-    GlobalDefinitions.flail                 -> 5.minutes,
-    GlobalDefinitions.fury                  -> 2.minutes,
-    GlobalDefinitions.galaxy_gunship        -> 15.minutes, //Temporary - Default is 10 minutes
-    GlobalDefinitions.lodestar              -> 5.minutes,
-    GlobalDefinitions.liberator             -> 5.minutes,
-    GlobalDefinitions.lightgunship          -> 5.minutes,
-    GlobalDefinitions.lightning             -> 5.minutes,
-    GlobalDefinitions.magrider              -> 5.minutes,
-    GlobalDefinitions.mediumtransport       -> 5.minutes,
-    GlobalDefinitions.mosquito              -> 5.minutes,
-    GlobalDefinitions.peregrine_flight      -> 15.minutes, //Temporarily - Default is 25 minutes
-    GlobalDefinitions.peregrine_gunner      -> 15.minutes, //Temporarily - Default is 25 minutes
-    GlobalDefinitions.phantasm              -> 5.minutes,
-    GlobalDefinitions.prowler               -> 5.minutes,
-    GlobalDefinitions.quadassault           -> 2.minutes,
-    GlobalDefinitions.quadstealth           -> 2.minutes,
-    GlobalDefinitions.router                -> 5.minutes,
-    GlobalDefinitions.switchblade           -> 5.minutes,
-    GlobalDefinitions.skyguard              -> 2.minutes,
-    GlobalDefinitions.threemanheavybuggy    -> 2.minutes,
-    GlobalDefinitions.thunderer             -> 5.minutes,
-    GlobalDefinitions.two_man_assault_buggy -> 2.minutes,
-    GlobalDefinitions.twomanhoverbuggy      -> 2.minutes,
-    GlobalDefinitions.twomanheavybuggy      -> 2.minutes,
-    GlobalDefinitions.vanguard              -> 5.minutes,
-    GlobalDefinitions.vulture               -> 5.minutes,
-    GlobalDefinitions.wasp                  -> 5.minutes,
-    GlobalDefinitions.flamethrower          -> 3.minutes,
-    GlobalDefinitions.nchev_sparrow         -> 5.minutes,
-    GlobalDefinitions.nchev_falcon          -> 5.minutes,
-    GlobalDefinitions.nchev_scattercannon   -> 5.minutes,
-    GlobalDefinitions.vshev_comet           -> 5.minutes,
-    GlobalDefinitions.vshev_quasar          -> 5.minutes,
-    GlobalDefinitions.vshev_starfire        -> 5.minutes,
-    GlobalDefinitions.trhev_burster         -> 5.minutes,
-    GlobalDefinitions.trhev_dualcycler      -> 5.minutes,
-    GlobalDefinitions.trhev_pounder         -> 5.minutes
+    GlobalDefinitions.ams                   -> 10.seconds,
+    GlobalDefinitions.ant                   -> 10.seconds,
+    GlobalDefinitions.apc_nc                -> 10.seconds,
+    GlobalDefinitions.apc_tr                -> 10.seconds,
+    GlobalDefinitions.apc_vs                -> 10.seconds,
+    GlobalDefinitions.aphelion_flight       -> 10.seconds, //Temporarily - Default is 25 minutes
+    GlobalDefinitions.aphelion_gunner       -> 10.seconds, //Temporarily - Default is 25 minutes
+    GlobalDefinitions.aurora                -> 10.seconds,
+    GlobalDefinitions.battlewagon           -> 10.seconds,
+    GlobalDefinitions.colossus_flight       -> 10.seconds, //Temporarily - Default is 25 minutes
+    GlobalDefinitions.colossus_gunner       -> 10.seconds, //Temporarily - Default is 25 minutes
+    GlobalDefinitions.dropship              -> 10.seconds,
+    GlobalDefinitions.flail                 -> 10.seconds,
+    GlobalDefinitions.fury                  -> 10.seconds,
+    GlobalDefinitions.galaxy_gunship        -> 10.seconds, //Temporary - Default is 10 minutes
+    GlobalDefinitions.lodestar              -> 10.seconds,
+    GlobalDefinitions.liberator             -> 10.seconds,
+    GlobalDefinitions.lightgunship          -> 10.seconds,
+    GlobalDefinitions.lightning             -> 10.seconds,
+    GlobalDefinitions.magrider              -> 10.seconds,
+    GlobalDefinitions.mediumtransport       -> 10.seconds,
+    GlobalDefinitions.mosquito              -> 10.seconds,
+    GlobalDefinitions.peregrine_flight      -> 10.seconds, //Temporarily - Default is 25 minutes
+    GlobalDefinitions.peregrine_gunner      -> 10.seconds, //Temporarily - Default is 25 minutes
+    GlobalDefinitions.phantasm              -> 10.seconds,
+    GlobalDefinitions.prowler               -> 10.seconds,
+    GlobalDefinitions.quadassault           -> 10.seconds,
+    GlobalDefinitions.quadstealth           -> 10.seconds,
+    GlobalDefinitions.router                -> 10.seconds,
+    GlobalDefinitions.switchblade           -> 10.seconds,
+    GlobalDefinitions.skyguard              -> 10.seconds,
+    GlobalDefinitions.threemanheavybuggy    -> 10.seconds,
+    GlobalDefinitions.thunderer             -> 10.seconds,
+    GlobalDefinitions.two_man_assault_buggy -> 10.seconds,
+    GlobalDefinitions.twomanhoverbuggy      -> 10.seconds,
+    GlobalDefinitions.twomanheavybuggy      -> 10.seconds,
+    GlobalDefinitions.vanguard              -> 10.seconds,
+    GlobalDefinitions.vulture               -> 10.seconds,
+    GlobalDefinitions.wasp                  -> 10.seconds,
+    GlobalDefinitions.flamethrower          -> 10.seconds,
+    GlobalDefinitions.nchev_sparrow         -> 10.seconds,
+    GlobalDefinitions.nchev_falcon          -> 10.seconds,
+    GlobalDefinitions.nchev_scattercannon   -> 10.seconds,
+    GlobalDefinitions.vshev_comet           -> 10.seconds,
+    GlobalDefinitions.vshev_quasar          -> 10.seconds,
+    GlobalDefinitions.vshev_starfire        -> 10.seconds,
+    GlobalDefinitions.trhev_burster         -> 10.seconds,
+    GlobalDefinitions.trhev_dualcycler      -> 10.seconds,
+    GlobalDefinitions.trhev_pounder         -> 10.seconds
   )
 
   val useCooldowns: Map[BasicDefinition, FiniteDuration] = Map(
@@ -75,45 +75,52 @@ object Avatar {
     GlobalDefinitions.super_staminakit -> 5.minutes // Temporary - Default value is 20 minutes
   )
 
-  def apply(charId: Int, name: String, faction: PlanetSideEmpire.Value, sex: CharacterSex, head: Int, voice: CharacterVoice.Value): Avatar = {
+  def apply(
+      charId: Int,
+      name: String,
+      faction: PlanetSideEmpire.Value,
+      sex: CharacterSex,
+      head: Int,
+      voice: CharacterVoice.Value
+  ): Avatar = {
     Avatar(charId, BasicCharacterData(name, faction, sex, head, voice))
   }
 
   def makeLocker(): LockerContainer = {
     new LockerContainer({
       val inv = new LocallyRegisteredInventory(numbers = 40150 until 40450) // TODO var bad
-      inv.Resize(30,20)
+      inv.Resize(30, 20)
       inv
     })
   }
 }
 
 case class Cooldowns(
-                      /** Timestamps of when a vehicle or equipment was last purchased */
-                      purchase: Map[String, LocalDateTime] = Map(),
-                      /** Timestamps of when a vehicle or equipment was last purchased */
-                      use: Map[String, LocalDateTime] = Map()
-                    )
+    /** Timestamps of when a vehicle or equipment was last purchased */
+    purchase: Map[String, LocalDateTime] = Map(),
+    /** Timestamps of when a vehicle or equipment was last purchased */
+    use: Map[String, LocalDateTime] = Map()
+)
 
 case class Loadouts(
-                     suit: Seq[Option[Loadout]] = Seq.fill(20)(None),
-                     squad: Seq[Option[SquadLoadout]] = Seq.fill(10)(None)
-                   )
+    suit: Seq[Option[Loadout]] = Seq.fill(20)(None),
+    squad: Seq[Option[SquadLoadout]] = Seq.fill(10)(None)
+)
 
 case class ProgressDecoration(
-                               cosmetics: Option[Set[Cosmetic]] = None,
-                               ribbonBars: RibbonBars = RibbonBars(),
-                               firstTimeEvents: Set[String] =
-                               FirstTimeEvents.Maps ++ FirstTimeEvents.Monoliths ++
-                                 FirstTimeEvents.Standard.All ++ FirstTimeEvents.Cavern.All ++
-                                 FirstTimeEvents.TR.All ++ FirstTimeEvents.NC.All ++ FirstTimeEvents.VS.All ++
-                                 FirstTimeEvents.Generic
-                             )
+    cosmetics: Option[Set[Cosmetic]] = None,
+    ribbonBars: RibbonBars = RibbonBars(),
+    firstTimeEvents: Set[String] =
+      FirstTimeEvents.Maps ++ FirstTimeEvents.Monoliths ++
+        FirstTimeEvents.Standard.All ++ FirstTimeEvents.Cavern.All ++
+        FirstTimeEvents.TR.All ++ FirstTimeEvents.NC.All ++ FirstTimeEvents.VS.All ++
+        FirstTimeEvents.Generic
+)
 
 case class MemberLists(
-                        friend: List[Friend] = List[Friend](),
-                        ignored: List[Ignored] = List[Ignored]()
-                      )
+    friend: List[Friend] = List[Friend](),
+    ignored: List[Ignored] = List[Ignored]()
+)
 
 case class Avatar(
     /** unique identifier corresponding to a database table row index */

@@ -13,9 +13,9 @@ import shapeless.{::, HNil}
   * @param faction faction affinity
   */
 final case class RadiationCloudData(
-                                     pos: PlacementData,
-                                     faction: PlanetSideEmpire.Value
-                                   ) extends ConstructorData {
+    pos: PlacementData,
+    faction: PlanetSideEmpire.Value
+) extends ConstructorData {
   override def bitsize: Long = {
     pos.bitsize + 24L
   }
@@ -24,11 +24,11 @@ final case class RadiationCloudData(
 object RadiationCloudData extends Marshallable[RadiationCloudData] {
   implicit val codec: Codec[RadiationCloudData] = {
     ("pos" | PlacementData.codec) ::
-    ignore(size = 1) ::
-    ("faction" | PlanetSideEmpire.codec) ::
-    uint(bits = 4) ::
-    ignore(size = 17)
-  }.xmap[RadiationCloudData] (
+      ignore(size = 1) ::
+      ("faction" | PlanetSideEmpire.codec) ::
+      uint(bits = 4) ::
+      ignore(size = 17)
+  }.xmap[RadiationCloudData](
     {
       case pos :: _ :: fac :: _ :: _ :: HNil =>
         RadiationCloudData(pos, fac)

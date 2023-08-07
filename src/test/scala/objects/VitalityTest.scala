@@ -35,7 +35,7 @@ class VitalityTest extends Specification {
         Vector3(50, 50, 0)
       )
       val result = resprojectile.calculate()(player)
-      val term = AmenitySource(new Terminal(GlobalDefinitions.order_terminal) { GUID = PlanetSideGUID(1) })
+      val term   = AmenitySource(new Terminal(GlobalDefinitions.order_terminal) { GUID = PlanetSideGUID(1) })
 
       player.LogActivity(result) //DamageResult, straight-up
       player.LogActivity(DamageFromProjectile(result))
@@ -52,7 +52,7 @@ class VitalityTest extends Specification {
     "return and clear the former list of vital activities" in {
       val player  = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
       val pSource = PlayerSource(player)
-      val term = AmenitySource(new Terminal(GlobalDefinitions.order_terminal) { GUID = PlanetSideGUID(1) })
+      val term    = AmenitySource(new Terminal(GlobalDefinitions.order_terminal) { GUID = PlanetSideGUID(1) })
 
       player.LogActivity(HealFromKit(GlobalDefinitions.medkit, 10))
       player.LogActivity(HealFromTerm(term, 10))
@@ -88,7 +88,7 @@ class VitalityTest extends Specification {
         Vector3(50, 50, 0)
       )
       val result = resprojectile.calculate()(player)
-      val term = AmenitySource(new Terminal(GlobalDefinitions.order_terminal) { GUID = PlanetSideGUID(1) })
+      val term   = AmenitySource(new Terminal(GlobalDefinitions.order_terminal) { GUID = PlanetSideGUID(1) })
 
       player.LogActivity(DamageFromProjectile(result))
       player.LogActivity(HealFromKit(GlobalDefinitions.medkit, 10))
@@ -103,7 +103,7 @@ class VitalityTest extends Specification {
         case Some(resolved_projectile) =>
           resolved_projectile.interaction.cause match {
             case o: ProjectileReason => o.projectile mustEqual projectile
-            case _ => ko
+            case _                   => ko
           }
         case None =>
           ko

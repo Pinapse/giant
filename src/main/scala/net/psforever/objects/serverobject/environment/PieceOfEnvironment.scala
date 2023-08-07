@@ -11,10 +11,11 @@ import net.psforever.types.{PlanetSideGUID, Vector3}
   * The representation of a feature of the game world that is not a formal game object,
   * usually terrain, but can be used to represent any bounded region.
   */
-trait PieceOfEnvironment
-  extends BlockMapEntity {
+trait PieceOfEnvironment extends BlockMapEntity {
+
   /** a general description of this environment */
   def attribute: EnvironmentTrait
+
   /** a special representation of the region that qualifies as "this environment" */
   def collision: EnvironmentCollision
 
@@ -41,7 +42,7 @@ trait PieceOfEnvironment
 
   def Position: Vector3 = collision.bounding.center.asVector3 + Vector3.z(collision.altitude)
 
-  def Position_=(vec : Vector3) : Vector3 = Position
+  def Position_=(vec: Vector3): Vector3 = Position
 
   def Orientation: Vector3 = Vector3.Zero
 
@@ -60,39 +61,44 @@ sealed abstract class EnvironmentTrait extends EnumEntry {
 }
 
 object EnvironmentAttribute extends Enum[EnvironmentTrait] {
+
   /** glue connecting `EnumEntry` to `Enumeration` */
   val values: IndexedSeq[EnvironmentTrait] = findValues
 
   case object Water extends EnvironmentTrait {
+
     /** water can only interact with objects that are negatively affected by being exposed to water;
-      * it's better this way */
+      * it's better this way
+      */
     def canInteractWith(obj: PlanetSideGameObject): Boolean = {
       obj.Definition.DrownAtMaxDepth || obj.Definition.DisableAtMaxDepth
     }
   }
 
   case object Lava extends EnvironmentTrait {
+
     /** lava can only interact with anything capable of registering damage */
     def canInteractWith(obj: PlanetSideGameObject): Boolean = {
       obj match {
         case o: Vitality => o.Definition.Damageable
-        case _ => false
+        case _           => false
       }
     }
   }
 
   case object Death extends EnvironmentTrait {
+
     /** death can only interact with anything capable of registering damage */
     def canInteractWith(obj: PlanetSideGameObject): Boolean = {
       obj match {
         case o: Vitality => o.Definition.Damageable
-        case _ => false
+        case _           => false
       }
     }
   }
 
-  case object GantryDenialField
-    extends EnvironmentTrait {
+  case object GantryDenialField extends EnvironmentTrait {
+
     /** only interact with living player characters */
     def canInteractWith(obj: PlanetSideGameObject): Boolean = {
       obj match {
@@ -102,8 +108,8 @@ object EnvironmentAttribute extends Enum[EnvironmentTrait] {
     }
   }
 
-  case object MovementFieldTrigger
-    extends EnvironmentTrait {
+  case object MovementFieldTrigger extends EnvironmentTrait {
+
     /** only interact with living player characters or vehicles */
     def canInteractWith(obj: PlanetSideGameObject): Boolean = {
       obj match {
@@ -121,16 +127,16 @@ object EnvironmentAttribute extends Enum[EnvironmentTrait] {
   * @param attribute of what the environment is composed
   * @param altitude how high the environment starts
   */
-final case class SeaLevel(attribute: EnvironmentTrait, altitude: Float)
-  extends PieceOfEnvironment {
+final case class SeaLevel(attribute: EnvironmentTrait, altitude: Float) extends PieceOfEnvironment {
   private val planar = DeepPlane(altitude)
 
-  def collision : EnvironmentCollision = planar
+  def collision: EnvironmentCollision = planar
 
   override def Position: Vector3 = Vector3.Zero
 }
 
 object SeaLevel {
+
   /**
     * An overloaded constructor that applies only to water.
     * @param altitude how high the environment starts
@@ -144,10 +150,10 @@ object SeaLevel {
   * @param attribute of what the environment is composed
   * @param collision a special representation of the region that qualifies as "this environment"
   */
-final case class Pool(attribute: EnvironmentTrait, collision: EnvironmentCollision)
-  extends PieceOfEnvironment
+final case class Pool(attribute: EnvironmentTrait, collision: EnvironmentCollision) extends PieceOfEnvironment
 
 object Pool {
+
   /**
     * An overloaded constructor that creates environment backed by a `DeepSquare`.
     * @param attribute of what the environment is composed
@@ -163,21 +169,22 @@ object Pool {
 }
 
 final case class GantryDenialField(
-                                    obbasemesh: PlanetSideGUID,
-                                    mountPoint: Int,
-                                    collision: EnvironmentCollision
-                                  ) extends PieceOfEnvironment {
+    obbasemesh: PlanetSideGUID,
+    mountPoint: Int,
+    collision: EnvironmentCollision
+) extends PieceOfEnvironment {
   def attribute = EnvironmentAttribute.GantryDenialField
 }
 
 final case class GeneralMovementField(
-                                       triggerAction: PlanetSideGameObject => Unit,
-                                       collision: EnvironmentCollision
-                                     ) extends PieceOfEnvironment {
+    triggerAction: PlanetSideGameObject => Unit,
+    collision: EnvironmentCollision
+) extends PieceOfEnvironment {
   def attribute = EnvironmentAttribute.MovementFieldTrigger
 }
 
 object PieceOfEnvironment {
+
   /**
     * Did the test point move into or leave the bounds of the represented environment since its previous test?
     * @param body the environment
@@ -188,8 +195,13 @@ object PieceOfEnvironment {
     *        `Some(false)`, if the point has left the sufficiently "deep" region;
     *        `None`, if the described points only exist outside of or only exists inside of the critical region
     */
-  def testStepIntoInteraction(body: PieceOfEnvironment, pos: Vector3, previousPos: Vector3, varDepth: Float): Option[Boolean] = {
-    val isEncroaching = body.collision.testInteraction(pos, varDepth)
+  def testStepIntoInteraction(
+      body: PieceOfEnvironment,
+      pos: Vector3,
+      previousPos: Vector3,
+      varDepth: Float
+  ): Option[Boolean] = {
+    val isEncroaching  = body.collision.testInteraction(pos, varDepth)
     val wasEncroaching = body.collision.testInteraction(previousPos, varDepth)
     if (isEncroaching != wasEncroaching) {
       Some(isEncroaching)

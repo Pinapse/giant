@@ -4,70 +4,70 @@ package net.psforever.objects.vital
 import net.psforever.objects.vital.resistance.{ResistanceCalculations, ResistanceSelection}
 
 object NoResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.AlwaysValidTarget,
-    ResistanceCalculations.NoResistExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.AlwaysValidTarget,
+      ResistanceCalculations.NoResistExtractor
+    )
 
 object InfantryHitResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidInfantryTarget,
-    ResistanceCalculations.ExoSuitDirectExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidInfantryTarget,
+      ResistanceCalculations.ExoSuitDirectExtractor
+    )
 
 object InfantrySplashResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidInfantryTarget,
-    ResistanceCalculations.ExoSuitSplashExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidInfantryTarget,
+      ResistanceCalculations.ExoSuitSplashExtractor
+    )
 
 object InfantryLashResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidInfantryTarget,
-    ResistanceCalculations.MaximumResistance
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidInfantryTarget,
+      ResistanceCalculations.MaximumResistance
+    )
 
 object InfantryAggravatedResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidInfantryTarget,
-    ResistanceCalculations.ExoSuitAggravatedExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidInfantryTarget,
+      ResistanceCalculations.ExoSuitAggravatedExtractor
+    )
 
 object VehicleHitResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidVehicleTarget,
-    ResistanceCalculations.VehicleDirectExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidVehicleTarget,
+      ResistanceCalculations.VehicleDirectExtractor
+    )
 
 object VehicleSplashResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidVehicleTarget,
-    ResistanceCalculations.VehicleSplashExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidVehicleTarget,
+      ResistanceCalculations.VehicleSplashExtractor
+    )
 
 object VehicleLashResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidVehicleTarget,
-    ResistanceCalculations.NoResistExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidVehicleTarget,
+      ResistanceCalculations.NoResistExtractor
+    )
 
 object VehicleAggravatedResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidVehicleTarget,
-    ResistanceCalculations.VehicleAggravatedExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidVehicleTarget,
+      ResistanceCalculations.VehicleAggravatedExtractor
+    )
 
 object AmenityHitResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidAmenityTarget,
-    ResistanceCalculations.OtherDirectExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidAmenityTarget,
+      ResistanceCalculations.OtherDirectExtractor
+    )
 
 object AmenitySplashResistance
-  extends ResistanceCalculations(
-    ResistanceCalculations.ValidAmenityTarget,
-    ResistanceCalculations.OtherSplashExtractor
-  )
+    extends ResistanceCalculations(
+      ResistanceCalculations.ValidAmenityTarget,
+      ResistanceCalculations.OtherSplashExtractor
+    )
 
 object NoResistanceSelection extends ResistanceSelection {
   def Direct: ResistanceSelection.Format     = NoResistance.Calculate

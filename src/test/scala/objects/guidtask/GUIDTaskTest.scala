@@ -45,11 +45,9 @@ object GUIDTaskTest {
     * @see `UniqueNumberSetup.AllocateNumberPoolActors(NumberPoolHub)(implicit ActorContext)`
     */
   def AllocateNumberPoolActors(poolSource: NumberPoolHub)(implicit system: ActorSystem): Map[String, ActorRef] = {
-    poolSource.Pools
-      .map {
-        case (pname, pool) =>
-          pname -> system.actorOf(Props(classOf[NumberPoolActor], pool), pname)
-      }
-      .toMap
+    poolSource.Pools.map {
+      case (pname, pool) =>
+        pname -> system.actorOf(Props(classOf[NumberPoolActor], pool), pname)
+    }.toMap
   }
 }

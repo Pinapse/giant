@@ -75,8 +75,8 @@ class HackClearActor() extends Actor {
 
   private def RestartTimer(): Unit = {
     if (hackedObjects.nonEmpty) {
-      val now                                 = System.nanoTime()
-      val (_/*unhackObjects*/, stillHackedObjects) = PartitionEntries(hackedObjects, now)
+      val now                                       = System.nanoTime()
+      val (_ /*unhackObjects*/, stillHackedObjects) = PartitionEntries(hackedObjects, now)
 
       stillHackedObjects.headOption match {
         case Some(hackEntry) =>

@@ -61,7 +61,7 @@ object Players {
     * @param item the tool being used to revive the target player
     */
   def FinishRevivingPlayer(target: Player, medic: Player, item: Tool)(): Unit = {
-    val name = target.Name
+    val name      = target.Name
     val medicName = medic.Name
     log.info(s"$medicName had revived $name")
     //target.History(PlayerRespawn(PlayerSource(target), target.Zone, target.Position, Some(PlayerSource(medic))))
@@ -167,18 +167,17 @@ object Players {
     */
   def repairModifierLevel(player: Player): Int = {
     val certs = player.avatar.certifications
-    if (certs.contains(Certification.AdvancedEngineering) ||
-        certs.contains(Certification.AssaultEngineering) ||
-        certs.contains(Certification.FortificationEngineering)) {
+    if (
+      certs.contains(Certification.AdvancedEngineering) ||
+      certs.contains(Certification.AssaultEngineering) ||
+      certs.contains(Certification.FortificationEngineering)
+    ) {
       3
-    }
-    else if (certs.contains(Certification.CombatEngineering)) {
+    } else if (certs.contains(Certification.CombatEngineering)) {
       2
-    }
-    else if (certs.contains(Certification.Engineering)) {
+    } else if (certs.contains(Certification.Engineering)) {
       1
-    }
-    else {
+    } else {
       0
     }
   }
@@ -218,10 +217,10 @@ object Players {
     *        `false`, otherwise
     */
   def deployableWithinBuildLimits(player: Player, obj: Deployable): Boolean = {
-    val zone = obj.Zone
-    val channel = player.Name
-    val definition = obj.Definition
-    val item = definition.Item
+    val zone        = obj.Zone
+    val channel     = player.Name
+    val definition  = obj.Definition
+    val item        = definition.Item
     val deployables = player.avatar.deployables
     val (curr, max) = deployables.CountDeployable(item)
     val tryAddToOwnedDeployables = if (!deployables.Available(obj)) {
@@ -250,9 +249,11 @@ object Players {
           }
           true
         case None =>
-          org.log4s.getLogger(name = "Deployables").warn(
-            s"${player.Name} has no allowance for ${definition.DeployCategory} deployables; is something wrong?"
-          )
+          org.log4s
+            .getLogger(name = "Deployables")
+            .warn(
+              s"${player.Name} has no allowance for ${definition.DeployCategory} deployables; is something wrong?"
+            )
           PlayerControl.sendResponse(zone, channel, ObjectDeployedMessage.Failure(definition.Name))
           false
       }
@@ -291,10 +292,10 @@ object Players {
     *        `false`, otherwise
     */
   def gainDeployableOwnership(
-                               player: Player,
-                               obj: Deployable,
-                               addFunc: Deployable=>Boolean
-                             ): Boolean = {
+      player: Player,
+      obj: Deployable,
+      addFunc: Deployable => Boolean
+  ): Boolean = {
     if (player.Zone == obj.Zone && addFunc(obj)) {
       obj.Actor ! Deployable.Ownership(player)
       player.Zone.LocalEvents ! LocalServiceMessage(player.Name, LocalAction.DeployableUIFor(obj.Definition.Item))
@@ -364,11 +365,11 @@ object Players {
     *        `false`, otherwise
     */
   def safelyRemoveConstructionItemFromSlot(
-                                            player: Player,
-                                            tool: ConstructionItem,
-                                            index: Int,
-                                            logDecorator: String = "SafelyRemoveConstructionItemFromSlot"
-                                          ): Boolean = {
+      player: Player,
+      tool: ConstructionItem,
+      index: Int,
+      logDecorator: String = "SafelyRemoveConstructionItemFromSlot"
+  ): Boolean = {
     if ({
       val holster = player.Slot(index)
       if (holster.Equipment.contains(tool)) {
@@ -377,7 +378,9 @@ object Players {
       } else {
         player.Find(tool) match {
           case Some(newIndex) =>
-            log.warn(s"$logDecorator: ${player.Name} was looking for an item in his hand $index, but item was found at $newIndex instead")
+            log.warn(
+              s"$logDecorator: ${player.Name} was looking for an item in his hand $index, but item was found at $newIndex instead"
+            )
             player.Slot(newIndex).Equipment = None
             true
           case None =>
@@ -417,11 +420,11 @@ object Players {
     if (player.Slot(index).Equipment.isEmpty) {
       FindEquipmentStock(player, { e => e.Definition == definition }, 1) match {
         case x :: _ =>
-          val zone = player.Zone
+          val zone   = player.Zone
           val events = zone.AvatarEvents
-          val name = player.Name
-          val pguid = player.GUID
-          val obj  = x.obj.asInstanceOf[ConstructionItem]
+          val name   = player.Name
+          val pguid  = player.GUID
+          val obj    = x.obj.asInstanceOf[ConstructionItem]
           if ((player.Slot(index).Equipment = obj).contains(obj)) {
             val fireMode = tool.FireModeIndex
             val ammoType = tool.AmmoTypeIndex

@@ -14,6 +14,7 @@ class WarpGate(name: String, building_guid: Int, map_id: Int, zone: Zone, buildi
     extends Building(name, building_guid, map_id, zone, StructureType.WarpGate, buildingDefinition)
     with NtuContainer
     with SpawnPoint {
+
   /** can this building be used as an active warp gate */
   private var active: Boolean = true
 
@@ -29,7 +30,7 @@ class WarpGate(name: String, building_guid: Int, map_id: Int, zone: Zone, buildi
       PlanetSideEmpire.NEUTRAL,
       0L,
       Faction, //should be neutral in most cases
-      0, //Field != 0 will cause malformed packet. See class def.
+      0,       //Field != 0 will cause malformed packet. See class def.
       None,
       PlanetSideGeneratorState.Normal,
       spawn_tubes_normal = true,
@@ -120,7 +121,7 @@ class WarpGate(name: String, building_guid: Int, map_id: Int, zone: Zone, buildi
 
   def NtuCapacitor_=(value: Float): Float = NtuCapacitor
 
-  def MaxNtuCapacitor : Float = Int.MaxValue
+  def MaxNtuCapacitor: Float = Int.MaxValue
 
   override def isOffline: Boolean = !Active
 

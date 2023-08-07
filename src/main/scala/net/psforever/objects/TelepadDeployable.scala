@@ -15,8 +15,7 @@ import net.psforever.services.local.{LocalAction, LocalServiceMessage}
 
 import scala.concurrent.duration._
 
-class TelepadDeployable(ddef: TelepadDeployableDefinition)
-  extends Deployable(ddef) with TelepadLike {
+class TelepadDeployable(ddef: TelepadDeployableDefinition) extends Deployable(ddef) with TelepadLike {
   override def Definition: TelepadDeployableDefinition = ddef
 }
 
@@ -26,7 +25,8 @@ class TelepadDeployableDefinition(objectId: Int) extends DeployableDefinition(ob
   var linkTime: FiniteDuration = 60.seconds
 
   override def Initialize(obj: Deployable, context: ActorContext) = {
-    obj.Actor = context.actorOf(Props(classOf[TelepadDeployableControl], obj), PlanetSideServerObject.UniqueActorName(obj))
+    obj.Actor =
+      context.actorOf(Props(classOf[TelepadDeployableControl], obj), PlanetSideServerObject.UniqueActorName(obj))
   }
 }
 
@@ -36,10 +36,7 @@ object TelepadDeployableDefinition {
   }
 }
 
-class TelepadDeployableControl(tpad: TelepadDeployable)
-  extends Actor
-  with DeployableBehavior
-  with DamageableEntity {
+class TelepadDeployableControl(tpad: TelepadDeployable) extends Actor with DeployableBehavior with DamageableEntity {
   def DeployableObject = tpad
   def DamageableObject = tpad
 
@@ -53,12 +50,11 @@ class TelepadDeployableControl(tpad: TelepadDeployable)
     deployableBehavior
       .orElse(takesDamage)
       .orElse {
-        case TelepadLike.Activate(tpad: TelepadDeployable)
-          if isConstructed.contains(true) =>
+        case TelepadLike.Activate(tpad: TelepadDeployable) if isConstructed.contains(true) =>
           val zone = tpad.Zone
           (zone.GUID(tpad.Router) match {
-            case Some(vehicle : Vehicle) => vehicle.Utility(UtilityType.internal_router_telepad_deployable)
-            case _                             => None
+            case Some(vehicle: Vehicle) => vehicle.Utility(UtilityType.internal_router_telepad_deployable)
+            case _                      => None
           }) match {
             case Some(obj: InternalTelepad) =>
               import scala.concurrent.ExecutionContext.Implicits.global
@@ -76,15 +72,13 @@ class TelepadDeployableControl(tpad: TelepadDeployable)
               }
           }
 
-        case TelepadLike.Activate(obj: InternalTelepad)
-          if isConstructed.contains(true) =>
+        case TelepadLike.Activate(obj: InternalTelepad) if isConstructed.contains(true) =>
           if (obj.Telepad.contains(tpad.GUID) && tpad.Router.contains(obj.Owner.GUID)) {
             tpad.Active = true
             TelepadLike.LinkTelepad(tpad.Zone, tpad.GUID)
           }
 
-        case TelepadLike.SeverLink(obj: InternalTelepad)
-          if isConstructed.contains(true) =>
+        case TelepadLike.SeverLink(obj: InternalTelepad) if isConstructed.contains(true) =>
           if (tpad.Router.contains(obj.Owner.GUID)) {
             tpad.Router = None
             tpad.Active = false
@@ -113,7 +107,7 @@ class TelepadDeployableControl(tpad: TelepadDeployable)
     self ! TelepadLike.Activate(tpad)
   }
 
-  override def deconstructDeployable(time : Option[FiniteDuration]) : Unit = {
+  override def deconstructDeployable(time: Option[FiniteDuration]): Unit = {
     TelepadControl.DestructionAwareness(tpad)
     super.deconstructDeployable(time)
   }
@@ -124,11 +118,11 @@ object TelepadControl {
     if (tpad.Active) {
       tpad.Active = false
       (tpad.Zone.GUID(tpad.Router) match {
-        case Some(vehicle : Vehicle) => vehicle.Utility(UtilityType.internal_router_telepad_deployable)
-        case _                             => None
+        case Some(vehicle: Vehicle) => vehicle.Utility(UtilityType.internal_router_telepad_deployable)
+        case _                      => None
       }) match {
         case Some(obj: InternalTelepad) => obj.Actor ! TelepadLike.SeverLink(tpad)
-        case _ => ;
+        case _                          => ;
       }
     }
   }

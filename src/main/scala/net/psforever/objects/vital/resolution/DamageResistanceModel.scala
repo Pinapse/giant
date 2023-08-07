@@ -23,13 +23,14 @@ trait DamageAndResistance {
 }
 
 object DamageAndResistance {
+
   /**
     * A pass-through function.
     * @param data garbage in
     * @return garbage out
     */
-  def doNothingFallback(data: DamageInteraction): ResolutionCalculations.Output = {
-    _: Any => DamageResult(data.target, data.target, data)
+  def doNothingFallback(data: DamageInteraction): ResolutionCalculations.Output = { _: Any =>
+    DamageResult(data.target, data.target, data)
   }
 }
 

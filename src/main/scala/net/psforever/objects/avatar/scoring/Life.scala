@@ -2,11 +2,11 @@
 package net.psforever.objects.avatar.scoring
 
 final case class Life(
-                       kills: Seq[Kill],
-                       assists: Seq[Assist],
-                       death: Option[Death],
-                       equipmentStats: Seq[EquipmentStat]
-                     )
+    kills: Seq[Kill],
+    assists: Seq[Assist],
+    death: Option[Death],
+    equipmentStats: Seq[EquipmentStat]
+)
 
 object Life {
   def apply(): Life = Life(Nil, Nil, None, Nil)

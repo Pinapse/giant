@@ -25,9 +25,9 @@ import shapeless.{::, HNil}
 final case class CaptureFlagData(
     pos: PlacementData,
     faction: PlanetSideEmpire.Value,
-    owningBaseGuid : Int,
-    targetBaseGuid : Int,
-    milliseconds_remaining : Long
+    owningBaseGuid: Int,
+    targetBaseGuid: Int,
+    milliseconds_remaining: Long
 ) extends ConstructorData {
   override def bitsize: Long = 88L + pos.bitsize
 }
@@ -55,7 +55,9 @@ object CaptureFlagData extends Marshallable[CaptureFlagData] {
     },
     {
       case CaptureFlagData(pos, faction, owningBaseGuid, targetBaseGuid, milliseconds_remaining) =>
-        Attempt.successful(pos :: faction :: false :: 4 :: 0 :: owningBaseGuid :: 0 :: targetBaseGuid :: 0 :: milliseconds_remaining :: 0 :: HNil)
+        Attempt.successful(
+          pos :: faction :: false :: 4 :: 0 :: owningBaseGuid :: 0 :: targetBaseGuid :: 0 :: milliseconds_remaining :: 0 :: HNil
+        )
     }
   )
 }

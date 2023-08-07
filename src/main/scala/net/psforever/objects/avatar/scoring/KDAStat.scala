@@ -12,7 +12,12 @@ trait KDAStat {
 
 final case class Kill(victim: PlayerSource, info: DamageResult, experienceEarned: Long) extends KDAStat
 
-final case class Assist(victim: PlayerSource, weapons: Seq[Int], damageInflictedPercentage: Float, experienceEarned: Long) extends KDAStat
+final case class Assist(
+    victim: PlayerSource,
+    weapons: Seq[Int],
+    damageInflictedPercentage: Float,
+    experienceEarned: Long
+) extends KDAStat
 
 final case class Death(assailant: Seq[PlayerSource], timeAlive: Long, bep: Long) extends KDAStat {
   def experienceEarned: Long = 0

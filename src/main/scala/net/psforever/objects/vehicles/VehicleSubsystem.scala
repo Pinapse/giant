@@ -12,10 +12,10 @@ import net.psforever.types.{PlanetSideGUID, SubsystemComponent}
 //data
 
 sealed abstract class VehicleSubsystemConditionModifier(
-                                                         val value: Int,
-                                                         val multiplier: Float,
-                                                         val addend: Int
-                                                       ) extends IntEnumEntry
+    val value: Int,
+    val multiplier: Float,
+    val addend: Int
+) extends IntEnumEntry
 
 object VehicleSubsystemConditionModifier extends IntEnum[VehicleSubsystemConditionModifier] {
   val values = findValues
@@ -48,10 +48,10 @@ trait VehicleSubsystemCondition {
 }
 
 final case class VehicleComponentCondition(
-                                            alarmLevel: Long,
-                                            factor: VehicleSubsystemConditionModifier,
-                                            unk: Boolean
-                                          ) extends VehicleSubsystemCondition {
+    alarmLevel: Long,
+    factor: VehicleSubsystemConditionModifier,
+    unk: Boolean
+) extends VehicleSubsystemCondition {
   override def getMultiplier(): Float = factor.multiplier
 
   def getMessage(id: SubsystemComponent, vehicle: Vehicle, guid: PlanetSideGUID): List[PlanetSideGamePacket] = {
@@ -102,8 +102,7 @@ trait VehicleSubsystemStatus {
   def clearJammerMessages(toState: Int, vehicle: Vehicle): List[PlanetSideGamePacket]
 }
 
-trait VehicleSubsystemComponent
-  extends VehicleSubsystemStatus {
+trait VehicleSubsystemComponent extends VehicleSubsystemStatus {
   def componentId: SubsystemComponent
 
   def getMessage(toState: Int, vehicle: Vehicle): List[PlanetSideGamePacket] = {
@@ -128,24 +127,23 @@ trait VehicleSubsystemComponent
 }
 
 final case class VehicleComponentStatus(
-                                         name: String,
-                                         componentId: SubsystemComponent,
-                                         effects: List[VehicleSubsystemCondition],
-                                         damageState: Option[Any],
-                                         jamState: Int,
-                                         priority: Int
-                                       ) extends VehicleSubsystemComponent
+    name: String,
+    componentId: SubsystemComponent,
+    effects: List[VehicleSubsystemCondition],
+    damageState: Option[Any],
+    jamState: Int,
+    priority: Int
+) extends VehicleSubsystemComponent
 
 object VehicleComponentStatus {
   def apply(state: String, cid: SubsystemComponent, states: List[VehicleSubsystemCondition]): VehicleComponentStatus =
     VehicleComponentStatus(state, cid, states, damageState = None, jamState = 0, priority = 0)
 }
 
-trait VehicleWeaponStatus
-  extends VehicleSubsystemStatus {
+trait VehicleWeaponStatus extends VehicleSubsystemStatus {
   def slotIndex: Int
 
-  override def getMessageTarget(vehicle : Vehicle) : Option[PlanetSideGameObject] = {
+  override def getMessageTarget(vehicle: Vehicle): Option[PlanetSideGameObject] = {
     vehicle.Weapons.get(slotIndex) match {
       case Some(slot) => slot.Equipment
       case None       => throw new IllegalArgumentException(s"subsystem for battleframe arm mount missing mount - $slotIndex")
@@ -159,16 +157,17 @@ trait VehicleWeaponStatus
     }
   }
 
-  override def getMessage(toState: Int, vehicle: Vehicle) : List[PlanetSideGamePacket] = {
+  override def getMessage(toState: Int, vehicle: Vehicle): List[PlanetSideGamePacket] = {
     getMessageTarget(vehicle) match {
-      case Some(_) => effects(toState).getMessage(id = SubsystemComponent.Unknown(36), vehicle, getMessageTargetId(vehicle))
-      case None    => Nil
+      case Some(_) =>
+        effects(toState).getMessage(id = SubsystemComponent.Unknown(36), vehicle, getMessageTargetId(vehicle))
+      case None => Nil
     }
   }
 }
 
 sealed abstract class BattleframeWeaponComponent extends VehicleSubsystemComponent with VehicleWeaponStatus {
-  override def getMessage(toState: Int, vehicle: Vehicle) : List[PlanetSideGamePacket] = {
+  override def getMessage(toState: Int, vehicle: Vehicle): List[PlanetSideGamePacket] = {
     getMessageTarget(vehicle) match {
       case Some(_) => effects(toState).getMessage(componentId, vehicle, getMessageTargetId(vehicle))
       case None    => Nil
@@ -177,29 +176,29 @@ sealed abstract class BattleframeWeaponComponent extends VehicleSubsystemCompone
 }
 
 final case class BattleframeWeaponComponentStatus(
-                                                   override val name: String,
-                                                   override val componentId: SubsystemComponent,
-                                                   override val effects: List[VehicleSubsystemCondition],
-                                                   override val damageState: Option[Any],
-                                                   override val jamState: Int,
-                                                   override val priority: Int,
-                                                   slotIndex: Int
-                                                 ) extends BattleframeWeaponComponent
+    override val name: String,
+    override val componentId: SubsystemComponent,
+    override val effects: List[VehicleSubsystemCondition],
+    override val damageState: Option[Any],
+    override val jamState: Int,
+    override val priority: Int,
+    slotIndex: Int
+) extends BattleframeWeaponComponent
 
 final case class BattleframeWeaponOnlyComponentStatus(
-                                                       override val name: String,
-                                                       override val componentId: SubsystemComponent,
-                                                       override val effects: List[VehicleSubsystemCondition],
-                                                       override val damageState: Option[Any],
-                                                       override val jamState: Int,
-                                                       override val priority: Int,
-                                                       slotIndex: Int
-                                                     ) extends BattleframeWeaponComponent {
-  override def getMessageTarget(vehicle : Vehicle) : Option[PlanetSideGameObject] = {
+    override val name: String,
+    override val componentId: SubsystemComponent,
+    override val effects: List[VehicleSubsystemCondition],
+    override val damageState: Option[Any],
+    override val jamState: Int,
+    override val priority: Int,
+    slotIndex: Int
+) extends BattleframeWeaponComponent {
+  override def getMessageTarget(vehicle: Vehicle): Option[PlanetSideGameObject] = {
     super.getMessageTarget(vehicle) match {
       case out @ Some(e: Equipment)
-        if !(GlobalDefinitions.isBattleFrameArmorSiphon(e.Definition) ||
-             GlobalDefinitions.isBattleFrameNTUSiphon(e.Definition)) =>
+          if !(GlobalDefinitions.isBattleFrameArmorSiphon(e.Definition) ||
+            GlobalDefinitions.isBattleFrameNTUSiphon(e.Definition)) =>
         out
       case _ =>
         None
@@ -208,19 +207,19 @@ final case class BattleframeWeaponOnlyComponentStatus(
 }
 
 final case class BattleframeSiphonOnlyComponentStatus(
-                                                       override val name: String,
-                                                       override val componentId: SubsystemComponent,
-                                                       override val effects: List[VehicleSubsystemCondition],
-                                                       override val damageState: Option[Any],
-                                                       override val jamState: Int,
-                                                       override val priority: Int,
-                                                       slotIndex: Int
-                                                     ) extends BattleframeWeaponComponent {
-  override def getMessageTarget(vehicle : Vehicle) : Option[PlanetSideGameObject] = {
+    override val name: String,
+    override val componentId: SubsystemComponent,
+    override val effects: List[VehicleSubsystemCondition],
+    override val damageState: Option[Any],
+    override val jamState: Int,
+    override val priority: Int,
+    slotIndex: Int
+) extends BattleframeWeaponComponent {
+  override def getMessageTarget(vehicle: Vehicle): Option[PlanetSideGameObject] = {
     super.getMessageTarget(vehicle) match {
       case out @ Some(e: Equipment)
-        if GlobalDefinitions.isBattleFrameArmorSiphon(e.Definition) ||
-           GlobalDefinitions.isBattleFrameNTUSiphon(e.Definition) =>
+          if GlobalDefinitions.isBattleFrameArmorSiphon(e.Definition) ||
+            GlobalDefinitions.isBattleFrameNTUSiphon(e.Definition) =>
         out
       case _ =>
         None
@@ -229,18 +228,17 @@ final case class BattleframeSiphonOnlyComponentStatus(
 }
 
 final case class BattleframeArmorSiphonComponentStatus(
-                                                       override val name: String,
-                                                       override val componentId: SubsystemComponent,
-                                                       override val effects: List[VehicleSubsystemCondition],
-                                                       override val damageState: Option[Any],
-                                                       override val jamState: Int,
-                                                       override val priority: Int,
-                                                       slotIndex: Int
-                                                     ) extends BattleframeWeaponComponent {
-  override def getMessageTarget(vehicle : Vehicle) : Option[PlanetSideGameObject] = {
+    override val name: String,
+    override val componentId: SubsystemComponent,
+    override val effects: List[VehicleSubsystemCondition],
+    override val damageState: Option[Any],
+    override val jamState: Int,
+    override val priority: Int,
+    slotIndex: Int
+) extends BattleframeWeaponComponent {
+  override def getMessageTarget(vehicle: Vehicle): Option[PlanetSideGameObject] = {
     super.getMessageTarget(vehicle) match {
-      case out @ Some(e: Equipment)
-        if GlobalDefinitions.isBattleFrameArmorSiphon(e.Definition) =>
+      case out @ Some(e: Equipment) if GlobalDefinitions.isBattleFrameArmorSiphon(e.Definition) =>
         out
       case _ =>
         None
@@ -248,8 +246,7 @@ final case class BattleframeArmorSiphonComponentStatus(
   }
 }
 
-final case class BattleframeWeaponToggle(slotIndex: Int)
-  extends VehicleWeaponStatus {
+final case class BattleframeWeaponToggle(slotIndex: Int) extends VehicleWeaponStatus {
   def name: String = "Toggle"
 
   def effects: List[VehicleSubsystemCondition] = List(BattleframeArmActive, BattleframeArmInactive)
@@ -284,11 +281,11 @@ trait VehicleSubsystemFields {
 }
 
 sealed abstract class VehicleSubsystemEntry(
-                                             val name: String,
-                                             val statuses: List[VehicleSubsystemStatus],
-                                             val startsEnabled: Boolean,
-                                             val enabledStatus: List[String]
-                                            ) extends VehicleSubsystemFields {
+    val name: String,
+    val statuses: List[VehicleSubsystemStatus],
+    val startsEnabled: Boolean,
+    val enabledStatus: List[String]
+) extends VehicleSubsystemFields {
   def this(value: String, statuses: List[VehicleSubsystemStatus]) =
     this(value, statuses, startsEnabled = true, enabledStatus = Nil)
 
@@ -302,200 +299,201 @@ sealed abstract class VehicleSubsystemEntry(
 }
 
 sealed abstract class BattleframeArmToggleEntry(override val name: String, slotIndex: Int)
-  extends VehicleSubsystemEntry(
-    name,
-    statuses = List(BattleframeWeaponToggle(slotIndex)),
-    startsEnabled = true,
-    enabledStatus = List("Toggle")
-  )
-
-sealed abstract class BattleframeArmWeaponEntry(override val name: String, slotIndex: Int) extends VehicleSubsystemEntry(
-  name,
-  statuses = List(
-    //weapons only
-    BattleframeWeaponOnlyComponentStatus(
-      "COFRecovery",
-      SubsystemComponent.WeaponSystemsCOFRecovery,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
-      ),
-      damageState = Some(1),
-      jamState = 1,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeWeaponOnlyComponentStatus(
-      "COF",
-      SubsystemComponent.WeaponSystemsCOF,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
-      ),
-      damageState = Some(1),
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeWeaponOnlyComponentStatus(
-      "AmmoLoss",
-      SubsystemComponent.WeaponSystemsAmmoLoss,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
-      ),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeWeaponOnlyComponentStatus(
-      "RefireTime",
-      SubsystemComponent.WeaponSystemsRefireTime,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
-      ),
-      damageState = Some(1),
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeWeaponOnlyComponentStatus(
-      "ReloadTime",
-      SubsystemComponent.WeaponSystemsReloadTime,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
-      ),
-      damageState = Some(1),
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    //siphons only
-    BattleframeSiphonOnlyComponentStatus(
-      "TransferEfficiency",
-      SubsystemComponent.SiphonTransferEfficiency,
-      List(VehicleComponentNormal,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeSiphonOnlyComponentStatus(
-      "TransferRate",
-      SubsystemComponent.SiphonTransferRateA,
-      List(VehicleComponentNormal,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeSiphonOnlyComponentStatus(
-      "DrainOnly",
-      SubsystemComponent.SiphonDrainOnly,
-      List(VehicleComponentNormal,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeSiphonOnlyComponentStatus(
-      "StorageCapacity",
-      SubsystemComponent.SiphonStorageCapacity,
-      List(VehicleComponentNormal,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeSiphonOnlyComponentStatus(
-      "TransferRate",
-      SubsystemComponent.SiphonTransferRateB,
-      List(PlaceholderNormalReplaceLater,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    //unknown
-    BattleframeWeaponComponentStatus(
-      "ProjectileRange",
-      SubsystemComponent.UnknownProjectileRange,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay55),
-        VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay90)
-      ),
-      damageState = None,
-      jamState = 1,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeWeaponComponentStatus(
-      "SensorRange",
-      SubsystemComponent.UnknownSensorRange,
-      List(PlaceholderNormalReplaceLater,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    BattleframeWeaponComponentStatus(
-      "RechargeInterval",
-      SubsystemComponent.UnknownRechargeInterval,
-      List(PlaceholderNormalReplaceLater,PlaceholderNormalReplaceLater),
-      damageState = None,
-      jamState = 0,
-      priority = 0,
-      slotIndex
-    ),
-    //all
-    BattleframeWeaponComponentStatus(
-      "Online",
-      SubsystemComponent.WeaponSystemsOffline,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
-      ),
-      damageState = Some(1),
-      jamState = 0,
-      priority = 1,
-      slotIndex
-    ),
-    BattleframeWeaponComponentStatus(
-      "Destroyed",
-      SubsystemComponent.WeaponSystemsDestroyed,
-      List(
-        VehicleComponentNormal,
-        VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
-      ),
-      damageState = Some(1),
-      jamState = 0,
-      priority = 2,
-      slotIndex
+    extends VehicleSubsystemEntry(
+      name,
+      statuses = List(BattleframeWeaponToggle(slotIndex)),
+      startsEnabled = true,
+      enabledStatus = List("Toggle")
     )
-  ),
-  startsEnabled = true,
-  enabledStatus = List("Online", "Destroyed")
-)
+
+sealed abstract class BattleframeArmWeaponEntry(override val name: String, slotIndex: Int)
+    extends VehicleSubsystemEntry(
+      name,
+      statuses = List(
+        //weapons only
+        BattleframeWeaponOnlyComponentStatus(
+          "COFRecovery",
+          SubsystemComponent.WeaponSystemsCOFRecovery,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
+          ),
+          damageState = Some(1),
+          jamState = 1,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeWeaponOnlyComponentStatus(
+          "COF",
+          SubsystemComponent.WeaponSystemsCOF,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
+          ),
+          damageState = Some(1),
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeWeaponOnlyComponentStatus(
+          "AmmoLoss",
+          SubsystemComponent.WeaponSystemsAmmoLoss,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
+          ),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeWeaponOnlyComponentStatus(
+          "RefireTime",
+          SubsystemComponent.WeaponSystemsRefireTime,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
+          ),
+          damageState = Some(1),
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeWeaponOnlyComponentStatus(
+          "ReloadTime",
+          SubsystemComponent.WeaponSystemsReloadTime,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add200),
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Add300),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add500),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add700)
+          ),
+          damageState = Some(1),
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        //siphons only
+        BattleframeSiphonOnlyComponentStatus(
+          "TransferEfficiency",
+          SubsystemComponent.SiphonTransferEfficiency,
+          List(VehicleComponentNormal, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeSiphonOnlyComponentStatus(
+          "TransferRate",
+          SubsystemComponent.SiphonTransferRateA,
+          List(VehicleComponentNormal, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeSiphonOnlyComponentStatus(
+          "DrainOnly",
+          SubsystemComponent.SiphonDrainOnly,
+          List(VehicleComponentNormal, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeSiphonOnlyComponentStatus(
+          "StorageCapacity",
+          SubsystemComponent.SiphonStorageCapacity,
+          List(VehicleComponentNormal, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeSiphonOnlyComponentStatus(
+          "TransferRate",
+          SubsystemComponent.SiphonTransferRateB,
+          List(PlaceholderNormalReplaceLater, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        //unknown
+        BattleframeWeaponComponentStatus(
+          "ProjectileRange",
+          SubsystemComponent.UnknownProjectileRange,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay55),
+            VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay90)
+          ),
+          damageState = None,
+          jamState = 1,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeWeaponComponentStatus(
+          "SensorRange",
+          SubsystemComponent.UnknownSensorRange,
+          List(PlaceholderNormalReplaceLater, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        BattleframeWeaponComponentStatus(
+          "RechargeInterval",
+          SubsystemComponent.UnknownRechargeInterval,
+          List(PlaceholderNormalReplaceLater, PlaceholderNormalReplaceLater),
+          damageState = None,
+          jamState = 0,
+          priority = 0,
+          slotIndex
+        ),
+        //all
+        BattleframeWeaponComponentStatus(
+          "Online",
+          SubsystemComponent.WeaponSystemsOffline,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
+          ),
+          damageState = Some(1),
+          jamState = 0,
+          priority = 1,
+          slotIndex
+        ),
+        BattleframeWeaponComponentStatus(
+          "Destroyed",
+          SubsystemComponent.WeaponSystemsDestroyed,
+          List(
+            VehicleComponentNormal,
+            VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
+          ),
+          damageState = Some(1),
+          jamState = 0,
+          priority = 2,
+          slotIndex
+        )
+      ),
+      startsEnabled = true,
+      enabledStatus = List("Online", "Destroyed")
+    )
 
 ////
 
@@ -548,338 +546,352 @@ private case object BattleframeShieldGeneratorDestroyed extends VehicleSubsystem
 
   def getMessage(id: SubsystemComponent, vehicle: Vehicle, guid: PlanetSideGUID): List[PlanetSideGamePacket] = {
     BattleframeShieldGeneratorOffline.getMessage(id, vehicle, guid) ++
-    List(ComponentDamageMessage(guid, id, Some(
-      ComponentDamageField(4, VehicleSubsystemConditionModifier.Off.value, unk = false)
-    )))
+      List(
+        ComponentDamageMessage(
+          guid,
+          id,
+          Some(
+            ComponentDamageField(4, VehicleSubsystemConditionModifier.Off.value, unk = false)
+          )
+        )
+      )
   }
 }
 
 object VehicleSubsystemEntry {
-  case object Controls extends VehicleSubsystemEntry(
-    name = "Controls",
-    statuses = List(
-      VehicleComponentStatus(
-        "Impaired",
-        SubsystemComponent.Unknown(36),
-        List(PlaceholderNormalReplaceLater,PlaceholderNormalReplaceLater),
-        damageState = None,
-        jamState = 0,
-        priority = 0
+  case object Controls
+      extends VehicleSubsystemEntry(
+        name = "Controls",
+        statuses = List(
+          VehicleComponentStatus(
+            "Impaired",
+            SubsystemComponent.Unknown(36),
+            List(PlaceholderNormalReplaceLater, PlaceholderNormalReplaceLater),
+            damageState = None,
+            jamState = 0,
+            priority = 0
+          )
+        ),
+        startsEnabled = true,
+        enabledStatus = List("Impaired")
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = List("Impaired")
-  )
 
-  case object Ejection extends VehicleSubsystemEntry(
-    name = "Ejection",
-    statuses = List(
-      VehicleComponentStatus(
-        "Online",
-        SubsystemComponent.Unknown(36),
-        List(PlaceholderNormalReplaceLater,PlaceholderNormalReplaceLater),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 0
+  case object Ejection
+      extends VehicleSubsystemEntry(
+        name = "Ejection",
+        statuses = List(
+          VehicleComponentStatus(
+            "Online",
+            SubsystemComponent.Unknown(36),
+            List(PlaceholderNormalReplaceLater, PlaceholderNormalReplaceLater),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 0
+          )
+        ),
+        startsEnabled = true,
+        enabledStatus = List("Online")
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = List("Online")
-  )
 
-  case object MosquitoRadar extends VehicleSubsystemEntry(
-    name = "MosquitoRadar",
-    statuses = List(
-      VehicleComponentStatus(
-        "Online",
-        SubsystemComponent.Unknown(36),
-        List(PlaceholderNormalReplaceLater,PlaceholderNormalReplaceLater),
-        damageState = None,
-        jamState = 0,
-        priority = 0
+  case object MosquitoRadar
+      extends VehicleSubsystemEntry(
+        name = "MosquitoRadar",
+        statuses = List(
+          VehicleComponentStatus(
+            "Online",
+            SubsystemComponent.Unknown(36),
+            List(PlaceholderNormalReplaceLater, PlaceholderNormalReplaceLater),
+            damageState = None,
+            jamState = 0,
+            priority = 0
+          )
+        ),
+        startsEnabled = true,
+        enabledStatus = List("Online")
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = List("Online")
-  )
 
-  case object BattleframeMovementServos extends VehicleSubsystemEntry(
-    name = "BattleframeMovementServos",
-    statuses = List(
-      VehicleComponentStatus(
-        "Transit",
-        SubsystemComponent.MovementServosTransit,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Off)
+  case object BattleframeMovementServos
+      extends VehicleSubsystemEntry(
+        name = "BattleframeMovementServos",
+        statuses = List(
+          VehicleComponentStatus(
+            "Transit",
+            SubsystemComponent.MovementServosTransit,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Off)
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "Backward",
+            SubsystemComponent.MovementServosBackward,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "Forward",
+            SubsystemComponent.MovementServosForward,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "PivotSpeed",
+            SubsystemComponent.MovementServosPivotSpeed,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            ),
+            damageState = Some(1),
+            jamState = 2,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "StrafeSpeed",
+            SubsystemComponent.MovementServosStrafeSpeed,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 0
+          )
         ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "Backward",
-        SubsystemComponent.MovementServosBackward,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "Forward",
-        SubsystemComponent.MovementServosForward,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "PivotSpeed",
-        SubsystemComponent.MovementServosPivotSpeed,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        ),
-        damageState = Some(1),
-        jamState = 2,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "StrafeSpeed",
-        SubsystemComponent.MovementServosStrafeSpeed,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 0
+        startsEnabled = true,
+        enabledStatus = Nil
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = Nil
-  )
 
-  case object BattleframeSensorArray extends VehicleSubsystemEntry(
-    name = "BattleframeSensorArray",
-    statuses = List(
-      VehicleComponentStatus(
-        "NoEnemies",
-        SubsystemComponent.SensorArrayNoEnemies,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Off)
+  case object BattleframeSensorArray
+      extends VehicleSubsystemEntry(
+        name = "BattleframeSensorArray",
+        statuses = List(
+          VehicleComponentStatus(
+            "NoEnemies",
+            SubsystemComponent.SensorArrayNoEnemies,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Off)
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 1
+          ),
+          VehicleComponentStatus(
+            "NoEnemyAircraft",
+            SubsystemComponent.SensorArrayNoEnemyAircraft,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "NoEnemyGroundVehicles",
+            SubsystemComponent.SensorArrayNoEnemyGroundVehicles,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "NoEnemyProjectiles",
+            SubsystemComponent.SensorArrayNoEnemyProjectiles,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "SensorRange",
+            SubsystemComponent.SensorArrayRange,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Range50),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Range25),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Off)
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 0
+          )
         ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 1
-      ),
-      VehicleComponentStatus(
-        "NoEnemyAircraft",
-        SubsystemComponent.SensorArrayNoEnemyAircraft,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
-        ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "NoEnemyGroundVehicles",
-        SubsystemComponent.SensorArrayNoEnemyGroundVehicles,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
-        ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "NoEnemyProjectiles",
-        SubsystemComponent.SensorArrayNoEnemyProjectiles,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off)
-        ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "SensorRange",
-        SubsystemComponent.SensorArrayRange,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Range50),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Range25),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Off)
-        ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 0
+        startsEnabled = true,
+        enabledStatus = List("NoEnemies")
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = List("NoEnemies"),
-  )
 
-  case object BattleframeFlightPod extends VehicleSubsystemEntry(
-    name = "BattleframeFlightPod",
-    statuses = List(
-      VehicleComponentStatus(
-        "RechargeRate",
-        SubsystemComponent.FlightSystemsRechargeRate,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        )
-      ),
-      VehicleComponentStatus(
-        "UseRate",
-        SubsystemComponent.FlightSystemsUseRate,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add200)
-        )
-      ),
-      VehicleComponentStatus(
-        "HorizontalForce",
-        SubsystemComponent.FlightSystemsHorizontalForce,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        )
-      ),
-      VehicleComponentStatus(
-        "VerticalForce",
-        SubsystemComponent.FlightSystemsVerticalForce,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
-        )
-      ),
-      VehicleComponentStatus(
-        "Online",
-        SubsystemComponent.FlightSystemsOffline,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off, unk = false)
+  case object BattleframeFlightPod
+      extends VehicleSubsystemEntry(
+        name = "BattleframeFlightPod",
+        statuses = List(
+          VehicleComponentStatus(
+            "RechargeRate",
+            SubsystemComponent.FlightSystemsRechargeRate,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            )
+          ),
+          VehicleComponentStatus(
+            "UseRate",
+            SubsystemComponent.FlightSystemsUseRate,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Add100),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Add200)
+            )
+          ),
+          VehicleComponentStatus(
+            "HorizontalForce",
+            SubsystemComponent.FlightSystemsHorizontalForce,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            )
+          ),
+          VehicleComponentStatus(
+            "VerticalForce",
+            SubsystemComponent.FlightSystemsVerticalForce,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            )
+          ),
+          VehicleComponentStatus(
+            "Online",
+            SubsystemComponent.FlightSystemsOffline,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off, unk = false)
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 1
+          ),
+          VehicleComponentStatus(
+            "Destroyed",
+            SubsystemComponent.FlightSystemsOffline,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(7, VehicleSubsystemConditionModifier.Off, unk = false)
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 2
+          )
         ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 1
-      ),
-      VehicleComponentStatus(
-        "Destroyed",
-        SubsystemComponent.FlightSystemsOffline,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(7, VehicleSubsystemConditionModifier.Off, unk = false)
-        ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 2
+        startsEnabled = true,
+        enabledStatus = List("Online", "Destroyed")
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = List("Online", "Destroyed")
-  )
 
-  case object BattleframeShieldGenerator extends VehicleSubsystemEntry(
-    name = "BattleframeShieldGenerator",
-    List(
-      VehicleComponentStatus(
-        "RechargeRate",
-        SubsystemComponent.ShieldGeneratorRechargeRate,
+  case object BattleframeShieldGenerator
+      extends VehicleSubsystemEntry(
+        name = "BattleframeShieldGenerator",
         List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
-          VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+          VehicleComponentStatus(
+            "RechargeRate",
+            SubsystemComponent.ShieldGeneratorRechargeRate,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(3, VehicleSubsystemConditionModifier.Decay20),
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Decay40),
+              VehicleComponentCondition(5, VehicleSubsystemConditionModifier.Decay60)
+            ),
+            damageState = None,
+            jamState = 2,
+            priority = 0
+          ),
+          VehicleComponentStatus(
+            "Online",
+            SubsystemComponent.Unknown(36), //doesn't matter
+            List(
+              BattleframeShieldGeneratorOnline,
+              BattleframeShieldGeneratorOffline
+            ),
+            damageState = None,
+            jamState = 0,
+            priority = 1
+          ),
+          VehicleComponentStatus(
+            "Damaged",
+            SubsystemComponent.ShieldGeneratorOffline,
+            List(
+              VehicleComponentNormal,
+              BattleframeShieldGeneratorDamaged
+            ),
+            damageState = Some(1),
+            jamState = 1,
+            priority = 1
+          ),
+          VehicleComponentStatus(
+            "Destroyed",
+            SubsystemComponent.ShieldGeneratorDestroyed,
+            List(
+              BattleframeShieldGeneratorFixed,
+              BattleframeShieldGeneratorDestroyed
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 2
+          )
         ),
-        damageState = None,
-        jamState = 2,
-        priority = 0
-      ),
-      VehicleComponentStatus(
-        "Online",
-        SubsystemComponent.Unknown(36), //doesn't matter
-        List(
-          BattleframeShieldGeneratorOnline,
-          BattleframeShieldGeneratorOffline
-        ),
-        damageState = None,
-        jamState = 0,
-        priority = 1
-      ),
-      VehicleComponentStatus(
-        "Damaged",
-        SubsystemComponent.ShieldGeneratorOffline,
-        List(
-          VehicleComponentNormal,
-          BattleframeShieldGeneratorDamaged
-        ),
-        damageState = Some(1),
-        jamState = 1,
-        priority = 1
-      ),
-      VehicleComponentStatus(
-        "Destroyed",
-        SubsystemComponent.ShieldGeneratorDestroyed,
-        List(
-          BattleframeShieldGeneratorFixed,
-          BattleframeShieldGeneratorDestroyed
-        ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 2
+        startsEnabled = true,
+        enabledStatus = List("Online", "Damaged", "Destroyed")
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = List("Online", "Damaged", "Destroyed")
-  )
 
-  case object BattleframeTrunk extends VehicleSubsystemEntry(
-    name = "BattleframeTrunk",
-    statuses = List(
-      VehicleComponentStatus(
-        "Damaged",
-        SubsystemComponent.Trunk,
-        List(
-          VehicleComponentNormal,
-          VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off) //one item destroyed
+  case object BattleframeTrunk
+      extends VehicleSubsystemEntry(
+        name = "BattleframeTrunk",
+        statuses = List(
+          VehicleComponentStatus(
+            "Damaged",
+            SubsystemComponent.Trunk,
+            List(
+              VehicleComponentNormal,
+              VehicleComponentCondition(4, VehicleSubsystemConditionModifier.Off) //one item destroyed
+            ),
+            damageState = Some(1),
+            jamState = 0,
+            priority = 0
+          )
         ),
-        damageState = Some(1),
-        jamState = 0,
-        priority = 0
+        startsEnabled = true,
+        enabledStatus = Nil
       )
-    ),
-    startsEnabled = true,
-    enabledStatus = Nil
-  )
 
   case object BattleframeLeftArm extends BattleframeArmToggleEntry(name = "BattleframeLeftArm", slotIndex = 2)
 
@@ -895,26 +907,32 @@ object VehicleSubsystemEntry {
 
   case object BattleframeGunnerWeapon extends BattleframeArmWeaponEntry(name = "BattleframeGunnerWeapon", slotIndex = 4)
 
-  case object BattleframeFlightLeftWeapon extends BattleframeArmWeaponEntry(name = "BattleframeLeftWeaponF", slotIndex = 1)
+  case object BattleframeFlightLeftWeapon
+      extends BattleframeArmWeaponEntry(name = "BattleframeLeftWeaponF", slotIndex = 1)
 
-  case object BattleframeFlightRightWeapon extends BattleframeArmWeaponEntry(name = "BattleframeRightWeaponF", slotIndex = 2)
+  case object BattleframeFlightRightWeapon
+      extends BattleframeArmWeaponEntry(name = "BattleframeRightWeaponF", slotIndex = 2)
 }
 
-class VehicleSubsystem(val sys: VehicleSubsystemEntry)
-  extends JammableUnit {
+class VehicleSubsystem(val sys: VehicleSubsystemEntry) extends JammableUnit {
+
   /** na */
   private val damageStates: Array[VehicleSubsystemStatusMonitor] = {
     sys.statuses.zipWithIndex.map { case (a, i) => new VehicleSubsystemStatusMonitor(a, i) }.toArray
   }
+
   /** na */
   private var activeJammedMsgs: List[Int] = Nil
+
   /** na */
   private var changedWhilejammed: Array[Int] = Array.emptyIntArray
+
   /** whether this subsystem is currently active or inactive */
   private var enabled: Boolean = sys.startsEnabled
+
   /** these statuses must be in good condition for the subsystem to be considered operational (enabled) */
-  private val enabledStatusIndices = sys.enabledStatus.map {
-    str => sys.statuses.indexWhere { _.name.equals(str) }
+  private val enabledStatusIndices = sys.enabledStatus.map { str =>
+    sys.statuses.indexWhere { _.name.equals(str) }
   }
   //first enabled status condition defaults to a damaged state if the subsystem defaults to disabled
   if (!enabled && enabledStatusIndices.nonEmpty) {
@@ -930,10 +948,10 @@ class VehicleSubsystem(val sys: VehicleSubsystemEntry)
     */
   def Enabled: Boolean = {
     !Jammed && (if (enabledStatusIndices.nonEmpty) {
-      enabledStatusIndices.forall { damageStates(_).Condition == 0 }
-    } else {
-      enabled
-    })
+                  enabledStatusIndices.forall { damageStates(_).Condition == 0 }
+                } else {
+                  enabled
+                })
   }
 
   /**
@@ -947,9 +965,12 @@ class VehicleSubsystem(val sys: VehicleSubsystemEntry)
     if (enabled != state && enabledStatusIndices.nonEmpty) {
       //for any VehicleSubsystemEvent.status, index=0 is normal and index>0 is damaged/jammed/disabled
       val condIndex = enabledStatusIndices.head
-      val stateAsInt = if (state) { 0 } else { 1 }
-      if ((stateAsInt == 1 && damageStates(condIndex).Condition == 0) ||
-          (stateAsInt == 0 && damageStates(condIndex).Condition > 0)) {
+      val stateAsInt = if (state) { 0 }
+      else { 1 }
+      if (
+        (stateAsInt == 1 && damageStates(condIndex).Condition == 0) ||
+        (stateAsInt == 0 && damageStates(condIndex).Condition > 0)
+      ) {
         damageStates(condIndex).Condition = stateAsInt
       }
     }
@@ -1011,7 +1032,7 @@ class VehicleSubsystem(val sys: VehicleSubsystemEntry)
     sys.statuses.indexWhere { _.name.contains(statusName) } match {
       case -1 =>
         defaultMultiplier
-      case n  =>
+      case n =>
         val status = sys.statuses(n)
         if (Jammed && status.jammable) {
           status.effects(status.jamState).getMultiplier()
@@ -1058,7 +1079,9 @@ class VehicleSubsystem(val sys: VehicleSubsystemEntry)
     if (Jammed) {
       Jammed = false
       val statuses = sys.statuses
-      val clearMsgs = activeJammedMsgs.flatMap { i => statuses(i).clearJammerMessages(damageStates(i).Condition, vehicle) }
+      val clearMsgs = activeJammedMsgs.flatMap { i =>
+        statuses(i).clearJammerMessages(damageStates(i).Condition, vehicle)
+      }
       activeJammedMsgs = Nil
       changedWhilejammed = Array.emptyIntArray
       clearMsgs
@@ -1078,9 +1101,10 @@ class VehicleSubsystem(val sys: VehicleSubsystemEntry)
     if (Jammed) {
       jammerMessages(vehicle)
     } else {
-      damageStates
-        .zipWithIndex
-        .collect { case (state, index) if state.Condition > 0 => sys.statuses(index).getMessage(state.Condition, vehicle) }
+      damageStates.zipWithIndex
+        .collect {
+          case (state, index) if state.Condition > 0 => sys.statuses(index).getMessage(state.Condition, vehicle)
+        }
         .flatten
         .toList
     }
@@ -1111,28 +1135,28 @@ class VehicleSubsystem(val sys: VehicleSubsystemEntry)
   }
 
   private def toPacketList(
-                            list: Iterable[(VehicleSubsystemStatusMonitor, Int)],
-                            vehicle: Vehicle,
-                            always: Boolean = false
-                          ): List[PlanetSideGamePacket] = {
-    list.flatMap { case (state: VehicleSubsystemStatusMonitor, index) =>
-      if (Jammed && state.status.jammable) {
-        sys.statuses(index).getMessage(state.status.jamState, vehicle)
-      } else if (state.Condition > 0 || always) {
-        sys.statuses(index).getMessage(state.Condition, vehicle)
-      } else {
-        Nil
-      }
-    }
-    .toList
+      list: Iterable[(VehicleSubsystemStatusMonitor, Int)],
+      vehicle: Vehicle,
+      always: Boolean = false
+  ): List[PlanetSideGamePacket] = {
+    list.flatMap {
+      case (state: VehicleSubsystemStatusMonitor, index) =>
+        if (Jammed && state.status.jammable) {
+          sys.statuses(index).getMessage(state.status.jamState, vehicle)
+        } else if (state.Condition > 0 || always) {
+          sys.statuses(index).getMessage(state.Condition, vehicle)
+        } else {
+          Nil
+        }
+    }.toList
   }
 }
 
 class VehicleSubsystemStatusMonitor(
-                                     val status: VehicleSubsystemStatus,
-                                     val index: Int
-                                   ) {
-  private var condition: Int = 0
+    val status: VehicleSubsystemStatus,
+    val index: Int
+) {
+  private var condition: Int   = 0
   private var changed: Boolean = false
 
   def Condition: Int = condition

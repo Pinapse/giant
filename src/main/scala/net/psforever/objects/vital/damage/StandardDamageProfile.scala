@@ -69,13 +69,13 @@ trait StandardDamageProfile extends DamageProfile {
 
 object StandardDamageProfile {
   def apply(
-             damage0: Option[Int] = None,
-             damage1: Option[Int] = None,
-             damage2: Option[Int] = None,
-             damage3: Option[Int] = None,
-             damage4: Option[Int] = None
-           ): StandardDamageProfile = {
-    val obj = new StandardDamageProfile { }
+      damage0: Option[Int] = None,
+      damage1: Option[Int] = None,
+      damage2: Option[Int] = None,
+      damage3: Option[Int] = None,
+      damage4: Option[Int] = None
+  ): StandardDamageProfile = {
+    val obj = new StandardDamageProfile {}
     obj.Damage0 = damage0
     obj.Damage1 = damage1
     obj.Damage2 = damage2

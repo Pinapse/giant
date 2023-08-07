@@ -11,8 +11,7 @@ case object EnvironmentInteraction extends ZoneInteractionType
 /**
   * This game entity may infrequently test whether it may interact with game world environment.
   */
-class InteractWithEnvironment()
-  extends ZoneInteraction {
+class InteractWithEnvironment() extends ZoneInteraction {
   private var interactingWithEnvironment: (PlanetSideServerObject, Boolean) => Any =
     InteractWithEnvironment.onStableEnvironment()
 
@@ -48,13 +47,14 @@ class InteractWithEnvironment()
     * and unblocking will immediately install whatever is the current active interaction.
     * @see `InteractsWithEnvironment.onStableEnvironment`
     */
-  def resetInteraction(target: InteractsWithZone) : Unit = {
+  def resetInteraction(target: InteractsWithZone): Unit = {
     interactingWithEnvironment(target, false)
     interactingWithEnvironment = InteractWithEnvironment.onStableEnvironment()
   }
 }
 
 object InteractWithEnvironment {
+
   /**
     * While on stable non-interactive terrain,
     * test whether any special terrain component has an affect upon the target entity.
@@ -68,16 +68,16 @@ object InteractWithEnvironment {
     *         may return itself
     */
   def onStableEnvironment()(obj: PlanetSideServerObject, allow: Boolean): Any = {
-    if(allow) {
+    if (allow) {
       checkAllEnvironmentInteractions(obj) match {
         case Some(body) =>
           obj.Actor ! InteractingWithEnvironment(obj, body, None)
-          awaitOngoingInteraction(obj.Zone, body)(_,_)
+          awaitOngoingInteraction(obj.Zone, body)(_, _)
         case None =>
-          onStableEnvironment()(_,_)
+          onStableEnvironment()(_, _)
       }
     } else {
-      blockedFromInteracting()(_,_)
+      blockedFromInteracting()(_, _)
     }
   }
 
@@ -99,7 +99,10 @@ object InteractWithEnvironment {
     * @return the function literal that represents the next iterative call of ongoing interaction testing;
     *         may return itself
     */
-  def awaitOngoingInteraction(zone: Zone, body: PieceOfEnvironment)(obj: PlanetSideServerObject, allow: Boolean): Any = {
+  def awaitOngoingInteraction(
+      zone: Zone,
+      body: PieceOfEnvironment
+  )(obj: PlanetSideServerObject, allow: Boolean): Any = {
     if (allow) {
       checkSpecificEnvironmentInteraction(zone, body)(obj) match {
         case Some(_) =>
@@ -120,7 +123,7 @@ object InteractWithEnvironment {
       }
     } else {
       obj.Actor ! EscapeFromEnvironment(obj, body, None)
-      blockedFromInteracting()(_,_)
+      blockedFromInteracting()(_, _)
     }
   }
 
@@ -137,7 +140,7 @@ object InteractWithEnvironment {
     if (allow) {
       onStableEnvironment()(obj, allow)
     } else {
-      blockedFromInteracting()(_,_)
+      blockedFromInteracting()(_, _)
     }
   }
 
@@ -148,7 +151,7 @@ object InteractWithEnvironment {
     */
   def checkAllEnvironmentInteractions(obj: PlanetSideServerObject): Option[PieceOfEnvironment] = {
     val position = obj.Position
-    val depth = GlobalDefinitions.MaxDepth(obj)
+    val depth    = GlobalDefinitions.MaxDepth(obj)
     (obj match {
       case bme: BlockMapEntity =>
         obj.Zone.blockMap.sector(bme).environmentList
@@ -166,7 +169,9 @@ object InteractWithEnvironment {
     * @param obj the target entity
     * @return any unstable, interactive, or special terrain that is being interacted
     */
-  private def checkSpecificEnvironmentInteraction(zone: Zone, body: PieceOfEnvironment)(obj: PlanetSideServerObject): Option[PieceOfEnvironment] = {
+  private def checkSpecificEnvironmentInteraction(zone: Zone, body: PieceOfEnvironment)(
+      obj: PlanetSideServerObject
+  ): Option[PieceOfEnvironment] = {
     if ((obj.Zone eq zone) && body.testInteraction(obj.Position, GlobalDefinitions.MaxDepth(obj))) {
       Some(body)
     } else {

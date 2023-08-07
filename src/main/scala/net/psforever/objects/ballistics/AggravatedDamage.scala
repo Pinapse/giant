@@ -13,6 +13,7 @@ import net.psforever.objects.vital.base.{DamageResolution, DamageType}
 final case class AggravatedTiming(duration: Long, ticks: Option[Int])
 
 object AggravatedTiming {
+
   /**
     * Overloaded constructor that only defines the duration.
     * @param duration for how long the over-all effect lasts
@@ -36,10 +37,11 @@ object AggravatedTiming {
   * @param degradation_percentage by how much the damage is degraded
   * @param infliction_rate how often the damage is inflicted (ms)
   */
-final case class AggravatedInfo(damage_type: DamageType.Value,
-                                degradation_percentage: Float,
-                                infliction_rate: Long) {
-  assert(damage_type == DamageType.Direct || damage_type == DamageType.Splash, s"aggravated damage is an unsupported type - $damage_type")
+final case class AggravatedInfo(damage_type: DamageType.Value, degradation_percentage: Float, infliction_rate: Long) {
+  assert(
+    damage_type == DamageType.Direct || damage_type == DamageType.Splash,
+    s"aggravated damage is an unsupported type - $damage_type"
+  )
 }
 
 /**
@@ -52,15 +54,18 @@ final case class AggravatedInfo(damage_type: DamageType.Value,
   * @param vanu_aggravated na (search me)
   * @param targets validation information indicating whether a certain entity is applicable for aggravation
   */
-final case class AggravatedDamage(info: List[AggravatedInfo],
-                                  effect_type: Aura,
-                                  timing: AggravatedTiming,
-                                  max_factor: Float,
-                                  cumulative_damage_degrade: Boolean,
-                                  vanu_aggravated: Boolean,
-                                  targets: List[TargetValidation])
+final case class AggravatedDamage(
+    info: List[AggravatedInfo],
+    effect_type: Aura,
+    timing: AggravatedTiming,
+    max_factor: Float,
+    cumulative_damage_degrade: Boolean,
+    vanu_aggravated: Boolean,
+    targets: List[TargetValidation]
+)
 
 object AggravatedDamage {
+
   /**
     * Overloaded constructor.
     * @param info the specific kinds of aggravation damage available
@@ -69,11 +74,13 @@ object AggravatedDamage {
     * @param max_factor na
     * @param targets validation information indicating whether a certain entity is applicable for aggravation
     */
-  def apply(info: AggravatedInfo,
-            effect_type: Aura,
-            timing: AggravatedTiming,
-            max_factor: Float,
-            targets: List[TargetValidation]): AggravatedDamage =
+  def apply(
+      info: AggravatedInfo,
+      effect_type: Aura,
+      timing: AggravatedTiming,
+      max_factor: Float,
+      targets: List[TargetValidation]
+  ): AggravatedDamage =
     AggravatedDamage(
       List(info),
       effect_type,
@@ -93,12 +100,14 @@ object AggravatedDamage {
     * @param vanu_aggravated na
     * @param targets validation information indicating whether a certain entity is applicable for aggravation
     */
-  def apply(info: AggravatedInfo,
-            effect_type: Aura,
-            timing: AggravatedTiming,
-            max_factor: Float,
-            vanu_aggravated: Boolean,
-            targets: List[TargetValidation]): AggravatedDamage =
+  def apply(
+      info: AggravatedInfo,
+      effect_type: Aura,
+      timing: AggravatedTiming,
+      max_factor: Float,
+      vanu_aggravated: Boolean,
+      targets: List[TargetValidation]
+  ): AggravatedDamage =
     AggravatedDamage(
       List(info),
       effect_type,
@@ -117,11 +126,13 @@ object AggravatedDamage {
     * @param max_factor na
     * @param targets validation information indicating whether a certain entity is applicable for aggravation
     */
-  def apply(info: AggravatedInfo,
-            effect_type: Aura,
-            duration: Long,
-            max_factor: Float,
-            targets: List[TargetValidation]): AggravatedDamage =
+  def apply(
+      info: AggravatedInfo,
+      effect_type: Aura,
+      duration: Long,
+      max_factor: Float,
+      targets: List[TargetValidation]
+  ): AggravatedDamage =
     AggravatedDamage(
       List(info),
       effect_type,
@@ -141,12 +152,14 @@ object AggravatedDamage {
     * @param vanu_aggravated na
     * @param targets validation information indicating whether a certain entity is applicable for aggravation
     */
-  def apply(info: AggravatedInfo,
-            effect_type: Aura,
-            duration: Long,
-            max_factor: Float,
-            vanu_aggravated: Boolean,
-            targets: List[TargetValidation]): AggravatedDamage =
+  def apply(
+      info: AggravatedInfo,
+      effect_type: Aura,
+      duration: Long,
+      max_factor: Float,
+      vanu_aggravated: Boolean,
+      targets: List[TargetValidation]
+  ): AggravatedDamage =
     AggravatedDamage(
       List(info),
       effect_type,
@@ -161,7 +174,7 @@ object AggravatedDamage {
     resolution match {
       case DamageResolution.AggravatedDirect => DamageResolution.AggravatedDirectBurn
       case DamageResolution.AggravatedSplash => DamageResolution.AggravatedSplashBurn
-      case _ => resolution
+      case _                                 => resolution
     }
   }
 

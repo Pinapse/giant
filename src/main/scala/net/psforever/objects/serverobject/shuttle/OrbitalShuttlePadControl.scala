@@ -30,12 +30,13 @@ import scala.concurrent.Future
   * @param pad the `OrbitalShuttlePad` object being governed
   */
 class OrbitalShuttlePadControl(pad: OrbitalShuttlePad) extends Actor {
+
   /** the doors that allow would be passengers to access the shuttle boarding gantries
     * (actually, a hallway with a teleport);
     * the target doors are of a specific type that flag their purpose - "gr_door_mb_orb"
     */
   var managedDoors: List[Door] = Nil
-  var shuttle: Vehicle = _
+  var shuttle: Vehicle         = _
 
   def receive: Receive = startUp
 
@@ -48,7 +49,7 @@ class OrbitalShuttlePadControl(pad: OrbitalShuttlePad) extends Actor {
       managedDoors.foreach { door =>
         door.Actor ! Door.UpdateMechanism(OrbitalShuttlePadControl.lockedWaitingForShuttle)
         val zone = pad.Zone
-        if(door.isOpen) {
+        if (door.isOpen) {
           zone.LocalEvents ! LocalServiceMessage(zone.id, LocalAction.DoorSlamsShut(door))
         }
       }
@@ -103,7 +104,7 @@ class OrbitalShuttlePadControl(pad: OrbitalShuttlePad) extends Actor {
       import net.psforever.types.Vector3.DistanceSquared
       import net.psforever.objects.GlobalDefinitions._
       val position = pad.Position
-      val zone = pad.Zone
+      val zone     = pad.Zone
       //collect managed doors
       managedDoors = pad.Owner.Amenities
         .collect { case d: Door if d.Definition == gr_door_mb_orb => d }
@@ -121,19 +122,22 @@ class OrbitalShuttlePadControl(pad: OrbitalShuttlePad) extends Actor {
   }
 
   /**
-   * If the new shuttle fails to register the nth time, try again.
-   * Don't take "no" for an answer.
-   */
+    * If the new shuttle fails to register the nth time, try again.
+    * Don't take "no" for an answer.
+    */
   def shuttleRegistration(zone: Zone, newShuttle: OrbitalShuttle, to: ActorRef): Future[Any] = {
     import scala.concurrent.ExecutionContext.Implicits.global
-    TaskWorkflow.execute(OrbitalShuttlePadControl.registerShuttle(zone, newShuttle, to)).recover({
-      case _: Exception =>
-        if (!newShuttle.HasGUID) shuttleRegistration(zone, newShuttle, to)
-    })
+    TaskWorkflow
+      .execute(OrbitalShuttlePadControl.registerShuttle(zone, newShuttle, to))
+      .recover({
+        case _: Exception =>
+          if (!newShuttle.HasGUID) shuttleRegistration(zone, newShuttle, to)
+      })
   }
 }
 
 object OrbitalShuttlePadControl {
+
   /**
     * Register the shuttle as a common vehicle in a zone.
     * @param zone the zone the shuttle and the pad will occupy
@@ -145,17 +149,18 @@ object OrbitalShuttlePadControl {
     import scala.concurrent.ExecutionContext.Implicits.global
     TaskBundle(
       new StraightforwardTask() {
-        private val localZone = zone
+        private val localZone    = zone
         private val localShuttle = shuttle
-        private val localSelf = ref
+        private val localSelf    = ref
 
         override def description(): String = s"register an orbital shuttle"
 
-        def action() : Future[Any] = {
+        def action(): Future[Any] = {
           localZone.Transport.tell(Zone.Vehicle.Spawn(localShuttle), localSelf)
           Future(this)
         }
-      }, GUIDTask.registerVehicle(zone.GUID, shuttle)
+      },
+      GUIDTask.registerVehicle(zone.GUID, shuttle)
     )
   }
 
@@ -194,7 +199,7 @@ object OrbitalShuttlePadControl {
           p.Name,
           AvatarAction.SendResponse(
             Service.defaultPlayerGUID,
-            ChatMsg(ChatMessageType.UNK_225, wideContents=false, "", "@DoorWillOpenWhenShuttleReturns", None)
+            ChatMsg(ChatMessageType.UNK_225, wideContents = false, "", "@DoorWillOpenWhenShuttleReturns", None)
           )
         )
         p.Name

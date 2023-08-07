@@ -116,7 +116,10 @@ class BuildingActor1Test extends ActorTest {
   "Building Control" should {
     "construct" in {
       ServiceManager.boot(system)
-      system.spawn(InterstellarClusterService(Seq(Zone.Nowhere)), InterstellarClusterService.InterstellarClusterServiceKey.id)
+      system.spawn(
+        InterstellarClusterService(Seq(Zone.Nowhere)),
+        InterstellarClusterService.InterstellarClusterServiceKey.id
+      )
       val bldg = Building("Building", 0, 10, Zone.Nowhere, StructureType.Building)
       bldg.Actor = system.spawn(BuildingActor(Zone.Nowhere, bldg), "test").toClassic
       assert(bldg.Actor != Default.Actor)

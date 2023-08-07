@@ -11,9 +11,8 @@ import net.psforever.types.Vector3
   * @param p1 a point
   * @param p2 another point
   */
-final case class Segment(p1: Point, p2: Point)
-  extends Geometry3D
-  with geometry.Segment {
+final case class Segment(p1: Point, p2: Point) extends Geometry3D with geometry.Segment {
+
   /**
     * The center point of a segment is a position that is equally in between both endpoints.
     * @return a point
@@ -33,6 +32,7 @@ final case class Segment(p1: Point, p2: Point)
 }
 
 object Segment {
+
   /**
     * An overloaded constructor that uses a pair of individual coordinates
     * and uses their difference to define a direction.

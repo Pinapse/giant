@@ -12,5 +12,9 @@ class RadiationCloudConverter extends ObjectCreateConverter[Projectile]() {
   }
 
   override def DetailedConstructorData(obj: Projectile): Try[RadiationCloudData] =
-    Failure(new Exception("RadiationCloudConverter should not be used to generate detailed RadiationCloudData (nothing should)"))
+    Failure(
+      new Exception(
+        "RadiationCloudConverter should not be used to generate detailed RadiationCloudData (nothing should)"
+      )
+    )
 }

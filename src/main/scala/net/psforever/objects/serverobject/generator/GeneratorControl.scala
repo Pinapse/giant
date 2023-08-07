@@ -34,19 +34,23 @@ class GeneratorControl(gen: Generator)
   def DamageableObject: Generator = gen
   def RepairableObject: Generator = gen
   def AutoRepairObject: Generator = gen
+
   /** flagged to explode after some time */
-  var imminentExplosion: Boolean   = false
+  var imminentExplosion: Boolean = false
+
   /** explode when this timer completes */
   var queuedExplosion: Cancellable = Default.Cancellable
+
   /** when damaged, announce that damage was dealt on a schedule */
-  var alarmCooldown: Cancellable   = Default.Cancellable
+  var alarmCooldown: Cancellable = Default.Cancellable
+
   /** the canned explosion used by this generator */
   lazy val explosionFunc: (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
     /*
     to determine the orientation of the generator room, locate the unique terminal - the generator terminal
     there will only be one terminal in the facility and it will be between the entry door and the generator itself
     this will define the "forward-facing" direction of the generator
-    */
+     */
     gen.Owner.Amenities.find {
       case t: Terminal => t.Definition.isInstanceOf[GeneratorTerminalDefinition]
       case _           => false
@@ -80,7 +84,8 @@ class GeneratorControl(gen: Generator)
           if (alarmCooldown.isCancelled) {
             GeneratorControl.UpdateOwner(gen, Some(GeneratorControl.Event.UnderAttack))
             alarmCooldown.cancel()
-            alarmCooldown = context.system.scheduler.scheduleOnce(delay = 5 seconds, self, GeneratorControl.AlarmReset())
+            alarmCooldown =
+              context.system.scheduler.scheduleOnce(delay = 5 seconds, self, GeneratorControl.AlarmReset())
           }
 
         case GeneratorControl.AlarmReset() =>
@@ -102,7 +107,8 @@ class GeneratorControl(gen: Generator)
           gen.Condition = PlanetSideGeneratorState.Destroyed
           GeneratorControl.UpdateOwner(gen, Some(GeneratorControl.Event.Destabilized))
           queuedExplosion.cancel()
-          queuedExplosion = context.system.scheduler.scheduleOnce(10 seconds, self, GeneratorControl.GeneratorExplodes())
+          queuedExplosion =
+            context.system.scheduler.scheduleOnce(10 seconds, self, GeneratorControl.GeneratorExplodes())
 
         case GeneratorControl.GeneratorExplodes() =>
           //TODO this only works with projectiles right now!
@@ -172,7 +178,7 @@ class GeneratorControl(gen: Generator)
     super.DamageAwareness(target, cause, amount)
     val damageTo = amount match {
       case a: Int => a
-      case _ => 0
+      case _      => 0
     }
     GeneratorControl.DamageAwareness(gen, cause, damageTo)
   }
@@ -187,9 +193,9 @@ class GeneratorControl(gen: Generator)
     }
   }
 
-  override def PerformRepairs(target : Target, amount : Int) : Int = {
+  override def PerformRepairs(target: Target, amount: Int): Int = {
     val newHealth = super.PerformRepairs(target, amount)
-    if(newHealth == target.Definition.MaxHealth) {
+    if (newHealth == target.Definition.MaxHealth) {
       stopAutoRepair()
     }
     newHealth
@@ -202,25 +208,25 @@ class GeneratorControl(gen: Generator)
     self ! GeneratorControl.Restored()
   }
 
-  override def withNtuSupplyCallback() : Unit = {
+  override def withNtuSupplyCallback(): Unit = {
     context.become(withNtu)
     super.withNtuSupplyCallback()
     //if not destroyed when a source of ntu is detected, restore facility power
-    if(!gen.Destroyed) {
+    if (!gen.Destroyed) {
       self ! GeneratorControl.Restored()
     }
   }
 
-  override def noNtuSupplyCallback() : Unit = {
+  override def noNtuSupplyCallback(): Unit = {
     //auto-repair must stop naturally
     context.become(withoutNtu)
     super.noNtuSupplyCallback()
     //if not destroyed when cutoff from a source of ntu, stop facility power generation
-    if(!gen.Destroyed) {
+    if (!gen.Destroyed) {
       GeneratorControl.UpdateOwner(gen, Some(GeneratorControl.Event.Offline))
     }
     //quit any explosion (see withoutNtu->GeneratorControl.Destabilized)
-    if(!queuedExplosion.isCancelled) {
+    if (!queuedExplosion.isCancelled) {
       queuedExplosion.cancel()
       self ! GeneratorControl.Destabilized()
     }
@@ -228,6 +234,7 @@ class GeneratorControl(gen: Generator)
 }
 
 object GeneratorControl {
+
   /**
     * na
     */
@@ -257,15 +264,10 @@ object GeneratorControl {
     * na
     */
   object Event extends Enumeration {
-    val
-    Critical, //PlanetSideGeneratorState.Critical
-    UnderAttack,
-    Destabilized,
-    Destroyed, //PlanetSideGeneratorState.Destroyed
-    Offline,
-    Normal, //PlanetSideGeneratorState.Normal
-    Online
-    = Value
+    val Critical,                         //PlanetSideGeneratorState.Critical
+    UnderAttack, Destabilized, Destroyed, //PlanetSideGeneratorState.Destroyed
+    Offline, Normal,                      //PlanetSideGeneratorState.Normal
+    Online = Value
   }
 
   /**
@@ -307,20 +309,20 @@ object GeneratorControl {
     *         calculates whether or not the target will be affected by an explosion of the source
     */
   def generatorRoomExplosionDetectionTestSetup(
-                                                pointTowardsFront: Vector3,
-                                                source: PlanetSideGameObject
-                                              ): (PlanetSideGameObject, PlanetSideGameObject, Float)=> Boolean = {
+      pointTowardsFront: Vector3,
+      source: PlanetSideGameObject
+  ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
     import net.psforever.types.Vector3._
-    val sourceGeometry = source.Definition.Geometry(source)
+    val sourceGeometry   = source.Definition.Geometry(source)
     val sourcePositionXY = source.Position.xy
-    val up = Vector3(0,0,1)
+    val up               = Vector3(0, 0, 1)
     val inFrontOf = if (pointTowardsFront.xy == sourcePositionXY) {
-      pointTowardsFront.xy + Vector3(1,0,0)
+      pointTowardsFront.xy + Vector3(1, 0, 0)
     } else {
       pointTowardsFront.xy
     }
     val front = inFrontOf - sourcePositionXY
-    val side = CrossProduct(front, up)
+    val side  = CrossProduct(front, up)
     generatorRoomExplosionDetectionTest(
       sourcePositionXY,
       Unit(front),
@@ -358,33 +360,31 @@ object GeneratorControl {
     *        `false`, otherwise
     */
   def generatorRoomExplosionDetectionTest(
-                                           g1ctrXY: Vector3,
-                                           ufront: Vector3,
-                                           uside: Vector3,
-                                           uup: Vector3,
-                                           topPoint: Float,
-                                           basePoint: Float
-                                         )
-                                         (
-                                           source: PlanetSideGameObject,
-                                           target: PlanetSideGameObject,
-                                           maxDistance: Float
-                                         ): Boolean = {
+      g1ctrXY: Vector3,
+      ufront: Vector3,
+      uside: Vector3,
+      uup: Vector3,
+      topPoint: Float,
+      basePoint: Float
+  )(
+      source: PlanetSideGameObject,
+      target: PlanetSideGameObject,
+      maxDistance: Float
+  ): Boolean = {
     import net.psforever.types.Vector3._
-    val g2 = target.Definition.Geometry(target)
-    val udir = Unit(target.Position.xy - g1ctrXY) //direction from source to target, xy-axis
-    val dir = g2.pointOnOutside(neg(udir)).asVector3.xy - g1ctrXY //distance from source to target, xy-axis
+    val g2   = target.Definition.Geometry(target)
+    val udir = Unit(target.Position.xy - g1ctrXY)                  //direction from source to target, xy-axis
+    val dir  = g2.pointOnOutside(neg(udir)).asVector3.xy - g1ctrXY //distance from source to target, xy-axis
     /* withinBaseToTop */
     topPoint > g2.pointOnOutside(neg(uup)).asVector3.z &&
     basePoint <= g2.pointOnOutside(uup).asVector3.z &&
     /* withinSideToSide; squaring negates the "which side" concern */
     MagnitudeSquared(VectorProjection(dir, uside)) < 121 &&
-    ( /* withinFrontBack */
-      if (DotProduct(udir, ufront) > 0) {
-        MagnitudeSquared(VectorProjection(dir, ufront)) < 210 //front, towards entry door
-      } else {
-        MagnitudeSquared(VectorProjection(dir, neg(ufront))) < 72 //back, towards back of room
-      }
-    )
+    (/* withinFrontBack */
+    if (DotProduct(udir, ufront) > 0) {
+      MagnitudeSquared(VectorProjection(dir, ufront)) < 210 //front, towards entry door
+    } else {
+      MagnitudeSquared(VectorProjection(dir, neg(ufront))) < 72 //back, towards back of room
+    })
   }
 }

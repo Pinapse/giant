@@ -78,14 +78,13 @@ final case class PadAndShuttlePair(pad: PlanetSideGUID, shuttle: PlanetSideGUID,
   *              with a control code
   */
 final case class OrbitalShuttleTimeMsg(
-                                        model_state: HartSequence,
-                                        unk0: Int,
-                                        arrival_time: Long,
-                                        boarding_time: Long,
-                                        other_time: Long,
-                                        pairs: List[PadAndShuttlePair]
-                                      )
-  extends PlanetSideGamePacket {
+    model_state: HartSequence,
+    unk0: Int,
+    arrival_time: Long,
+    boarding_time: Long,
+    other_time: Long,
+    pairs: List[PadAndShuttlePair]
+) extends PlanetSideGamePacket {
   type Packet = OrbitalShuttleTimeMsg
   def opcode = GamePacketOpcode.OrbitalShuttleTimeMsg
   def encode = OrbitalShuttleTimeMsg.encode(this)
@@ -100,19 +99,19 @@ object OrbitalShuttleTimeMsg extends Marshallable[OrbitalShuttleTimeMsg] {
     ("pad" | PlanetSideGUID.codec) ::
       ("shuttle" | PlanetSideGUID.codec) ::
       ("unk" | uint(bits = 6))
-    ).as[PadAndShuttlePair]
+  ).as[PadAndShuttlePair]
 
   implicit val codec: Codec[OrbitalShuttleTimeMsg] = (
     uint3 >>:~ { size =>
       ("model_state" | hartSequenceCodec) ::
-      ("unk0" | uint3) ::
-      ("arrival_time" | uint32L) ::
-      ("boarding_time" | uint32L) ::
-      bool ::
-      ("other_time" | uint32L) ::
-      ("pairs" | PacketHelpers.listOfNSized(size, padShuttlePair_codec))
+        ("unk0" | uint3) ::
+        ("arrival_time" | uint32L) ::
+        ("boarding_time" | uint32L) ::
+        bool ::
+        ("other_time" | uint32L) ::
+        ("pairs" | PacketHelpers.listOfNSized(size, padShuttlePair_codec))
     }
-    ).xmap[OrbitalShuttleTimeMsg](
+  ).xmap[OrbitalShuttleTimeMsg](
     {
       case _ :: model :: u0 :: arrival :: boarding :: _ :: other :: pairs :: HNil =>
         OrbitalShuttleTimeMsg(model, u0, arrival, boarding, other, pairs)

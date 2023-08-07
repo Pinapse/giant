@@ -82,15 +82,15 @@ object VehicleStateMessage extends Marshallable[VehicleStateMessage] {
 
   implicit val codec: Codec[VehicleStateMessage] = (
     ("vehicle_guid" | PlanetSideGUID.codec) ::
-    ("unk1" | uintL(bits = 3)) ::
-    ("pos" | Vector3.codec_pos) ::
-    ("ang" | codec_orient) ::
-    ("vel" | optional(bool, Vector3.codec_vel)) ::
-    ("flying" | optional(bool, uintL(bits = 5))) ::
-    ("unk3" | uintL(bits = 7)) ::
-    ("unk4" | uint4L) ::
-    ("wheel_direction" | uintL(5)) ::
-    ("is_decelerating" | bool) ::
-    ("is_cloaked" | bool)
+      ("unk1" | uintL(bits = 3)) ::
+      ("pos" | Vector3.codec_pos) ::
+      ("ang" | codec_orient) ::
+      ("vel" | optional(bool, Vector3.codec_vel)) ::
+      ("flying" | optional(bool, uintL(bits = 5))) ::
+      ("unk3" | uintL(bits = 7)) ::
+      ("unk4" | uint4L) ::
+      ("wheel_direction" | uintL(5)) ::
+      ("is_decelerating" | bool) ::
+      ("is_cloaked" | bool)
   ).as[VehicleStateMessage]
 }

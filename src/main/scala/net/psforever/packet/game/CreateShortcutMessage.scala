@@ -70,39 +70,40 @@ final case class CreateShortcutMessage(
 }
 
 object Shortcut extends Marshallable[Shortcut] {
+
   /** Preset for the medkit quick-use option. */
-  final case class Medkit() extends Shortcut(code=0) {
+  final case class Medkit() extends Shortcut(code = 0) {
     def tile = "medkit"
   }
 
   /**
-   * Converter for text macro parameters that acts like a preset.
-   * @param acronym a three letter acronym displayed in the hotbar
-   * @param msg the chat message content
-   * @return `Some` shortcut that represents a voice macro command
-   */
-  final case class Macro(acronym: String, msg: String) extends Shortcut(code=1) {
+    * Converter for text macro parameters that acts like a preset.
+    * @param acronym a three letter acronym displayed in the hotbar
+    * @param msg the chat message content
+    * @return `Some` shortcut that represents a voice macro command
+    */
+  final case class Macro(acronym: String, msg: String) extends Shortcut(code = 1) {
     override val tile: String = "shortcut_macro"
   }
 
   /**
-   * Converter for an implant name token that acts like a preset.
-   * @param tile implant name
-   * @return `Some` shortcut that represents an implant
-   * @throws `AssertionError` if an implant is not named
-   */
-  final case class Implant(tile: String) extends Shortcut(code=2) {
+    * Converter for an implant name token that acts like a preset.
+    * @param tile implant name
+    * @return `Some` shortcut that represents an implant
+    * @throws `AssertionError` if an implant is not named
+    */
+  final case class Implant(tile: String) extends Shortcut(code = 2) {
     assert(ImplantType.names.exists(_.equals(tile)), s"not an implant - $tile")
   }
 
   /**
-   * Main transcoder for medkit shortcuts.
-   */
+    * Main transcoder for medkit shortcuts.
+    */
   val medkitCodec: Codec[Medkit] = (
-    ("tile" | PacketHelpers.encodedStringAligned(adjustment=5)) ::
+    ("tile" | PacketHelpers.encodedStringAligned(adjustment = 5)) ::
       ("effect1" | PacketHelpers.encodedWideString) ::
       ("effect2" | PacketHelpers.encodedWideString)
-    ).xmap[Medkit](
+  ).xmap[Medkit](
     _ => Medkit(),
     {
       case Medkit() => "medkit" :: "" :: "" :: HNil
@@ -110,14 +111,14 @@ object Shortcut extends Marshallable[Shortcut] {
   )
 
   /**
-   * Main transcoder for text chat macro shortcuts.
-   * All strings transcoders are utilized.
-   */
+    * Main transcoder for text chat macro shortcuts.
+    * All strings transcoders are utilized.
+    */
   val macroCodec: Codec[Macro] = (
-    ("tile" | PacketHelpers.encodedStringAligned(adjustment=5)) ::
+    ("tile" | PacketHelpers.encodedStringAligned(adjustment = 5)) ::
       ("effect1" | PacketHelpers.encodedWideString) ::
       ("effect2" | PacketHelpers.encodedWideString)
-    ).xmap[Macro](
+  ).xmap[Macro](
     {
       case _ :: acronym :: msg :: HNil => Macro(acronym, msg)
     },
@@ -127,13 +128,13 @@ object Shortcut extends Marshallable[Shortcut] {
   )
 
   /**
-   * Main transcoder for implant quick-use shortcuts.
-   */
+    * Main transcoder for implant quick-use shortcuts.
+    */
   val implantCodec: Codec[Implant] = (
-    ("tile" | PacketHelpers.encodedStringAligned(adjustment=5)) ::
+    ("tile" | PacketHelpers.encodedStringAligned(adjustment = 5)) ::
       ("effect1" | PacketHelpers.encodedWideString) ::
       ("effect2" | PacketHelpers.encodedWideString)
-    ).xmap[Implant](
+  ).xmap[Implant](
     {
       case implant :: _ :: _ :: HNil => Implant(implant)
     },
@@ -143,11 +144,11 @@ object Shortcut extends Marshallable[Shortcut] {
   )
 
   /**
-   * Convert the numeric flag for a specific kind of shortcut into the transcoder for that kind of shortcut.
-   * @param code numeric code for shortcut type
-   * @return transcoder for that shortcut type
-   * @throws IllegalArgumentException if the numeric code does not map to any valid transcoders
-   */
+    * Convert the numeric flag for a specific kind of shortcut into the transcoder for that kind of shortcut.
+    * @param code numeric code for shortcut type
+    * @return transcoder for that shortcut type
+    * @throws IllegalArgumentException if the numeric code does not map to any valid transcoders
+    */
   def shortcutSwitch(code: Int): Codec[Shortcut] = {
     (code match {
       case 0 => medkitCodec
@@ -157,15 +158,14 @@ object Shortcut extends Marshallable[Shortcut] {
     }).asInstanceOf[Codec[Shortcut]]
   }
 
-  implicit val codec: Codec[Shortcut] = (
-    uint(bits=2) >>:~ { code =>
-      shortcutSwitch(code).hlist
-    }).xmap[Shortcut](
+  implicit val codec: Codec[Shortcut] = (uint(bits = 2) >>:~ { code =>
+    shortcutSwitch(code).hlist
+  }).xmap[Shortcut](
     {
       case _ :: shortcut :: HNil => shortcut
     },
-    {
-      shortcut => shortcut.code :: shortcut :: HNil
+    { shortcut =>
+      shortcut.code :: shortcut :: HNil
     }
   )
 }

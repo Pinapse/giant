@@ -102,6 +102,7 @@ class OrderTerminalDefinition(objId: Int) extends TerminalDefinition(objId) {
 }
 
 object OrderTerminalDefinition {
+
   /**
     * Assemble some logic for a provided object.
     * @param obj an `Amenity` object;

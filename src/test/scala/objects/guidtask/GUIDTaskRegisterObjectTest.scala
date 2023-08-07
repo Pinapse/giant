@@ -12,10 +12,12 @@ class GUIDTaskRegisterObjectTest extends ActorTest {
     val obj             = new GUIDTaskTest.TestObject
 
     assert(!obj.HasGUID)
-    TaskWorkflow.execute(TaskBundle(
-      new GUIDTaskTest.RegisterTestTask(probe.ref),
-      GUIDTask.registerObject(uns, obj)
-    ))
+    TaskWorkflow.execute(
+      TaskBundle(
+        new GUIDTaskTest.RegisterTestTask(probe.ref),
+        GUIDTask.registerObject(uns, obj)
+      )
+    )
     probe.expectMsg(5.second, scala.util.Success(true))
     assert(obj.HasGUID)
   }

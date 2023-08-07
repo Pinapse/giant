@@ -46,8 +46,7 @@ object ZoneActor {
 
   final case class PickupItem(guid: PlanetSideGUID) extends Command
 
-  final case class BuildDeployable(obj: Deployable, withTool: ConstructionItem)
-      extends Command
+  final case class BuildDeployable(obj: Deployable, withTool: ConstructionItem) extends Command
 
   final case class DismissDeployable(obj: Deployable) extends Command
 
@@ -73,12 +72,12 @@ object ZoneActor {
 }
 
 class ZoneActor(context: ActorContext[ZoneActor.Command], zone: Zone)
-  extends AbstractBehavior[ZoneActor.Command](context) {
+    extends AbstractBehavior[ZoneActor.Command](context) {
 
   import ZoneActor._
   import ctx._
 
-  private[this] val log           = org.log4s.getLogger
+  private[this] val log                   = org.log4s.getLogger
   val players: mutable.ListBuffer[Player] = mutable.ListBuffer()
 
   zone.actor = context.self
@@ -89,7 +88,7 @@ class ZoneActor(context: ActorContext[ZoneActor.Command], zone: Zone)
       buildings.foreach { building =>
         zone.BuildingByMapId(building.localId) match {
           case Some(_: WarpGate) => ;
-            //warp gates are controlled by game logic and are better off not restored via the database
+          //warp gates are controlled by game logic and are better off not restored via the database
           case Some(b) =>
             if ((b.Faction = PlanetSideEmpire(building.factionId)) != PlanetSideEmpire.NEUTRAL) {
               b.ForceDomeActive = MajorFacilityLogic.checkForceDomeStatus(b).getOrElse(false)

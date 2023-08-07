@@ -17,21 +17,19 @@ import net.psforever.types._
   * @see `RouterControl`
   * @param vehicle the vehicle
   */
-class DeployingVehicleControl(vehicle: Vehicle)
-  extends VehicleControl(vehicle)
-    with DeploymentBehavior {
+class DeployingVehicleControl(vehicle: Vehicle) extends VehicleControl(vehicle) with DeploymentBehavior {
   def DeploymentObject: Vehicle = vehicle
 
-  override def commonEnabledBehavior : Receive = super.commonEnabledBehavior.orElse(deployBehavior)
+  override def commonEnabledBehavior: Receive = super.commonEnabledBehavior.orElse(deployBehavior)
 
   /**
     * Even when disabled, the vehicle can be made to undeploy.
     * Even when disabled, passengers can formally dismount from the vehicle.
     */
-  override def commonDisabledBehavior : Receive =
+  override def commonDisabledBehavior: Receive =
     super.commonDisabledBehavior
       .orElse {
-        case msg : Deployment.TryUndeploy =>
+        case msg: Deployment.TryUndeploy =>
           deployBehavior.apply(msg)
 
         case msg @ Mountable.TryDismount(_, seat_num, _) =>
@@ -42,7 +40,7 @@ class DeployingVehicleControl(vehicle: Vehicle)
   /**
     * Even when on the verge of deletion, the vehicle can be made to undeploy.
     */
-  override def commonDeleteBehavior : Receive =
+  override def commonDeleteBehavior: Receive =
     super.commonDeleteBehavior
       .orElse {
         case msg: Deployment.TryUndeploy =>
@@ -52,7 +50,7 @@ class DeployingVehicleControl(vehicle: Vehicle)
   /**
     * Even when disabled, the vehicle can be made to undeploy.
     */
-  override def PrepareForDisabled(kickPassengers: Boolean) : Unit = {
+  override def PrepareForDisabled(kickPassengers: Boolean): Unit = {
     TryUndeployStateChange(DriveState.Undeploying)
     super.PrepareForDisabled(kickPassengers)
   }
@@ -60,7 +58,7 @@ class DeployingVehicleControl(vehicle: Vehicle)
   /**
     * Even when on the verge of deletion, the vehicle can be made to undeploy.
     */
-  override def PrepareForDeletion() : Unit = {
+  override def PrepareForDeletion(): Unit = {
     vehicle.Actor ! Deployment.TryUndeploy(DriveState.Undeploying)
     super.PrepareForDeletion()
   }
@@ -70,28 +68,28 @@ class DeployingVehicleControl(vehicle: Vehicle)
   }
 
   override def DeploymentAction(
-                                 obj: DeploymentObject,
-                                 state: DriveState.Value,
-                                 prevState: DriveState.Value
-                               ): DriveState.Value = {
+      obj: DeploymentObject,
+      state: DriveState.Value,
+      prevState: DriveState.Value
+  ): DriveState.Value = {
     val out = super.DeploymentAction(obj, state, prevState)
     Vehicles.ReloadAccessPermissions(vehicle, vehicle.Faction.toString)
     specificResponseToDeployment(state)
     out
   }
 
-  def specificResponseToDeployment(state: DriveState.Value): Unit = { }
+  def specificResponseToDeployment(state: DriveState.Value): Unit = {}
 
   override def UndeploymentAction(
-                                   obj: DeploymentObject,
-                                   state: DriveState.Value,
-                                   prevState: DriveState.Value
-                                 ): DriveState.Value = {
+      obj: DeploymentObject,
+      state: DriveState.Value,
+      prevState: DriveState.Value
+  ): DriveState.Value = {
     val out = if (decaying) state else super.UndeploymentAction(obj, state, prevState)
     Vehicles.ReloadAccessPermissions(vehicle, vehicle.Faction.toString)
     specificResponseToUndeployment(state)
     out
   }
 
-  def specificResponseToUndeployment(state: DriveState.Value): Unit = { }
+  def specificResponseToUndeployment(state: DriveState.Value): Unit = {}
 }

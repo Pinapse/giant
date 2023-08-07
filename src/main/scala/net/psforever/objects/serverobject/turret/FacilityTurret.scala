@@ -7,7 +7,7 @@ import net.psforever.objects.serverobject.terminals.capture.CaptureTerminalAware
 import net.psforever.types.Vector3
 
 class FacilityTurret(tDef: FacilityTurretDefinition)
-  extends Amenity
+    extends Amenity
     with WeaponTurret
     with JammableUnit
     with CaptureTerminalAware {

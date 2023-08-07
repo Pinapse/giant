@@ -26,30 +26,31 @@ import net.psforever.types.PlanetSideGUID
   * @param user the player who is holding the trigger
   * @param item_guid the trigger
   */
-final case class TriggerUsedReason(user: PlayerSource, item_guid: PlanetSideGUID)
-  extends DamageReason {
+final case class TriggerUsedReason(user: PlayerSource, item_guid: PlanetSideGUID) extends DamageReason {
   def source: DamageProperties = TriggerUsedReason.triggered
 
   def resolution: DamageResolution.Value = DamageResolution.Resolved
 
-  def same(test: DamageReason): Boolean = test match {
-    case tur: TriggerUsedReason => tur.item_guid == item_guid && tur.user.Name.equals(user.Name)
-    case _                      => false
-  }
+  def same(test: DamageReason): Boolean =
+    test match {
+      case tur: TriggerUsedReason => tur.item_guid == item_guid && tur.user.Name.equals(user.Name)
+      case _                      => false
+    }
 
   /** lay the blame on the player who caused this explosion to occur */
   def adversary: Option[SourceEntry] = Some(user)
 
-  override def damageModel : DamageAndResistance = TriggerUsedReason.drm
+  override def damageModel: DamageAndResistance = TriggerUsedReason.drm
 
   /** while weird, the trigger was accredited as the method of death on Gemini Live;
-    * even though its icon looks like an misshapen AMS */
+    * even though its icon looks like an misshapen AMS
+    */
   override def attribution: Int = GlobalDefinitions.boomer_trigger.ObjectId
 }
 
 object TriggerUsedReason {
   private val triggered = new DamageProperties {
-    Damage0 = 1 //token damage
+    Damage0 = 1                 //token damage
     SympatheticExplosion = true //sets off a boomer
   }
 

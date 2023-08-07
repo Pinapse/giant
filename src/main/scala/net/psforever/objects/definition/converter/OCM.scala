@@ -10,6 +10,7 @@ import net.psforever.packet.game.objectcreate.ObjectCreateMessageParent
   * Compose an `ObjectCreateMessage` packet or, if requesting and allowing, an `ObjectCreateDetailedMessage` packet.
   */
 object OCM {
+
   /**
     * Compose an `ObjectCreateMessage` packet of an entity.
     * @param obj the entity being converted into a packet
@@ -36,6 +37,7 @@ object OCM {
       case _          => apply(obj)
     }
   }
+
   /**
     * Compose a contained `ObjectCreateMessage` packet of an entity.
     * @param obj the entity being converted into a packet
@@ -54,7 +56,7 @@ object OCM {
 
   def detailed(obj: PlanetSideGameObject): PlanetSideGamePacket = {
     val definition = obj.Definition
-    val packet = definition.Packet
+    val packet     = definition.Packet
     if (packet.noDetailedForm(obj)) {
       apply(obj) //fall back
     } else {
@@ -78,6 +80,7 @@ object OCM {
       case _          => detailed(obj)
     }
   }
+
   /**
     * Compose a contained detailed `ObjectCreateMessage` packet of an entity.
     * @param obj the entity being converted into a packet
@@ -86,7 +89,7 @@ object OCM {
     */
   def detailed(obj: PlanetSideGameObject, parent: ObjectCreateMessageParent): PlanetSideGamePacket = {
     val definition = obj.Definition
-    val packet = definition.Packet
+    val packet     = definition.Packet
     if (packet.noDetailedForm(obj)) {
       apply(obj, parent) //fall back
     } else {

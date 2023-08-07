@@ -16,6 +16,7 @@ import scala.concurrent.duration._
   * @see `LocalService`
   */
 class DoorCloseActor() extends Actor {
+
   /** The periodic `Executor` that checks for doors to be closed */
   private var doorCloserTrigger: Cancellable = Default.Cancellable
 

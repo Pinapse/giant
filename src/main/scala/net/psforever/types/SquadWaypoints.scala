@@ -16,8 +16,10 @@ object WaypointSubtype extends Enumeration {
   * Base of all waypoints visible to members of a particular squad.
   */
 sealed trait SquadWaypoint {
+
   /** the index of this kind of waypoint */
   def value: Int
+
   /** the distinction of this kind of waypoint */
   def subtype: WaypointSubtype.Value
 }
@@ -48,6 +50,7 @@ sealed case class LazeWaypoint(value: Int) extends SquadWaypoint {
 }
 
 object SquadWaypoint {
+
   /**
     * Overloaded constructor
     * that returns either the specific squad waypoint as the index value
@@ -56,7 +59,7 @@ object SquadWaypoint {
     * @return a waypoint object
     */
   def apply(value: Int): SquadWaypoint = {
-    if(value < 5) {
+    if (value < 5) {
       values(value)
     } else {
       LazeWaypoint(value)
@@ -66,16 +69,21 @@ object SquadWaypoint {
   /** the five squad-specific waypoints */
   //does not include the multitude of possible laze waypoints
   def values = Seq(One, Two, Three, Four, ExperienceRally)
+
   /** the first squad rally */
   case object One extends StandardWaypoint(value = 0)
+
   /** the second squad rally */
   case object Two extends StandardWaypoint(value = 1)
+
   /** the third squad rally */
   case object Three extends StandardWaypoint(value = 2)
+
   /** the fourth squad rally */
   case object Four extends StandardWaypoint(value = 3)
+
   /** the squad experience bonus rally */
   case object ExperienceRally extends StandardWaypoint(value = 4)
 
-  implicit val codec = uint8L.xmap[SquadWaypoint]( n => apply(n), waypoint => waypoint.value )
+  implicit val codec = uint8L.xmap[SquadWaypoint](n => apply(n), waypoint => waypoint.value)
 }

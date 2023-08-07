@@ -21,33 +21,32 @@ import net.psforever.types.PlanetSideGUID
   * A common characteristic of this type of vehicle is the ability to discharge a defensive wide-area electromagnetic pulse.
   * @param vehicle the APC
   */
-class ApcControl(vehicle: Vehicle)
-  extends VehicleControl(vehicle)
-  with VehicleCapacitance {
+class ApcControl(vehicle: Vehicle) extends VehicleControl(vehicle) with VehicleCapacitance {
   def CapacitanceObject: Vehicle = vehicle
 
-  override def postStop() : Unit = {
+  override def postStop(): Unit = {
     super.postStop()
     capacitancePostStop()
   }
 
-  override def commonEnabledBehavior : Receive = super.commonEnabledBehavior
-    .orElse(capacitorBehavior)
-    .orElse {
-      case SpecialEmp.Burst() =>
-        performEmpBurst()
+  override def commonEnabledBehavior: Receive =
+    super.commonEnabledBehavior
+      .orElse(capacitorBehavior)
+      .orElse {
+        case SpecialEmp.Burst() =>
+          performEmpBurst()
 
-      case _ => ;
-    }
+        case _ => ;
+      }
 
   def performEmpBurst(): Unit = {
     val obj = CapacitanceObject
     if (obj.Capacitor == obj.Definition.MaxCapacitor) { //only if the capacitor is full
-      val zone = obj.Zone
-      val events = zone.VehicleEvents
-      val pos = obj.Position
-      val GUID0 = Service.defaultPlayerGUID
-      val emp = ApcControl.apc_emp
+      val zone    = obj.Zone
+      val events  = zone.VehicleEvents
+      val pos     = obj.Position
+      val GUID0   = Service.defaultPlayerGUID
+      val emp     = ApcControl.apc_emp
       val faction = obj.Faction
       //drain the capacitor
       capacitorCharge(-vehicle.Capacitor)
@@ -78,7 +77,7 @@ class ApcControl(vehicle: Vehicle)
     }
   }
 
-  override def PrepareForDisabled(kickPassengers: Boolean) : Unit = {
+  override def PrepareForDisabled(kickPassengers: Boolean): Unit = {
     super.PrepareForDisabled(kickPassengers)
     capacitanceStop()
   }

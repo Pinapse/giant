@@ -21,12 +21,12 @@ import net.psforever.services.InterstellarClusterService
   * @param interstellarCluster event system for behavior updates from the whole server
   */
 final case class FacilityWrapper(
-                                  building: Building,
-                                  context: ActorContext[BuildingActor.Command],
-                                  galaxyService: classic.ActorRef,
-                                  interstellarCluster: ActorRef[InterstellarClusterService.Command]
-                                )
-  extends BuildingWrapper {
+    building: Building,
+    context: ActorContext[BuildingActor.Command],
+    galaxyService: classic.ActorRef,
+    interstellarCluster: ActorRef[InterstellarClusterService.Command]
+) extends BuildingWrapper {
+
   /** a custom source for nanite transfer units */
   val supplier = new FakeNtuSource(building)
 }

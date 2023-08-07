@@ -13,14 +13,14 @@ import net.psforever.packet.game.DeployableIcon
 import net.psforever.types.PlanetSideEmpire
 
 trait BaseDeployable
-  extends PlanetSideServerObject
+    extends PlanetSideServerObject
     with FactionAffinity
     with BlockMapEntity
     with Vitality
     with OwnableByPlayer
     with ZoneAware {
   private var faction: PlanetSideEmpire.Value = PlanetSideEmpire.NEUTRAL
-  private var shields: Int = 0
+  private var shields: Int                    = 0
 
   def Shields: Int = shields
 
@@ -47,8 +47,7 @@ trait BaseDeployable
   def Definition: DeployableDefinition
 }
 
-abstract class Deployable(cdef: DeployableDefinition)
-  extends BaseDeployable {
+abstract class Deployable(cdef: DeployableDefinition) extends BaseDeployable {
   def Definition: DeployableDefinition = cdef
 }
 

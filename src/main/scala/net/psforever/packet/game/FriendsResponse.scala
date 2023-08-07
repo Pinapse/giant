@@ -31,11 +31,11 @@ final case class Friend(name: String, online: Boolean = false)
   * @param friends a list of `Friend`s
   */
 final case class FriendsResponse(
-                                  action: MemberAction.Value,
-                                  unk1: Int,
-                                  first_entry: Boolean,
-                                  last_entry: Boolean,
-                                  friends: List[Friend]
+    action: MemberAction.Value,
+    unk1: Int,
+    first_entry: Boolean,
+    last_entry: Boolean,
+    friends: List[Friend]
 ) extends PlanetSideGamePacket {
   type Packet = FriendsResponse
 
@@ -62,7 +62,7 @@ object Friend extends Marshallable[Friend] {
 
 object FriendsResponse extends Marshallable[FriendsResponse] {
   def apply(action: MemberAction.Value, friend: Friend): FriendsResponse = {
-    FriendsResponse(action, unk1=0, first_entry=true, last_entry=true, List(friend))
+    FriendsResponse(action, unk1 = 0, first_entry = true, last_entry = true, List(friend))
   }
 
   /**
@@ -75,17 +75,17 @@ object FriendsResponse extends Marshallable[FriendsResponse] {
     */
   def packetSequence(action: MemberAction.Value, friends: List[Friend]): List[FriendsResponse] = {
     val lists = friends.grouped(15)
-    val size = lists.size
+    val size  = lists.size
     if (size <= 1) {
-      List(FriendsResponse(action, unk1=0, first_entry=true, last_entry=true, friends))
+      List(FriendsResponse(action, unk1 = 0, first_entry = true, last_entry = true, friends))
     } else {
       val size1 = size - 1
       val first = lists.take(1)
-      val rest = lists.slice(1, size1)
-      val last = lists.drop(size1)
-      List(FriendsResponse(action, unk1=0, first_entry=true, last_entry=false, first.next())) ++
-        rest.map { FriendsResponse(action, unk1=0, first_entry=false, last_entry=false, _)} ++
-        List(FriendsResponse(action, unk1=0, first_entry=false, last_entry=true, last.next()))
+      val rest  = lists.slice(1, size1)
+      val last  = lists.drop(size1)
+      List(FriendsResponse(action, unk1 = 0, first_entry = true, last_entry = false, first.next())) ++
+        rest.map { FriendsResponse(action, unk1 = 0, first_entry = false, last_entry = false, _) } ++
+        List(FriendsResponse(action, unk1 = 0, first_entry = false, last_entry = true, last.next()))
     }
   }
 

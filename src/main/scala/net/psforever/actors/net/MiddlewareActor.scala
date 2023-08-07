@@ -273,7 +273,8 @@ class MiddlewareActor(
   private val packetOutboundDelay: Long = Config.app.network.middleware.packetBundlingDelay.toMillis
 
   /** Delay between runs of the packet bundler/resolver timer (ms);
-   * this is the same as `packetOutboundDelay` increased by the multiplier */
+    * this is the same as `packetOutboundDelay` increased by the multiplier
+    */
   private val packetProcessorDelay: FiniteDuration = Duration.apply(
     math.abs(packetOutboundDelay * Config.app.network.middleware.packetBundlingDelayMultiplier).toLong,
     "milliseconds"
@@ -313,7 +314,7 @@ class MiddlewareActor(
                 Unknown30 is used to reuse an existing crypto session when switching from login to world
                 When not handling it, it appears that the client will fall back to using ClientStart
                 Do we need to implement this?
-                */
+                 */
                 connectionClose()
 
               case (ConnectionClose(), _) =>
@@ -395,7 +396,11 @@ class MiddlewareActor(
       .receiveSignal(onSignal)
   }
 
-  private def cryptoFinish(dh: DiffieHellman, clientChallenge: ByteVector, serverChallenge: ByteVector): Behavior[Command] = {
+  private def cryptoFinish(
+      dh: DiffieHellman,
+      clientChallenge: ByteVector,
+      serverChallenge: ByteVector
+  ): Behavior[Command] = {
     Behaviors
       .receiveMessagePartial[Command] {
         case Receive(msg) =>
@@ -474,8 +479,7 @@ class MiddlewareActor(
           out(packet)
           Behaviors.same
 
-        case Raw(msg, true)
-          if System.currentTimeMillis() - lastOutboundEventTime > packetOutboundDelay =>
+        case Raw(msg, true) if System.currentTimeMillis() - lastOutboundEventTime > packetOutboundDelay =>
           outQueue.enqueue((KeepAliveMessage(), msg)) //caught by bundling isolation filter
           processOutQueueBundle()
           Behaviors.same
@@ -484,8 +488,7 @@ class MiddlewareActor(
           outQueue.enqueue((KeepAliveMessage(), msg)) //caught by bundling isolation filter
           Behaviors.same
 
-        case Raw(msg, false)
-          if System.currentTimeMillis() - lastOutboundEventTime > packetOutboundDelay =>
+        case Raw(msg, false) if System.currentTimeMillis() - lastOutboundEventTime > packetOutboundDelay =>
           outQueue.enqueue((ActionResultMessage.Pass, msg))
           processOutQueueBundle()
           Behaviors.same
@@ -593,7 +596,7 @@ class MiddlewareActor(
             Unknown30 is used to reuse an existing crypto session when switching from login to world
             When not handling it, it appears that the client will fall back to using ClientStart
             Do we need to implement this?
-            */
+             */
             connectionClose()
 
           case other =>
@@ -628,8 +631,7 @@ class MiddlewareActor(
 
       case _ =>
         PacketCoding.encodePacket(packet) match {
-          case Successful(payload)
-            if System.currentTimeMillis() - lastOutboundEventTime > packetOutboundDelay =>
+          case Successful(payload) if System.currentTimeMillis() - lastOutboundEventTime > packetOutboundDelay =>
             outQueue.enqueue((packet, payload))
             processOutQueueBundle()
           case Successful(payload) =>
@@ -880,11 +882,11 @@ class MiddlewareActor(
   private var activeSubslotsFunc: (Int, Int, ByteVector) => Unit = inSubslotNotMissing
 
   /**
-   * Start making requests for missing `SlottedMetaPackets`
-   * if no prior requests were prepared.
-   * Start the scheduled task and handle the dispatched requests.
-   * @see `processRequestsForMissingSubslots`
-   */
+    * Start making requests for missing `SlottedMetaPackets`
+    * if no prior requests were prepared.
+    * Start the scheduled task and handle the dispatched requests.
+    * @see `processRequestsForMissingSubslots`
+    */
   def askForMissingSubslots(): Unit = {
     if (subslotMissingProcessor.isCancelled) {
       subslotMissingProcessor = context.system.scheduler.scheduleWithFixedDelay(
@@ -930,11 +932,11 @@ class MiddlewareActor(
   }
 
   /**
-   * Make requests for missing `SlottedMetaPackets`.
-   * @see `inSubslotsMissingRequestFuncs`
-   * @see `inSubslotsMissingRequestsFinished`
-   * @see `RelatedA`
-   */
+    * Make requests for missing `SlottedMetaPackets`.
+    * @see `inSubslotsMissingRequestFuncs`
+    * @see `inSubslotsMissingRequestsFinished`
+    * @see `RelatedA`
+    */
   def processRequestsForMissingSubslots(): Unit = {
     timesSubslotMissing += inSubslotsMissing.size
     inSubslotsMissing.foreach {
@@ -1067,7 +1069,7 @@ class MiddlewareActor(
     * @param amount the number of bytes
     * @return a random series of bytes
     */
-    //noinspection SameParameterValue
+  //noinspection SameParameterValue
   private def randomBytes(amount: Int): ByteVector = {
     val array = Array.ofDim[Byte](amount)
     random.nextBytes(array)
@@ -1075,10 +1077,10 @@ class MiddlewareActor(
   }
 
   /**
-   * If the timer the timer for processing outbound packets is not currently running,
-   * test if there are any packets waiting in certain messaging queues
-   * for the chance to cancel, then restart, the timer for processing outbound packets.
-   */
+    * If the timer the timer for processing outbound packets is not currently running,
+    * test if there are any packets waiting in certain messaging queues
+    * for the chance to cancel, then restart, the timer for processing outbound packets.
+    */
   private def retimePacketProcessorIfNotRunningIfWork(): Unit = {
     if (packetProcessor == Default.Cancellable || packetProcessor.isCancelled) {
       retimePacketProcessorIfWork()
@@ -1086,10 +1088,10 @@ class MiddlewareActor(
   }
 
   /**
-   * If the timer the timer for processing outbound packets is not currently running,
-   * test if there are any packets waiting in certain messaging queues
-   * for the chance to cancel, then restart, the timer for processing outbound packets.
-   */
+    * If the timer the timer for processing outbound packets is not currently running,
+    * test if there are any packets waiting in certain messaging queues
+    * for the chance to cancel, then restart, the timer for processing outbound packets.
+    */
   private def retimePacketProcessorIfNotRunning(): Unit = {
     if (packetProcessor == Default.Cancellable || packetProcessor.isCancelled) {
       retimePacketProcessor()
@@ -1097,9 +1099,9 @@ class MiddlewareActor(
   }
 
   /**
-   * If there are any packets waiting in the following queues,
-   * cancel, then restart, the timer for processing outbound packets.
-   */
+    * If there are any packets waiting in the following queues,
+    * cancel, then restart, the timer for processing outbound packets.
+    */
   private def retimePacketProcessorIfWork(): Unit = {
     if (outQueueBundled.nonEmpty || outQueue.nonEmpty || inReorderQueue.nonEmpty) {
       retimePacketProcessor()
@@ -1107,14 +1109,17 @@ class MiddlewareActor(
   }
 
   /**
-   * Cancel, then restart, the timer for processing outbound packets.
-   * Sends a message to the normal mailbox to signal processing activity.
-   */
+    * Cancel, then restart, the timer for processing outbound packets.
+    * Sends a message to the normal mailbox to signal processing activity.
+    */
   private def retimePacketProcessor(): Unit = {
     packetProcessor.cancel()
-    packetProcessor = context.system.scheduler.scheduleOnce(packetProcessorDelay, () => {
-      context.self ! ProcessQueue
-    })
+    packetProcessor = context.system.scheduler.scheduleOnce(
+      packetProcessorDelay,
+      () => {
+        context.self ! ProcessQueue
+      }
+    )
   }
 
   /**

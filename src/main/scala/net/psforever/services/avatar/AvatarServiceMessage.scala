@@ -41,9 +41,9 @@ object AvatarAction {
   final case class ConcealPlayer(player_guid: PlanetSideGUID)                                        extends Action
   final case class EnvironmentalDamage(player_guid: PlanetSideGUID, source_guid: PlanetSideGUID, amount: Int)
       extends Action
-  final case class DeployItem(player_guid: PlanetSideGUID, item: Deployable) extends Action
-  final case class DeactivateImplantSlot(player_guid: PlanetSideGUID, slot: Int)                       extends Action
-  final case class ActivateImplantSlot(player_guid: PlanetSideGUID, slot: Int)                         extends Action
+  final case class DeployItem(player_guid: PlanetSideGUID, item: Deployable)     extends Action
+  final case class DeactivateImplantSlot(player_guid: PlanetSideGUID, slot: Int) extends Action
+  final case class ActivateImplantSlot(player_guid: PlanetSideGUID, slot: Int)   extends Action
   final case class Destroy(victim: PlanetSideGUID, killer: PlanetSideGUID, weapon: PlanetSideGUID, pos: Vector3)
       extends Action
   final case class DestroyDisplay(killer: SourceEntry, victim: SourceEntry, method: Int, unk: Int = 121) extends Action
@@ -149,9 +149,9 @@ object AvatarAction {
       old_inventory: List[(Equipment, PlanetSideGUID)],
       inventory: List[InventoryItem],
       drop: List[InventoryItem]
-  ) extends Action
-  final case class DropSpecialItem() extends Action
-  final case class UseKit(kit_guid: PlanetSideGUID, kit_objid: Int) extends Action
+  )                                                                  extends Action
+  final case class DropSpecialItem()                                 extends Action
+  final case class UseKit(kit_guid: PlanetSideGUID, kit_objid: Int)  extends Action
   final case class KitNotUsed(kit_guid: PlanetSideGUID, msg: String) extends Action
 
   final case class TeardownConnection() extends Action

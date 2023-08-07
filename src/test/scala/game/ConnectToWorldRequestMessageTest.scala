@@ -12,7 +12,16 @@ class ConnectToWorldRequestMessageTest extends Specification {
 
   "decode" in {
     PacketCoding.decodePacket(string).require match {
-      case ConnectToWorldRequestMessage(serverName, token, majorVersion, minorVersion, revision, buildDate, unk1, unk2) =>
+      case ConnectToWorldRequestMessage(
+            serverName,
+            token,
+            majorVersion,
+            minorVersion,
+            revision,
+            buildDate,
+            unk1,
+            unk2
+          ) =>
         serverName mustEqual "gemini"
         token mustEqual ""
         majorVersion mustEqual 0

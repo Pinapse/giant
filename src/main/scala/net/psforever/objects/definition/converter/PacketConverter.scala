@@ -17,6 +17,7 @@ sealed trait PacketConverter
   * @tparam A the type of game object
   */
 abstract class ObjectCreateConverter[A <: PlanetSideGameObject] extends PacketConverter {
+
   /** some objects do not have a detailed constructor data form */
   def noDetailedForm(obj: A): Boolean = DetailedConstructorData(obj).isFailure
 

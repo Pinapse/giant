@@ -315,14 +315,16 @@ class SquadMembershipResponseTest extends Specification {
     }
 
     "encode (1-1)" in {
-      val msg = SquadMembershipResponse(SquadResponseType.ProximityInvite, 19, 0, 41530025L, Some(0L), "", true, Some(None))
+      val msg =
+        SquadMembershipResponse(SquadResponseType.ProximityInvite, 19, 0, 41530025L, Some(0L), "", true, Some(None))
       val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
       pkt mustEqual string_11
     }
 
     "encode (1-2)" in {
-      val msg = SquadMembershipResponse(SquadResponseType.ProximityInvite, 18, 0, 41578085L, Some(0L), "", true, Some(None))
+      val msg =
+        SquadMembershipResponse(SquadResponseType.ProximityInvite, 18, 0, 41578085L, Some(0L), "", true, Some(None))
       val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
       pkt mustEqual string_12

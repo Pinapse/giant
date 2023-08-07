@@ -15,11 +15,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class PainboxControl(painbox: Painbox) extends PoweredAmenityControl {
-  private[this] val log         = org.log4s.getLogger(s"Painbox")
-  var painboxTick: Cancellable  = Default.Cancellable
-  var nearestDoor: Option[Door] = None
+  private[this] val log            = org.log4s.getLogger(s"Painbox")
+  var painboxTick: Cancellable     = Default.Cancellable
+  var nearestDoor: Option[Door]    = None
   var domain: PainboxControl.Shape = PainboxControl.Unshaped()
-  var disabled = false
+  var disabled                     = false
 
   def initialStartup(): Unit = {
     if (painbox.Owner.Continent.matches("c[0-9]")) {
@@ -31,15 +31,15 @@ class PainboxControl(painbox: Painbox) extends PoweredAmenityControl {
       if (painbox.Definition.HasNearestDoorDependency) {
         //whether an open door summons the pain
         (painbox.Owner match {
-          case obj : Building =>
+          case obj: Building =>
             obj.Amenities
-              .collect { case door : Door => door }
+              .collect { case door: Door => door }
               .sortBy(door => Vector3.DistanceSquared(painbox.Position, door.Position))
               .headOption
           case _ =>
             None
         }) match {
-          case door@Some(_) =>
+          case door @ Some(_) =>
             nearestDoor = door
           case _ =>
             log.error(
@@ -127,18 +127,18 @@ class PainboxControl(painbox: Painbox) extends PoweredAmenityControl {
 object PainboxControl {
   sealed trait Shape {
     def midpoint: Vector3
-    def filterTargets(available : List[Player]): List[Player]
+    def filterTargets(available: List[Player]): List[Player]
   }
 
   final case class Unshaped() extends Shape {
     def midpoint: Vector3 = Vector3.Zero
 
-    def filterTargets(available: List[Player]) : List[Player] = Nil
+    def filterTargets(available: List[Player]): List[Player] = Nil
   }
 
   final case class Passthrough(midpoint: Vector3) extends Shape {
 
-    def filterTargets(available: List[Player]) : List[Player] = available
+    def filterTargets(available: List[Player]): List[Player] = available
   }
 
   final case class Spherical(midpoint: Vector3, radius: Float) extends Shape {
@@ -152,22 +152,22 @@ object PainboxControl {
   final case class Box(painbox: Painbox) extends Shape {
     private val (bBoxMinCorner, bBoxMaxCorner, bBoxMidPoint): (Vector3, Vector3, Vector3) = {
       painbox.Owner match {
-        case obj : Building =>
+        case obj: Building =>
           val planarRange = 16.5f
-          val aboveRange = 5
-          val belowRange = 5
+          val aboveRange  = 5
+          val belowRange  = 5
           // Find amenities within the specified range
           val nearbyAmenities = obj.Amenities
             .filter(amenity =>
               amenity.Position != Vector3.Zero
-              && (amenity.Definition == GlobalDefinitions.mb_locker
+                && (amenity.Definition == GlobalDefinitions.mb_locker
                   || amenity.Definition == GlobalDefinitions.respawn_tube
                   || amenity.Definition == GlobalDefinitions.spawn_terminal
                   || amenity.Definition == GlobalDefinitions.order_terminal
                   || amenity.Definition == GlobalDefinitions.door)
-              && amenity.Position.x > painbox.Position.x - planarRange && amenity.Position.x < painbox.Position.x + planarRange
-              && amenity.Position.y > painbox.Position.y - planarRange && amenity.Position.y < painbox.Position.y + planarRange
-              && amenity.Position.z > painbox.Position.z - belowRange && amenity.Position.z < painbox.Position.z + aboveRange
+                && amenity.Position.x > painbox.Position.x - planarRange && amenity.Position.x < painbox.Position.x + planarRange
+                && amenity.Position.y > painbox.Position.y - planarRange && amenity.Position.y < painbox.Position.y + planarRange
+                && amenity.Position.z > painbox.Position.z - belowRange && amenity.Position.z < painbox.Position.z + aboveRange
             )
           // Calculate bounding box of amenities
           //0.5 is added/removed to ensure entirety of valid amenities were encompassed by field
@@ -190,14 +190,14 @@ object PainboxControl {
 
     def midpoint: Vector3 = bBoxMidPoint
 
-    def filterTargets(available : List[Player]) : List[Player] = {
+    def filterTargets(available: List[Player]): List[Player] = {
       available.filter { p =>
         /*
         This may be cpu intensive with a large number of players in SOI. Further performance tweaking may be required
         The bounding box is calculated aligned to the world XY axis, instead of rotating the painbox corners to match the base rotation
         we instead rotate the player's current coordinates to match the base rotation,
         allowing for much simplified checking of if the player is within the bounding box
-        */
+         */
         val playerRot = Vector3.PlanarRotateAroundPoint(
           p.Position,
           bBoxMidPoint,

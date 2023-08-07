@@ -31,7 +31,7 @@ class VehicleSpawnControl2Test extends ActorTest {
   "VehicleSpawnControl" should {
     "complete a vehicle order" in {
       val (vehicle, player, pad, terminal, zone) = VehicleSpawnPadControlTest.SetUpAgents(PlanetSideEmpire.TR)
-      val probe                        = new TestProbe(system, "zone-events")
+      val probe                                  = new TestProbe(system, "zone-events")
 
       zone.VehicleEvents = probe.ref                                      //zone events
       pad.Actor ! VehicleSpawnPad.VehicleOrder(player, vehicle, terminal) //order
@@ -105,7 +105,7 @@ class VehicleSpawnControl4Test extends ActorTest {
   "VehicleSpawnControl" should {
     "clean up the vehicle if the driver-to-be is on the wrong continent" in {
       val (vehicle, player, pad, terminal, zone) = VehicleSpawnPadControlTest.SetUpAgents(PlanetSideEmpire.TR)
-      val probe                        = new TestProbe(system, "zone-events")
+      val probe                                  = new TestProbe(system, "zone-events")
       zone.VehicleEvents = probe.ref
       player.Continent = "problem" //problem
 
@@ -181,7 +181,7 @@ class VehicleSpawnControl7Test extends ActorTest {
   "VehicleSpawnControl" should {
     "abandon a vehicle on the spawn pad if driver is unfit to drive (blocking)" in {
       val (vehicle, player, pad, terminal, zone) = VehicleSpawnPadControlTest.SetUpAgents(PlanetSideEmpire.TR)
-      val probe                        = new TestProbe(system, "zone-events")
+      val probe                                  = new TestProbe(system, "zone-events")
       player.ExoSuit = ExoSuitType.MAX
 
       zone.VehicleEvents = probe.ref                                      //zone events

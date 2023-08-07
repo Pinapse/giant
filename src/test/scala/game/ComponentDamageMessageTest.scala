@@ -8,7 +8,7 @@ import net.psforever.types.{PlanetSideGUID, SubsystemComponent}
 import scodec.bits._
 
 class ComponentDamageMessageTest extends Specification {
-  val string_on = hex"d3 8f01 1a000000820000000000202040"
+  val string_on  = hex"d3 8f01 1a000000820000000000202040"
   val string_off = hex"d3 8f01 1a00000000"
 
   "decode (on)" in {

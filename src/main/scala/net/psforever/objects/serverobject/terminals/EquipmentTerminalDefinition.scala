@@ -213,7 +213,7 @@ object EquipmentTerminalDefinition {
     * key - an identification string sent by the client
     * value - a curried function that builds the object
     */
-  val bfrArmWeapons : Map[String, () => Equipment] = Map(
+  val bfrArmWeapons: Map[String, () => Equipment] = Map(
     "aphelion_armor_siphon"      -> MakeTool(aphelion_armor_siphon),
     "aphelion_laser"             -> MakeTool(aphelion_laser),
     "aphelion_ntu_siphon"        -> MakeTool(aphelion_ntu_siphon),
@@ -236,7 +236,7 @@ object EquipmentTerminalDefinition {
     * key - an identification string sent by the client
     * value - a curried function that builds the object
     */
-  val bfrGunnerWeapons : Map[String, () => Equipment] = Map(
+  val bfrGunnerWeapons: Map[String, () => Equipment] = Map(
     "aphelion_immolation_cannon"  -> MakeTool(aphelion_immolation_cannon),
     "aphelion_plasma_rocket_pod"  -> MakeTool(aphelion_plasma_rocket_pod),
     "colossus_cluster_bomb_pod"   -> MakeTool(colossus_cluster_bomb_pod),
@@ -245,7 +245,7 @@ object EquipmentTerminalDefinition {
     "peregrine_particle_cannon"   -> MakeTool(peregrine_particle_cannon)
   )
 
-  val bfrAmmunition : Map[String, () => AmmoBox] = Map(
+  val bfrAmmunition: Map[String, () => AmmoBox] = Map(
     "aphelion_laser_ammo"             -> MakeAmmoBox(aphelion_laser_ammo),
     "aphelion_immolation_cannon_ammo" -> MakeAmmoBox(aphelion_immolation_cannon_ammo),
     "aphelion_plasma_rocket_ammo"     -> MakeAmmoBox(aphelion_plasma_rocket_ammo),
@@ -271,7 +271,9 @@ object EquipmentTerminalDefinition {
   /**
     * A single-element `Map` of the one piece of `Equipment` for the Flail.
     */
-  val flailTerminal: Map[String, () => Equipment] = Map("flail_targeting_laser" -> MakeSimpleItem(flail_targeting_laser))
+  val flailTerminal: Map[String, () => Equipment] = Map(
+    "flail_targeting_laser" -> MakeSimpleItem(flail_targeting_laser)
+  )
 
   /**
     * Create a new `Tool` from provided `EquipmentDefinition` objects.

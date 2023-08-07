@@ -9,12 +9,11 @@ import net.psforever.objects.vital.{Vitality, VitalityDefinition}
 import net.psforever.types.{PlanetSideEmpire, PlanetSideGUID, Vector3}
 
 class DummyExplodingEntity(
-                            private val obj: PlanetSideGameObject,
-                            private val faction: PlanetSideEmpire.Value
-                          )
-  extends PlanetSideGameObject
-  with FactionAffinity
-  with Vitality {
+    private val obj: PlanetSideGameObject,
+    private val faction: PlanetSideEmpire.Value
+) extends PlanetSideGameObject
+    with FactionAffinity
+    with Vitality {
   override def GUID: PlanetSideGUID = obj.GUID
 
   override def Position: Vector3 = {
@@ -33,7 +32,7 @@ class DummyExplodingEntity(
     }
   }
 
-  override def Velocity : Option[Vector3] = {
+  override def Velocity: Option[Vector3] = {
     super.Velocity.orElse(obj.Velocity)
   }
 
@@ -47,8 +46,8 @@ class DummyExplodingEntity(
 }
 
 private class DefinitionWrappedInVitality(private val entity: PlanetSideGameObject)
-  extends ObjectDefinition(entity.Definition.ObjectId)
-  with VitalityDefinition {
+    extends ObjectDefinition(entity.Definition.ObjectId)
+    with VitalityDefinition {
   private val internalDefinition = entity.Definition
 
   innateDamage = internalDefinition match {
@@ -61,14 +60,15 @@ private class DefinitionWrappedInVitality(private val entity: PlanetSideGameObje
 
   DefaultHealth = 1 //just cuz
 
-  override def ObjectId: Int = entity match {
-    case p: Projectile => p.tool_def.ObjectId //projectiles point back to the weapon of origin
-    case _             => internalDefinition.ObjectId //what are we?
-  }
+  override def ObjectId: Int =
+    entity match {
+      case p: Projectile => p.tool_def.ObjectId         //projectiles point back to the weapon of origin
+      case _             => internalDefinition.ObjectId //what are we?
+    }
 }
 
 object DummyExplodingEntity {
-  final val DefaultDamageResistanceModel = new DamageResistanceModel { }
+  final val DefaultDamageResistanceModel = new DamageResistanceModel {}
 
   def apply(obj: PlanetSideGameObject): DummyExplodingEntity = new DummyExplodingEntity(obj, PlanetSideEmpire.NEUTRAL)
 }

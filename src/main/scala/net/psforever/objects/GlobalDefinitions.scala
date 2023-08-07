@@ -21,7 +21,12 @@ import net.psforever.objects.serverobject.painbox.PainboxDefinition
 import net.psforever.objects.serverobject.terminals._
 import net.psforever.objects.serverobject.tube.SpawnTubeDefinition
 import net.psforever.objects.serverobject.resourcesilo.ResourceSiloDefinition
-import net.psforever.objects.serverobject.structures.{AmenityDefinition, AutoRepairStats, BuildingDefinition, WarpGateDefinition}
+import net.psforever.objects.serverobject.structures.{
+  AmenityDefinition,
+  AutoRepairStats,
+  BuildingDefinition,
+  WarpGateDefinition
+}
 import net.psforever.objects.serverobject.terminals.capture.CaptureTerminalDefinition
 import net.psforever.objects.serverobject.terminals.implant.{ImplantTerminalDefinition, ImplantTerminalMechDefinition}
 import net.psforever.objects.serverobject.turret.{FacilityTurretDefinition, TurretUpgrade}
@@ -52,8 +57,11 @@ object GlobalDefinitions {
   avatar.DrownAtMaxDepth = true
   avatar.MaxDepth = 1.609375f //Male, standing, not MAX
   avatar.UnderwaterLifespan(suffocation = 60000L, recovery = 10000L)
-  avatar.collision.xy = CollisionXYData(Array((0.1f, 0), (0.2f, 5), (0.50f, 15), (0.75f, 20), (1f, 30))) //not in the ADB
-  avatar.collision.z = CollisionZData(Array((0.1f, 0), (5f, 1), (10f, 3), (20f, 5), (35f, 7), (50f, 10), (75f, 40), (100f, 100))) //not in the ADB
+  avatar.collision.xy =
+    CollisionXYData(Array((0.1f, 0), (0.2f, 5), (0.50f, 15), (0.75f, 20), (1f, 30))) //not in the ADB
+  avatar.collision.z = CollisionZData(
+    Array((0.1f, 0), (5f, 1), (10f, 3), (20f, 5), (35f, 7), (50f, 10), (75f, 40), (100f, 100))
+  )                            //not in the ADB
   avatar.maxForwardSpeed = 27f //not in the ADB; running speed
   /*
   exo-suits
@@ -180,7 +188,9 @@ object GlobalDefinitions {
 
   val anniversary_projectileb = ProjectileDefinition(Projectiles.Types.anniversary_projectileb)
 
-  val aphelion_immolation_cannon_projectile = ProjectileDefinition(Projectiles.Types.aphelion_immolation_cannon_projectile)
+  val aphelion_immolation_cannon_projectile = ProjectileDefinition(
+    Projectiles.Types.aphelion_immolation_cannon_projectile
+  )
 
   val aphelion_laser_projectile = ProjectileDefinition(Projectiles.Types.aphelion_laser_projectile)
 
@@ -302,7 +312,9 @@ object GlobalDefinitions {
 
   val maelstrom_grenade_projectile = ProjectileDefinition(Projectiles.Types.maelstrom_grenade_projectile)
 
-  val maelstrom_grenade_projectile_contact = ProjectileDefinition(Projectiles.Types.maelstrom_grenade_projectile_contact)
+  val maelstrom_grenade_projectile_contact = ProjectileDefinition(
+    Projectiles.Types.maelstrom_grenade_projectile_contact
+  )
 
   val maelstrom_stream_projectile = ProjectileDefinition(Projectiles.Types.maelstrom_stream_projectile)
 
@@ -336,13 +348,19 @@ object GlobalDefinitions {
 
   val pellet_gun_projectile = ProjectileDefinition(Projectiles.Types.pellet_gun_projectile)
 
-  val peregrine_dual_machine_gun_projectile = ProjectileDefinition(Projectiles.Types.peregrine_dual_machine_gun_projectile)
+  val peregrine_dual_machine_gun_projectile = ProjectileDefinition(
+    Projectiles.Types.peregrine_dual_machine_gun_projectile
+  )
 
   val peregrine_mechhammer_projectile = ProjectileDefinition(Projectiles.Types.peregrine_mechhammer_projectile)
 
-  val peregrine_particle_cannon_projectile = ProjectileDefinition(Projectiles.Types.peregrine_particle_cannon_projectile)
+  val peregrine_particle_cannon_projectile = ProjectileDefinition(
+    Projectiles.Types.peregrine_particle_cannon_projectile
+  )
 
-  val peregrine_particle_cannon_radiation_cloud = ProjectileDefinition(Projectiles.Types.peregrine_particle_cannon_radiation_cloud)
+  val peregrine_particle_cannon_radiation_cloud = ProjectileDefinition(
+    Projectiles.Types.peregrine_particle_cannon_radiation_cloud
+  )
 
   val peregrine_rocket_pod_projectile = ProjectileDefinition(Projectiles.Types.peregrine_rocket_pod_projectile)
 
@@ -420,7 +438,9 @@ object GlobalDefinitions {
 
   val striker_missile_projectile = ProjectileDefinition(Projectiles.Types.striker_missile_projectile)
 
-  val striker_missile_targeting_projectile = ProjectileDefinition(Projectiles.Types.striker_missile_targeting_projectile)
+  val striker_missile_targeting_projectile = ProjectileDefinition(
+    Projectiles.Types.striker_missile_targeting_projectile
+  )
 
   val trek_projectile = ProjectileDefinition(Projectiles.Types.trek_projectile)
 
@@ -438,7 +458,8 @@ object GlobalDefinitions {
 
   val winchester_projectile = ProjectileDefinition(Projectiles.Types.winchester_projectile)
 
-  val armor_siphon_projectile = ProjectileDefinition(Projectiles.Types.trek_projectile) //fake projectile for storing damage information
+  val armor_siphon_projectile =
+    ProjectileDefinition(Projectiles.Types.trek_projectile) //fake projectile for storing damage information
 
   val ntu_siphon_emp = ProjectileDefinition(Projectiles.Types.ntu_siphon_emp)
   init_projectile()
@@ -1581,7 +1602,7 @@ object GlobalDefinitions {
   def isMaxArms(tdef: ToolDefinition): Boolean = {
     tdef match {
       case `trhev_dualcycler` | `nchev_scattercannon` | `vshev_quasar` | `trhev_pounder` | `nchev_falcon` |
-           `vshev_comet` | `trhev_burster` | `nchev_sparrow` | `vshev_starfire` =>
+          `vshev_comet` | `trhev_burster` | `nchev_sparrow` | `vshev_starfire` =>
         true
       case _ =>
         false
@@ -1691,13 +1712,13 @@ object GlobalDefinitions {
   def isFactionWeapon(edef: EquipmentDefinition): PlanetSideEmpire.Value = {
     edef match {
       case `chainblade` | `repeater` | `anniversary_guna` | `cycler` | `mini_chaingun` | `striker` |
-           `trhev_dualcycler` | `trhev_pounder` | `trhev_burster` =>
+          `trhev_dualcycler` | `trhev_pounder` | `trhev_burster` =>
         PlanetSideEmpire.TR
       case `magcutter` | `isp` | `anniversary_gun` | `gauss` | `r_shotgun` | `hunterseeker` | `nchev_scattercannon` |
-           `nchev_falcon` | `nchev_sparrow` =>
+          `nchev_falcon` | `nchev_sparrow` =>
         PlanetSideEmpire.NC
       case `forceblade` | `beamer` | `anniversary_gunb` | `pulsar` | `lasher` | `lancer` | `vshev_quasar` |
-           `vshev_comet` | `vshev_starfire` =>
+          `vshev_comet` | `vshev_starfire` =>
         PlanetSideEmpire.VS
       case _ =>
         PlanetSideEmpire.NEUTRAL
@@ -1713,16 +1734,16 @@ object GlobalDefinitions {
   def isFactionEquipment(edef: EquipmentDefinition): PlanetSideEmpire.Value = {
     edef match {
       case `chainblade` | `repeater` | `anniversary_guna` | `cycler` | `mini_chaingun` | `striker` |
-           `striker_missile_ammo` | `trhev_dualcycler` | `trhev_pounder` | `trhev_burster` | `dualcycler_ammo` |
-           `pounder_ammo` | `burster_ammo` =>
+          `striker_missile_ammo` | `trhev_dualcycler` | `trhev_pounder` | `trhev_burster` | `dualcycler_ammo` |
+          `pounder_ammo` | `burster_ammo` =>
         PlanetSideEmpire.TR
       case `magcutter` | `isp` | `anniversary_gun` | `gauss` | `r_shotgun` | `hunterseeker` | `hunter_seeker_missile` |
-           `nchev_scattercannon` | `nchev_falcon` | `nchev_sparrow` | `scattercannon_ammo` | `falcon_ammo` |
-           `sparrow_ammo` =>
+          `nchev_scattercannon` | `nchev_falcon` | `nchev_sparrow` | `scattercannon_ammo` | `falcon_ammo` |
+          `sparrow_ammo` =>
         PlanetSideEmpire.NC
       case `forceblade` | `beamer` | `anniversary_gunb` | `pulsar` | `lasher` | `lancer` | `energy_cell` |
-           `lancer_cartridge` | `vshev_quasar` | `vshev_comet` | `vshev_starfire` | `quasar_ammo` | `comet_ammo` |
-           `starfire_ammo` =>
+          `lancer_cartridge` | `vshev_quasar` | `vshev_comet` | `vshev_starfire` | `quasar_ammo` | `comet_ammo` |
+          `starfire_ammo` =>
         PlanetSideEmpire.VS
       case _ =>
         PlanetSideEmpire.NEUTRAL
@@ -1789,7 +1810,7 @@ object GlobalDefinitions {
     * @return `true`, if the definition represents a battle frame robotics weapon;
     *         `false`, otherwise
     */
-  def isBattleFrameWeapon(tdef : EquipmentDefinition) : Boolean = {
+  def isBattleFrameWeapon(tdef: EquipmentDefinition): Boolean = {
     isBattleFrameWeaponForVS(tdef) || isBattleFrameWeaponForTR(tdef) || isBattleFrameWeaponForNC(tdef)
   }
 
@@ -1800,7 +1821,7 @@ object GlobalDefinitions {
     * @return `true`, if a battle frame robotics weapon and associated with the given faction;
     *         `false`, otherwise
     */
-  def isBattleFrameWeapon(tdef : EquipmentDefinition, faction : PlanetSideEmpire.Value) : Boolean = {
+  def isBattleFrameWeapon(tdef: EquipmentDefinition, faction: PlanetSideEmpire.Value): Boolean = {
     faction match {
       case PlanetSideEmpire.VS =>
         isBattleFrameWeaponForVS(tdef)
@@ -1813,22 +1834,22 @@ object GlobalDefinitions {
     }
   }
 
-  def isBattleFrameArmorSiphon(edef : EquipmentDefinition) : Boolean = {
+  def isBattleFrameArmorSiphon(edef: EquipmentDefinition): Boolean = {
     edef match {
       case `aphelion_armor_siphon` | `aphelion_armor_siphon_left` | `aphelion_armor_siphon_right` |
-           `colossus_armor_siphon` | `colossus_armor_siphon_left` | `colossus_armor_siphon_right` |
-           `peregrine_armor_siphon` | `peregrine_armor_siphon_left` | `peregrine_armor_siphon_right` =>
+          `colossus_armor_siphon` | `colossus_armor_siphon_left` | `colossus_armor_siphon_right` |
+          `peregrine_armor_siphon` | `peregrine_armor_siphon_left` | `peregrine_armor_siphon_right` =>
         true
       case _ =>
         false
     }
   }
 
-  def isBattleFrameNTUSiphon(edef : EquipmentDefinition) : Boolean = {
+  def isBattleFrameNTUSiphon(edef: EquipmentDefinition): Boolean = {
     edef match {
-      case `aphelion_ntu_siphon` | `aphelion_ntu_siphon_left` | `aphelion_ntu_siphon_right` |
-           `colossus_ntu_siphon` | `colossus_ntu_siphon_left` | `colossus_ntu_siphon_right` |
-           `peregrine_ntu_siphon` | `peregrine_ntu_siphon_left` | `peregrine_ntu_siphon_right` =>
+      case `aphelion_ntu_siphon` | `aphelion_ntu_siphon_left` | `aphelion_ntu_siphon_right` | `colossus_ntu_siphon` |
+          `colossus_ntu_siphon_left` | `colossus_ntu_siphon_right` | `peregrine_ntu_siphon` |
+          `peregrine_ntu_siphon_left` | `peregrine_ntu_siphon_right` =>
         true
       case _ =>
         false
@@ -1841,14 +1862,13 @@ object GlobalDefinitions {
     * @return `true`, if a battle frame robotics weapon and associated with the given faction;
     *         `false`, otherwise
     */
-  def isBattleFrameWeaponForVS(tdef : EquipmentDefinition) : Boolean = {
+  def isBattleFrameWeaponForVS(tdef: EquipmentDefinition): Boolean = {
     tdef match {
-      case `aphelion_armor_siphon` | `aphelion_armor_siphon_left` | `aphelion_armor_siphon_right` |
-           `aphelion_laser` | `aphelion_laser_left` | `aphelion_laser_right` |
-           `aphelion_ntu_siphon` | `aphelion_ntu_siphon_left` | `aphelion_ntu_siphon_right` |
-           `aphelion_ppa` | `aphelion_ppa_left` | `aphelion_ppa_right` |
-           `aphelion_starfire` | `aphelion_starfire_left` | `aphelion_starfire_right` |
-           `aphelion_immolation_cannon` | `aphelion_plasma_rocket_pod` =>
+      case `aphelion_armor_siphon` | `aphelion_armor_siphon_left` | `aphelion_armor_siphon_right` | `aphelion_laser` |
+          `aphelion_laser_left` | `aphelion_laser_right` | `aphelion_ntu_siphon` | `aphelion_ntu_siphon_left` |
+          `aphelion_ntu_siphon_right` | `aphelion_ppa` | `aphelion_ppa_left` | `aphelion_ppa_right` |
+          `aphelion_starfire` | `aphelion_starfire_left` | `aphelion_starfire_right` | `aphelion_immolation_cannon` |
+          `aphelion_plasma_rocket_pod` =>
         true
       case _ =>
         false
@@ -1861,14 +1881,13 @@ object GlobalDefinitions {
     * @return `true`, if a battle frame robotics weapon and associated with the given faction;
     *         `false`, otherwise
     */
-  def isBattleFrameWeaponForTR(tdef : EquipmentDefinition) : Boolean = {
+  def isBattleFrameWeaponForTR(tdef: EquipmentDefinition): Boolean = {
     tdef match {
-      case `colossus_armor_siphon` | `colossus_armor_siphon_left` | `colossus_armor_siphon_right` |
-           `colossus_burster` | `colossus_burster_left` | `colossus_burster_right` |
-           `colossus_chaingun` | `colossus_chaingun_left` | `colossus_chaingun_right` |
-           `colossus_ntu_siphon` | `colossus_ntu_siphon_left` | `colossus_ntu_siphon_right` |
-           `colossus_tank_cannon` | `colossus_tank_cannon_left` | `colossus_tank_cannon_right` |
-           `colossus_cluster_bomb_pod` | `colossus_dual_100mm_cannons` =>
+      case `colossus_armor_siphon` | `colossus_armor_siphon_left` | `colossus_armor_siphon_right` | `colossus_burster` |
+          `colossus_burster_left` | `colossus_burster_right` | `colossus_chaingun` | `colossus_chaingun_left` |
+          `colossus_chaingun_right` | `colossus_ntu_siphon` | `colossus_ntu_siphon_left` | `colossus_ntu_siphon_right` |
+          `colossus_tank_cannon` | `colossus_tank_cannon_left` | `colossus_tank_cannon_right` |
+          `colossus_cluster_bomb_pod` | `colossus_dual_100mm_cannons` =>
         true
       case _ =>
         false
@@ -1881,14 +1900,13 @@ object GlobalDefinitions {
     * @return `true`, if a battle frame robotics weapon and associated with the given faction;
     *         `false`, otherwise
     */
-  def isBattleFrameWeaponForNC(tdef : EquipmentDefinition) : Boolean = {
+  def isBattleFrameWeaponForNC(tdef: EquipmentDefinition): Boolean = {
     tdef match {
       case `peregrine_armor_siphon` | `peregrine_armor_siphon_left` | `peregrine_armor_siphon_right` |
-           `peregrine_dual_machine_gun` | `peregrine_dual_machine_gun_left` | `peregrine_dual_machine_gun_right` |
-           `peregrine_mechhammer` | `peregrine_mechhammer_left` | `peregrine_mechhammer_right` |
-           `peregrine_ntu_siphon` | `colossus_ntu_siphon_left` | `peregrine_ntu_siphon_right` |
-           `peregrine_sparrow` | `peregrine_sparrow_left` | `peregrine_sparrow_right` |
-           `peregrine_particle_cannon` | `peregrine_dual_rocket_pods` =>
+          `peregrine_dual_machine_gun` | `peregrine_dual_machine_gun_left` | `peregrine_dual_machine_gun_right` |
+          `peregrine_mechhammer` | `peregrine_mechhammer_left` | `peregrine_mechhammer_right` | `peregrine_ntu_siphon` |
+          `colossus_ntu_siphon_left` | `peregrine_ntu_siphon_right` | `peregrine_sparrow` | `peregrine_sparrow_left` |
+          `peregrine_sparrow_right` | `peregrine_particle_cannon` | `peregrine_dual_rocket_pods` =>
         true
       case _ =>
         false
@@ -1905,7 +1923,7 @@ object GlobalDefinitions {
   def isFlightVehicle(vdef: VehicleDefinition): Boolean = {
     vdef match {
       case `mosquito` | `lightgunship` | `wasp` | `liberator` | `vulture` | `phantasm` | `lodestar` | `dropship` |
-           `galaxy_gunship` =>
+          `galaxy_gunship` =>
         true
       case _ =>
         false
@@ -1931,7 +1949,7 @@ object GlobalDefinitions {
     * @param vdef the `VehicleDefinition` of the vehicle
     * @return `true`, if it is; `false`, otherwise
     */
-  def isBattleFrameVehicle(vdef : VehicleDefinition) : Boolean = {
+  def isBattleFrameVehicle(vdef: VehicleDefinition): Boolean = {
     isBattleFrameGunnerVehicle(vdef) || isBattleFrameFlightVehicle(vdef)
   }
 
@@ -2009,12 +2027,10 @@ object GlobalDefinitions {
     * @return the damage proxy projectiles, if they can be produced
     */
   def getDamageProxy(projectile: Projectile, hitPosition: Vector3): List[Projectile] = {
-    projectile
-      .Definition
-      .DamageProxy
+    projectile.Definition.DamageProxy
       .flatMap { uoid =>
         ((uoid: @switch) match {
-          case 96 =>  Some(aphelion_plasma_cloud)
+          case 96  => Some(aphelion_plasma_cloud)
           case 301 => Some(projectile.profile) //'flamethrower_fire_cloud' can not be made into a packet
           case 464 => Some(projectile.profile) //'maelstrom_grenade_damager' can not be made into a packet
           case 601 => Some(oicw_little_buddy)
@@ -2022,19 +2038,20 @@ object GlobalDefinitions {
           case 717 => Some(radiator_cloud)
           case _   => None
         }) match {
-          case Some(proxy)
-            if proxy eq projectile.profile =>
+          case Some(proxy) if proxy eq projectile.profile =>
             List(projectile)
           case Some(proxy) =>
-            List(Projectile(
-              proxy,
-              projectile.tool_def,
-              projectile.fire_mode,
-              projectile.owner,
-              projectile.attribute_to,
-              hitPosition,
-              Vector3.Zero
-            ))
+            List(
+              Projectile(
+                proxy,
+                projectile.tool_def,
+                projectile.fire_mode,
+                projectile.owner,
+                projectile.attribute_to,
+                hitPosition,
+                Vector3.Zero
+              )
+            )
           case None =>
             Nil
         }
@@ -2484,7 +2501,7 @@ object GlobalDefinitions {
     * Initialize `ProjectileDefinition` globals for most projectiles.
     */
   private def init_standard_projectile(): Unit = {
-    val projectileConverter: ProjectileConverter = new ProjectileConverter
+    val projectileConverter: ProjectileConverter   = new ProjectileConverter
     val radCloudConverter: RadiationCloudConverter = new RadiationCloudConverter
 
     no_projectile.Name = "no_projectile"
@@ -4429,7 +4446,7 @@ object GlobalDefinitions {
     * Initialize `ProjectileDefinition` globals for projectiles utilized by battleframe robotics.
     */
   private def init_bfr_projectile(): Unit = {
-    val projectileConverter: ProjectileConverter = new ProjectileConverter
+    val projectileConverter: ProjectileConverter   = new ProjectileConverter
     val radCloudConverter: RadiationCloudConverter = new RadiationCloudConverter
 
     aphelion_immolation_cannon_projectile.Name = "aphelion_immolation_cannon_projectile"
@@ -4469,7 +4486,7 @@ object GlobalDefinitions {
       AggravatedInfo(DamageType.Splash, 0.5f, 1000),
       Aura.Napalm,
       AggravatedTiming(10000, 2), //10000
-      10f, //aphelion_plasma_rocket_projectile.aggravated_damage_max_factor
+      10f,                        //aphelion_plasma_rocket_projectile.aggravated_damage_max_factor
       true,
       List(
         TargetValidation(EffectTarget.Category.Player, EffectTarget.Validation.Player)
@@ -6998,11 +7015,11 @@ object GlobalDefinitions {
     fury.Repairable = true
     fury.RepairIfDestroyed = false
     fury.MaxShields = 130
-    fury.Seats += 0             -> bailableSeat
+    fury.Seats += 0 -> bailableSeat
     fury.controlledWeapons(seat = 0, weapon = 1)
-    fury.Weapons += 1           -> fury_weapon_systema
-    fury.MountPoints += 1       -> MountInfo(0)
-    fury.MountPoints += 2       -> MountInfo(0)
+    fury.Weapons += 1     -> fury_weapon_systema
+    fury.MountPoints += 1 -> MountInfo(0)
+    fury.MountPoints += 2 -> MountInfo(0)
     fury.subsystems = controlSubsystem
     fury.TrunkSize = InventoryTile.Tile1111
     fury.TrunkOffset = 30
@@ -7034,11 +7051,11 @@ object GlobalDefinitions {
     quadassault.Repairable = true
     quadassault.RepairIfDestroyed = false
     quadassault.MaxShields = 130
-    quadassault.Seats += 0             -> bailableSeat
+    quadassault.Seats += 0 -> bailableSeat
     quadassault.controlledWeapons(seat = 0, weapon = 1)
-    quadassault.Weapons += 1           -> quadassault_weapon_system
-    quadassault.MountPoints += 1       -> MountInfo(0)
-    quadassault.MountPoints += 2       -> MountInfo(0)
+    quadassault.Weapons += 1     -> quadassault_weapon_system
+    quadassault.MountPoints += 1 -> MountInfo(0)
+    quadassault.MountPoints += 2 -> MountInfo(0)
     quadassault.subsystems = controlSubsystem
     quadassault.TrunkSize = InventoryTile.Tile1111
     quadassault.TrunkOffset = 30
@@ -7106,12 +7123,12 @@ object GlobalDefinitions {
     two_man_assault_buggy.Repairable = true
     two_man_assault_buggy.RepairIfDestroyed = false
     two_man_assault_buggy.MaxShields = 250
-    two_man_assault_buggy.Seats += 0             -> bailableSeat
-    two_man_assault_buggy.Seats += 1             -> bailableSeat
+    two_man_assault_buggy.Seats += 0 -> bailableSeat
+    two_man_assault_buggy.Seats += 1 -> bailableSeat
     two_man_assault_buggy.controlledWeapons(seat = 1, weapon = 2)
-    two_man_assault_buggy.Weapons += 2           -> chaingun_p
-    two_man_assault_buggy.MountPoints += 1       -> MountInfo(0)
-    two_man_assault_buggy.MountPoints += 2       -> MountInfo(1)
+    two_man_assault_buggy.Weapons += 2     -> chaingun_p
+    two_man_assault_buggy.MountPoints += 1 -> MountInfo(0)
+    two_man_assault_buggy.MountPoints += 2 -> MountInfo(1)
     two_man_assault_buggy.subsystems = controlSubsystem
     two_man_assault_buggy.TrunkSize = InventoryTile.Tile1511
     two_man_assault_buggy.TrunkOffset = 30
@@ -7133,7 +7150,9 @@ object GlobalDefinitions {
     two_man_assault_buggy.UnderwaterLifespan(suffocation = 5000L, recovery = 2500L)
     two_man_assault_buggy.Geometry = GeometryForm.representByCylinder(radius = 2.10545f, height = 1.59376f)
     two_man_assault_buggy.collision.avatarCollisionDamageMax = 75
-    two_man_assault_buggy.collision.xy = CollisionXYData(Array((0.1f, 1), (0.25f, 5), (0.5f, 20), (0.75f, 40), (1f, 60)))
+    two_man_assault_buggy.collision.xy = CollisionXYData(
+      Array((0.1f, 1), (0.25f, 5), (0.5f, 20), (0.75f, 40), (1f, 60))
+    )
     two_man_assault_buggy.collision.z = CollisionZData(Array((7f, 1), (21f, 50), (35f, 150), (42f, 300), (45.5f, 600)))
     two_man_assault_buggy.maxForwardSpeed = 85f
     two_man_assault_buggy.mass = 52.4f
@@ -7144,13 +7163,13 @@ object GlobalDefinitions {
     skyguard.Repairable = true
     skyguard.RepairIfDestroyed = false
     skyguard.MaxShields = 200
-    skyguard.Seats += 0             -> bailableSeat
-    skyguard.Seats += 1             -> bailableSeat
+    skyguard.Seats += 0 -> bailableSeat
+    skyguard.Seats += 1 -> bailableSeat
     skyguard.controlledWeapons(seat = 1, weapon = 2)
-    skyguard.Weapons += 2           -> skyguard_weapon_system
-    skyguard.MountPoints += 1       -> MountInfo(0)
-    skyguard.MountPoints += 2       -> MountInfo(0)
-    skyguard.MountPoints += 3       -> MountInfo(1)
+    skyguard.Weapons += 2     -> skyguard_weapon_system
+    skyguard.MountPoints += 1 -> MountInfo(0)
+    skyguard.MountPoints += 2 -> MountInfo(0)
+    skyguard.MountPoints += 3 -> MountInfo(1)
     skyguard.subsystems = controlSubsystem
     skyguard.TrunkSize = InventoryTile.Tile1511
     skyguard.TrunkOffset = 30
@@ -7183,16 +7202,16 @@ object GlobalDefinitions {
     threemanheavybuggy.Repairable = true
     threemanheavybuggy.RepairIfDestroyed = false
     threemanheavybuggy.MaxShields = 340
-    threemanheavybuggy.Seats += 0             -> bailableSeat
-    threemanheavybuggy.Seats += 1             -> bailableSeat
-    threemanheavybuggy.Seats += 2             -> bailableSeat
+    threemanheavybuggy.Seats += 0 -> bailableSeat
+    threemanheavybuggy.Seats += 1 -> bailableSeat
+    threemanheavybuggy.Seats += 2 -> bailableSeat
     threemanheavybuggy.controlledWeapons(seat = 1, weapon = 3)
     threemanheavybuggy.controlledWeapons(seat = 2, weapon = 4)
-    threemanheavybuggy.Weapons += 3           -> chaingun_p
-    threemanheavybuggy.Weapons += 4           -> grenade_launcher_marauder
-    threemanheavybuggy.MountPoints += 1       -> MountInfo(0)
-    threemanheavybuggy.MountPoints += 2       -> MountInfo(1)
-    threemanheavybuggy.MountPoints += 3       -> MountInfo(2)
+    threemanheavybuggy.Weapons += 3     -> chaingun_p
+    threemanheavybuggy.Weapons += 4     -> grenade_launcher_marauder
+    threemanheavybuggy.MountPoints += 1 -> MountInfo(0)
+    threemanheavybuggy.MountPoints += 2 -> MountInfo(1)
+    threemanheavybuggy.MountPoints += 3 -> MountInfo(2)
     threemanheavybuggy.subsystems = controlSubsystem
     threemanheavybuggy.TrunkSize = InventoryTile.Tile1511
     threemanheavybuggy.TrunkOffset = 30
@@ -7225,12 +7244,12 @@ object GlobalDefinitions {
     twomanheavybuggy.Repairable = true
     twomanheavybuggy.RepairIfDestroyed = false
     twomanheavybuggy.MaxShields = 360
-    twomanheavybuggy.Seats += 0             -> bailableSeat
-    twomanheavybuggy.Seats += 1             -> bailableSeat
+    twomanheavybuggy.Seats += 0 -> bailableSeat
+    twomanheavybuggy.Seats += 1 -> bailableSeat
     twomanheavybuggy.controlledWeapons(seat = 1, weapon = 2)
-    twomanheavybuggy.Weapons += 2           -> advanced_missile_launcher_t
-    twomanheavybuggy.MountPoints += 1       -> MountInfo(0)
-    twomanheavybuggy.MountPoints += 2       -> MountInfo(1)
+    twomanheavybuggy.Weapons += 2     -> advanced_missile_launcher_t
+    twomanheavybuggy.MountPoints += 1 -> MountInfo(0)
+    twomanheavybuggy.MountPoints += 2 -> MountInfo(1)
     twomanheavybuggy.subsystems = controlSubsystem
     twomanheavybuggy.TrunkSize = InventoryTile.Tile1511
     twomanheavybuggy.TrunkOffset = 30
@@ -7264,12 +7283,12 @@ object GlobalDefinitions {
     twomanhoverbuggy.Repairable = true
     twomanhoverbuggy.RepairIfDestroyed = false
     twomanhoverbuggy.MaxShields = 320
-    twomanhoverbuggy.Seats += 0             -> bailableSeat
-    twomanhoverbuggy.Seats += 1             -> bailableSeat
+    twomanhoverbuggy.Seats += 0 -> bailableSeat
+    twomanhoverbuggy.Seats += 1 -> bailableSeat
     twomanhoverbuggy.controlledWeapons(seat = 1, weapon = 2)
-    twomanhoverbuggy.Weapons += 2           -> flux_cannon_thresher
-    twomanhoverbuggy.MountPoints += 1       -> MountInfo(0)
-    twomanhoverbuggy.MountPoints += 2       -> MountInfo(1)
+    twomanhoverbuggy.Weapons += 2     -> flux_cannon_thresher
+    twomanhoverbuggy.MountPoints += 1 -> MountInfo(0)
+    twomanhoverbuggy.MountPoints += 2 -> MountInfo(1)
     twomanhoverbuggy.subsystems = controlSubsystem
     twomanhoverbuggy.TrunkSize = InventoryTile.Tile1511
     twomanhoverbuggy.TrunkOffset = 30
@@ -7306,20 +7325,20 @@ object GlobalDefinitions {
     mediumtransport.Repairable = true
     mediumtransport.RepairIfDestroyed = false
     mediumtransport.MaxShields = 500
-    mediumtransport.Seats += 0             -> driverSeat
-    mediumtransport.Seats += 1             -> normalSeat
-    mediumtransport.Seats += 2             -> normalSeat
-    mediumtransport.Seats += 3             -> normalSeat
-    mediumtransport.Seats += 4             -> normalSeat
+    mediumtransport.Seats += 0 -> driverSeat
+    mediumtransport.Seats += 1 -> normalSeat
+    mediumtransport.Seats += 2 -> normalSeat
+    mediumtransport.Seats += 3 -> normalSeat
+    mediumtransport.Seats += 4 -> normalSeat
     mediumtransport.controlledWeapons(seat = 1, weapon = 5)
     mediumtransport.controlledWeapons(seat = 2, weapon = 6)
-    mediumtransport.Weapons += 5           -> mediumtransport_weapon_systemA
-    mediumtransport.Weapons += 6           -> mediumtransport_weapon_systemB
-    mediumtransport.MountPoints += 1       -> MountInfo(0)
-    mediumtransport.MountPoints += 2       -> MountInfo(1)
-    mediumtransport.MountPoints += 3       -> MountInfo(2)
-    mediumtransport.MountPoints += 4       -> MountInfo(3)
-    mediumtransport.MountPoints += 5       -> MountInfo(4)
+    mediumtransport.Weapons += 5     -> mediumtransport_weapon_systemA
+    mediumtransport.Weapons += 6     -> mediumtransport_weapon_systemB
+    mediumtransport.MountPoints += 1 -> MountInfo(0)
+    mediumtransport.MountPoints += 2 -> MountInfo(1)
+    mediumtransport.MountPoints += 3 -> MountInfo(2)
+    mediumtransport.MountPoints += 4 -> MountInfo(3)
+    mediumtransport.MountPoints += 5 -> MountInfo(4)
     mediumtransport.subsystems = controlSubsystem
     mediumtransport.TrunkSize = InventoryTile.Tile1515
     mediumtransport.TrunkOffset = 30
@@ -7352,24 +7371,24 @@ object GlobalDefinitions {
     battlewagon.Repairable = true
     battlewagon.RepairIfDestroyed = false
     battlewagon.MaxShields = 500
-    battlewagon.Seats += 0             -> driverSeat
-    battlewagon.Seats += 1             -> normalSeat
-    battlewagon.Seats += 2             -> normalSeat
-    battlewagon.Seats += 3             -> normalSeat
-    battlewagon.Seats += 4             -> normalSeat
+    battlewagon.Seats += 0 -> driverSeat
+    battlewagon.Seats += 1 -> normalSeat
+    battlewagon.Seats += 2 -> normalSeat
+    battlewagon.Seats += 3 -> normalSeat
+    battlewagon.Seats += 4 -> normalSeat
     battlewagon.controlledWeapons(seat = 1, weapon = 5)
     battlewagon.controlledWeapons(seat = 2, weapon = 6)
     battlewagon.controlledWeapons(seat = 3, weapon = 7)
     battlewagon.controlledWeapons(seat = 4, weapon = 8)
-    battlewagon.Weapons += 5           -> battlewagon_weapon_systema
-    battlewagon.Weapons += 6           -> battlewagon_weapon_systemb
-    battlewagon.Weapons += 7           -> battlewagon_weapon_systemc
-    battlewagon.Weapons += 8           -> battlewagon_weapon_systemd
-    battlewagon.MountPoints += 1       -> MountInfo(0)
-    battlewagon.MountPoints += 2       -> MountInfo(1)
-    battlewagon.MountPoints += 3       -> MountInfo(2)
-    battlewagon.MountPoints += 4       -> MountInfo(3)
-    battlewagon.MountPoints += 5       -> MountInfo(4)
+    battlewagon.Weapons += 5     -> battlewagon_weapon_systema
+    battlewagon.Weapons += 6     -> battlewagon_weapon_systemb
+    battlewagon.Weapons += 7     -> battlewagon_weapon_systemc
+    battlewagon.Weapons += 8     -> battlewagon_weapon_systemd
+    battlewagon.MountPoints += 1 -> MountInfo(0)
+    battlewagon.MountPoints += 2 -> MountInfo(1)
+    battlewagon.MountPoints += 3 -> MountInfo(2)
+    battlewagon.MountPoints += 4 -> MountInfo(3)
+    battlewagon.MountPoints += 5 -> MountInfo(4)
     battlewagon.subsystems = controlSubsystem
     battlewagon.TrunkSize = InventoryTile.Tile1515
     battlewagon.TrunkOffset = 30
@@ -7390,8 +7409,12 @@ object GlobalDefinitions {
     battlewagon.UnderwaterLifespan(suffocation = -1, recovery = -1)
     battlewagon.Geometry = delivererForm
     battlewagon.collision.avatarCollisionDamageMax = 120
-    battlewagon.collision.xy = CollisionXYData(Array((0.1f, 1), (0.25f, 35), (0.5f, 60), (0.75f, 110), (1f, 175))) //inherited from mediumtransport
-    battlewagon.collision.z = CollisionZData(Array((5f, 1), (15f, 50), (25f, 200), (30f, 750), (32.5f, 2000))) //inherited from mediumtransport
+    battlewagon.collision.xy =
+      CollisionXYData(
+        Array((0.1f, 1), (0.25f, 35), (0.5f, 60), (0.75f, 110), (1f, 175))
+      ) //inherited from mediumtransport
+    battlewagon.collision.z =
+      CollisionZData(Array((5f, 1), (15f, 50), (25f, 200), (30f, 750), (32.5f, 2000))) //inherited from mediumtransport
     battlewagon.maxForwardSpeed = 65f
     battlewagon.mass = 108.5f
 
@@ -7401,20 +7424,20 @@ object GlobalDefinitions {
     thunderer.Repairable = true
     thunderer.RepairIfDestroyed = false
     thunderer.MaxShields = 500
-    thunderer.Seats += 0             -> driverSeat
-    thunderer.Seats += 1             -> normalSeat
-    thunderer.Seats += 2             -> normalSeat
-    thunderer.Seats += 3             -> normalSeat
-    thunderer.Seats += 4             -> normalSeat
-    thunderer.Weapons += 5           -> thunderer_weapon_systema
-    thunderer.Weapons += 6           -> thunderer_weapon_systemb
+    thunderer.Seats += 0   -> driverSeat
+    thunderer.Seats += 1   -> normalSeat
+    thunderer.Seats += 2   -> normalSeat
+    thunderer.Seats += 3   -> normalSeat
+    thunderer.Seats += 4   -> normalSeat
+    thunderer.Weapons += 5 -> thunderer_weapon_systema
+    thunderer.Weapons += 6 -> thunderer_weapon_systemb
     thunderer.controlledWeapons(seat = 1, weapon = 5)
     thunderer.controlledWeapons(seat = 2, weapon = 6)
-    thunderer.MountPoints += 1       -> MountInfo(0)
-    thunderer.MountPoints += 2       -> MountInfo(1)
-    thunderer.MountPoints += 3       -> MountInfo(2)
-    thunderer.MountPoints += 4       -> MountInfo(3)
-    thunderer.MountPoints += 5       -> MountInfo(4)
+    thunderer.MountPoints += 1 -> MountInfo(0)
+    thunderer.MountPoints += 2 -> MountInfo(1)
+    thunderer.MountPoints += 3 -> MountInfo(2)
+    thunderer.MountPoints += 4 -> MountInfo(3)
+    thunderer.MountPoints += 5 -> MountInfo(4)
     thunderer.subsystems = controlSubsystem
     thunderer.TrunkSize = InventoryTile.Tile1515
     thunderer.TrunkOffset = 30
@@ -7447,20 +7470,20 @@ object GlobalDefinitions {
     aurora.Repairable = true
     aurora.RepairIfDestroyed = false
     aurora.MaxShields = 500
-    aurora.Seats += 0             -> driverSeat
-    aurora.Seats += 1             -> normalSeat
-    aurora.Seats += 2             -> normalSeat
-    aurora.Seats += 3             -> normalSeat
-    aurora.Seats += 4             -> normalSeat
+    aurora.Seats += 0 -> driverSeat
+    aurora.Seats += 1 -> normalSeat
+    aurora.Seats += 2 -> normalSeat
+    aurora.Seats += 3 -> normalSeat
+    aurora.Seats += 4 -> normalSeat
     aurora.controlledWeapons(seat = 1, weapon = 5)
     aurora.controlledWeapons(seat = 2, weapon = 6)
-    aurora.Weapons += 5           -> aurora_weapon_systema
-    aurora.Weapons += 6           -> aurora_weapon_systemb
-    aurora.MountPoints += 1       -> MountInfo(0)
-    aurora.MountPoints += 2       -> MountInfo(1)
-    aurora.MountPoints += 3       -> MountInfo(2)
-    aurora.MountPoints += 4       -> MountInfo(3)
-    aurora.MountPoints += 5       -> MountInfo(4)
+    aurora.Weapons += 5     -> aurora_weapon_systema
+    aurora.Weapons += 6     -> aurora_weapon_systemb
+    aurora.MountPoints += 1 -> MountInfo(0)
+    aurora.MountPoints += 2 -> MountInfo(1)
+    aurora.MountPoints += 3 -> MountInfo(2)
+    aurora.MountPoints += 4 -> MountInfo(3)
+    aurora.MountPoints += 5 -> MountInfo(4)
     aurora.subsystems = controlSubsystem
     aurora.TrunkSize = InventoryTile.Tile1515
     aurora.TrunkOffset = 30
@@ -7493,41 +7516,41 @@ object GlobalDefinitions {
     apc_tr.Repairable = true
     apc_tr.RepairIfDestroyed = false
     apc_tr.MaxShields = 1200
-    apc_tr.Seats += 0             -> normalSeat
-    apc_tr.Seats += 1             -> normalSeat
-    apc_tr.Seats += 2             -> normalSeat
-    apc_tr.Seats += 3             -> normalSeat
-    apc_tr.Seats += 4             -> normalSeat
-    apc_tr.Seats += 5             -> normalSeat
-    apc_tr.Seats += 6             -> normalSeat
-    apc_tr.Seats += 7             -> normalSeat
-    apc_tr.Seats += 8             -> normalSeat
-    apc_tr.Seats += 9             -> maxOnlySeat
-    apc_tr.Seats += 10            -> maxOnlySeat
+    apc_tr.Seats += 0  -> normalSeat
+    apc_tr.Seats += 1  -> normalSeat
+    apc_tr.Seats += 2  -> normalSeat
+    apc_tr.Seats += 3  -> normalSeat
+    apc_tr.Seats += 4  -> normalSeat
+    apc_tr.Seats += 5  -> normalSeat
+    apc_tr.Seats += 6  -> normalSeat
+    apc_tr.Seats += 7  -> normalSeat
+    apc_tr.Seats += 8  -> normalSeat
+    apc_tr.Seats += 9  -> maxOnlySeat
+    apc_tr.Seats += 10 -> maxOnlySeat
     apc_tr.controlledWeapons(seat = 1, weapon = 11)
     apc_tr.controlledWeapons(seat = 2, weapon = 12)
     apc_tr.controlledWeapons(seat = 5, weapon = 15)
     apc_tr.controlledWeapons(seat = 6, weapon = 16)
     apc_tr.controlledWeapons(seat = 7, weapon = 13)
     apc_tr.controlledWeapons(seat = 8, weapon = 14)
-    apc_tr.Weapons += 11          -> apc_weapon_systemc_tr
-    apc_tr.Weapons += 12          -> apc_weapon_systemb
-    apc_tr.Weapons += 13          -> apc_weapon_systema
-    apc_tr.Weapons += 14          -> apc_weapon_systemd_tr
-    apc_tr.Weapons += 15          -> apc_ballgun_r
-    apc_tr.Weapons += 16          -> apc_ballgun_l
-    apc_tr.MountPoints += 1       -> MountInfo(0)
-    apc_tr.MountPoints += 2       -> MountInfo(0)
-    apc_tr.MountPoints += 3       -> MountInfo(1)
-    apc_tr.MountPoints += 4       -> MountInfo(2)
-    apc_tr.MountPoints += 5       -> MountInfo(3)
-    apc_tr.MountPoints += 6       -> MountInfo(4)
-    apc_tr.MountPoints += 7       -> MountInfo(5)
-    apc_tr.MountPoints += 8       -> MountInfo(6)
-    apc_tr.MountPoints += 9       -> MountInfo(7)
-    apc_tr.MountPoints += 10      -> MountInfo(8)
-    apc_tr.MountPoints += 11      -> MountInfo(9)
-    apc_tr.MountPoints += 12      -> MountInfo(10)
+    apc_tr.Weapons += 11     -> apc_weapon_systemc_tr
+    apc_tr.Weapons += 12     -> apc_weapon_systemb
+    apc_tr.Weapons += 13     -> apc_weapon_systema
+    apc_tr.Weapons += 14     -> apc_weapon_systemd_tr
+    apc_tr.Weapons += 15     -> apc_ballgun_r
+    apc_tr.Weapons += 16     -> apc_ballgun_l
+    apc_tr.MountPoints += 1  -> MountInfo(0)
+    apc_tr.MountPoints += 2  -> MountInfo(0)
+    apc_tr.MountPoints += 3  -> MountInfo(1)
+    apc_tr.MountPoints += 4  -> MountInfo(2)
+    apc_tr.MountPoints += 5  -> MountInfo(3)
+    apc_tr.MountPoints += 6  -> MountInfo(4)
+    apc_tr.MountPoints += 7  -> MountInfo(5)
+    apc_tr.MountPoints += 8  -> MountInfo(6)
+    apc_tr.MountPoints += 9  -> MountInfo(7)
+    apc_tr.MountPoints += 10 -> MountInfo(8)
+    apc_tr.MountPoints += 11 -> MountInfo(9)
+    apc_tr.MountPoints += 12 -> MountInfo(10)
     apc_tr.subsystems = controlSubsystem
     apc_tr.TrunkSize = InventoryTile.Tile2016
     apc_tr.TrunkOffset = 30
@@ -7563,41 +7586,41 @@ object GlobalDefinitions {
     apc_nc.Repairable = true
     apc_nc.RepairIfDestroyed = false
     apc_nc.MaxShields = 1200
-    apc_nc.Seats += 0             -> normalSeat
-    apc_nc.Seats += 1             -> normalSeat
-    apc_nc.Seats += 2             -> normalSeat
-    apc_nc.Seats += 3             -> normalSeat
-    apc_nc.Seats += 4             -> normalSeat
-    apc_nc.Seats += 5             -> normalSeat
-    apc_nc.Seats += 6             -> normalSeat
-    apc_nc.Seats += 7             -> normalSeat
-    apc_nc.Seats += 8             -> normalSeat
-    apc_nc.Seats += 9             -> maxOnlySeat
-    apc_nc.Seats += 10            -> maxOnlySeat
+    apc_nc.Seats += 0  -> normalSeat
+    apc_nc.Seats += 1  -> normalSeat
+    apc_nc.Seats += 2  -> normalSeat
+    apc_nc.Seats += 3  -> normalSeat
+    apc_nc.Seats += 4  -> normalSeat
+    apc_nc.Seats += 5  -> normalSeat
+    apc_nc.Seats += 6  -> normalSeat
+    apc_nc.Seats += 7  -> normalSeat
+    apc_nc.Seats += 8  -> normalSeat
+    apc_nc.Seats += 9  -> maxOnlySeat
+    apc_nc.Seats += 10 -> maxOnlySeat
     apc_nc.controlledWeapons(seat = 1, weapon = 11)
     apc_nc.controlledWeapons(seat = 2, weapon = 12)
     apc_nc.controlledWeapons(seat = 5, weapon = 15)
     apc_nc.controlledWeapons(seat = 6, weapon = 16)
     apc_nc.controlledWeapons(seat = 7, weapon = 13)
     apc_nc.controlledWeapons(seat = 8, weapon = 14)
-    apc_nc.Weapons += 11          -> apc_weapon_systemc_nc
-    apc_nc.Weapons += 12          -> apc_weapon_systemb
-    apc_nc.Weapons += 13          -> apc_weapon_systema
-    apc_nc.Weapons += 14          -> apc_weapon_systemd_nc
-    apc_nc.Weapons += 15          -> apc_ballgun_r
-    apc_nc.Weapons += 16          -> apc_ballgun_l
-    apc_nc.MountPoints += 1       -> MountInfo(0)
-    apc_nc.MountPoints += 2       -> MountInfo(0)
-    apc_nc.MountPoints += 3       -> MountInfo(1)
-    apc_nc.MountPoints += 4       -> MountInfo(2)
-    apc_nc.MountPoints += 5       -> MountInfo(3)
-    apc_nc.MountPoints += 6       -> MountInfo(4)
-    apc_nc.MountPoints += 7       -> MountInfo(5)
-    apc_nc.MountPoints += 8       -> MountInfo(6)
-    apc_nc.MountPoints += 9       -> MountInfo(7)
-    apc_nc.MountPoints += 10      -> MountInfo(8)
-    apc_nc.MountPoints += 11      -> MountInfo(9)
-    apc_nc.MountPoints += 12      -> MountInfo(10)
+    apc_nc.Weapons += 11     -> apc_weapon_systemc_nc
+    apc_nc.Weapons += 12     -> apc_weapon_systemb
+    apc_nc.Weapons += 13     -> apc_weapon_systema
+    apc_nc.Weapons += 14     -> apc_weapon_systemd_nc
+    apc_nc.Weapons += 15     -> apc_ballgun_r
+    apc_nc.Weapons += 16     -> apc_ballgun_l
+    apc_nc.MountPoints += 1  -> MountInfo(0)
+    apc_nc.MountPoints += 2  -> MountInfo(0)
+    apc_nc.MountPoints += 3  -> MountInfo(1)
+    apc_nc.MountPoints += 4  -> MountInfo(2)
+    apc_nc.MountPoints += 5  -> MountInfo(3)
+    apc_nc.MountPoints += 6  -> MountInfo(4)
+    apc_nc.MountPoints += 7  -> MountInfo(5)
+    apc_nc.MountPoints += 8  -> MountInfo(6)
+    apc_nc.MountPoints += 9  -> MountInfo(7)
+    apc_nc.MountPoints += 10 -> MountInfo(8)
+    apc_nc.MountPoints += 11 -> MountInfo(9)
+    apc_nc.MountPoints += 12 -> MountInfo(10)
     apc_nc.subsystems = controlSubsystem
     apc_nc.TrunkSize = InventoryTile.Tile2016
     apc_nc.TrunkOffset = 30
@@ -7633,41 +7656,41 @@ object GlobalDefinitions {
     apc_vs.Repairable = true
     apc_vs.RepairIfDestroyed = false
     apc_vs.MaxShields = 1200
-    apc_vs.Seats += 0             -> normalSeat
-    apc_vs.Seats += 1             -> normalSeat
-    apc_vs.Seats += 2             -> normalSeat
-    apc_vs.Seats += 3             -> normalSeat
-    apc_vs.Seats += 4             -> normalSeat
-    apc_vs.Seats += 5             -> normalSeat
-    apc_vs.Seats += 6             -> normalSeat
-    apc_vs.Seats += 7             -> normalSeat
-    apc_vs.Seats += 8             -> normalSeat
-    apc_vs.Seats += 9             -> maxOnlySeat
-    apc_vs.Seats += 10            -> maxOnlySeat
+    apc_vs.Seats += 0  -> normalSeat
+    apc_vs.Seats += 1  -> normalSeat
+    apc_vs.Seats += 2  -> normalSeat
+    apc_vs.Seats += 3  -> normalSeat
+    apc_vs.Seats += 4  -> normalSeat
+    apc_vs.Seats += 5  -> normalSeat
+    apc_vs.Seats += 6  -> normalSeat
+    apc_vs.Seats += 7  -> normalSeat
+    apc_vs.Seats += 8  -> normalSeat
+    apc_vs.Seats += 9  -> maxOnlySeat
+    apc_vs.Seats += 10 -> maxOnlySeat
     apc_vs.controlledWeapons(seat = 1, weapon = 11)
     apc_vs.controlledWeapons(seat = 2, weapon = 12)
     apc_vs.controlledWeapons(seat = 5, weapon = 15)
     apc_vs.controlledWeapons(seat = 6, weapon = 16)
     apc_vs.controlledWeapons(seat = 7, weapon = 13)
     apc_vs.controlledWeapons(seat = 8, weapon = 14)
-    apc_vs.Weapons += 11          -> apc_weapon_systemc_vs
-    apc_vs.Weapons += 12          -> apc_weapon_systemb
-    apc_vs.Weapons += 13          -> apc_weapon_systema
-    apc_vs.Weapons += 14          -> apc_weapon_systemd_vs
-    apc_vs.Weapons += 15          -> apc_ballgun_r
-    apc_vs.Weapons += 16          -> apc_ballgun_l
-    apc_vs.MountPoints += 1       -> MountInfo(0)
-    apc_vs.MountPoints += 2       -> MountInfo(0)
-    apc_vs.MountPoints += 3       -> MountInfo(1)
-    apc_vs.MountPoints += 4       -> MountInfo(2)
-    apc_vs.MountPoints += 5       -> MountInfo(3)
-    apc_vs.MountPoints += 6       -> MountInfo(4)
-    apc_vs.MountPoints += 7       -> MountInfo(5)
-    apc_vs.MountPoints += 8       -> MountInfo(6)
-    apc_vs.MountPoints += 9       -> MountInfo(7)
-    apc_vs.MountPoints += 10      -> MountInfo(8)
-    apc_vs.MountPoints += 11      -> MountInfo(9)
-    apc_vs.MountPoints += 12      -> MountInfo(10)
+    apc_vs.Weapons += 11     -> apc_weapon_systemc_vs
+    apc_vs.Weapons += 12     -> apc_weapon_systemb
+    apc_vs.Weapons += 13     -> apc_weapon_systema
+    apc_vs.Weapons += 14     -> apc_weapon_systemd_vs
+    apc_vs.Weapons += 15     -> apc_ballgun_r
+    apc_vs.Weapons += 16     -> apc_ballgun_l
+    apc_vs.MountPoints += 1  -> MountInfo(0)
+    apc_vs.MountPoints += 2  -> MountInfo(0)
+    apc_vs.MountPoints += 3  -> MountInfo(1)
+    apc_vs.MountPoints += 4  -> MountInfo(2)
+    apc_vs.MountPoints += 5  -> MountInfo(3)
+    apc_vs.MountPoints += 6  -> MountInfo(4)
+    apc_vs.MountPoints += 7  -> MountInfo(5)
+    apc_vs.MountPoints += 8  -> MountInfo(6)
+    apc_vs.MountPoints += 9  -> MountInfo(7)
+    apc_vs.MountPoints += 10 -> MountInfo(8)
+    apc_vs.MountPoints += 11 -> MountInfo(9)
+    apc_vs.MountPoints += 12 -> MountInfo(10)
     apc_vs.subsystems = controlSubsystem
     apc_vs.TrunkSize = InventoryTile.Tile2016
     apc_vs.TrunkOffset = 30
@@ -7703,11 +7726,11 @@ object GlobalDefinitions {
     lightning.Repairable = true
     lightning.RepairIfDestroyed = false
     lightning.MaxShields = 400
-    lightning.Seats += 0             -> driverSeat
+    lightning.Seats += 0 -> driverSeat
     lightning.controlledWeapons(seat = 0, weapon = 1)
-    lightning.Weapons += 1           -> lightning_weapon_system
-    lightning.MountPoints += 1       -> MountInfo(0)
-    lightning.MountPoints += 2       -> MountInfo(0)
+    lightning.Weapons += 1     -> lightning_weapon_system
+    lightning.MountPoints += 1 -> MountInfo(0)
+    lightning.MountPoints += 2 -> MountInfo(0)
     lightning.subsystems = controlSubsystem
     lightning.TrunkSize = InventoryTile.Tile1511
     lightning.TrunkOffset = 30
@@ -7741,16 +7764,16 @@ object GlobalDefinitions {
     prowler.Repairable = true
     prowler.RepairIfDestroyed = false
     prowler.MaxShields = 960
-    prowler.Seats += 0             -> driverSeat
-    prowler.Seats += 1             -> normalSeat
-    prowler.Seats += 2             -> normalSeat
+    prowler.Seats += 0 -> driverSeat
+    prowler.Seats += 1 -> normalSeat
+    prowler.Seats += 2 -> normalSeat
     prowler.controlledWeapons(seat = 1, weapon = 3)
     prowler.controlledWeapons(seat = 2, weapon = 4)
-    prowler.Weapons += 3           -> prowler_weapon_systemA
-    prowler.Weapons += 4           -> prowler_weapon_systemB
-    prowler.MountPoints += 1       -> MountInfo(0)
-    prowler.MountPoints += 2       -> MountInfo(1)
-    prowler.MountPoints += 3       -> MountInfo(2)
+    prowler.Weapons += 3     -> prowler_weapon_systemA
+    prowler.Weapons += 4     -> prowler_weapon_systemB
+    prowler.MountPoints += 1 -> MountInfo(0)
+    prowler.MountPoints += 2 -> MountInfo(1)
+    prowler.MountPoints += 3 -> MountInfo(2)
     prowler.subsystems = controlSubsystem
     prowler.TrunkSize = InventoryTile.Tile1511
     prowler.TrunkOffset = 30
@@ -7784,12 +7807,12 @@ object GlobalDefinitions {
     vanguard.Repairable = true
     vanguard.RepairIfDestroyed = false
     vanguard.MaxShields = 1080
-    vanguard.Seats += 0             -> driverSeat
-    vanguard.Seats += 1             -> normalSeat
+    vanguard.Seats += 0 -> driverSeat
+    vanguard.Seats += 1 -> normalSeat
     vanguard.controlledWeapons(seat = 1, weapon = 2)
-    vanguard.Weapons += 2           -> vanguard_weapon_system
-    vanguard.MountPoints += 1       -> MountInfo(0)
-    vanguard.MountPoints += 2       -> MountInfo(1)
+    vanguard.Weapons += 2     -> vanguard_weapon_system
+    vanguard.MountPoints += 1 -> MountInfo(0)
+    vanguard.MountPoints += 2 -> MountInfo(1)
     vanguard.subsystems = controlSubsystem
     vanguard.TrunkSize = InventoryTile.Tile1511
     vanguard.TrunkOffset = 30
@@ -7823,14 +7846,14 @@ object GlobalDefinitions {
     magrider.Repairable = true
     magrider.RepairIfDestroyed = false
     magrider.MaxShields = 840
-    magrider.Seats += 0             -> driverSeat
-    magrider.Seats += 1             -> normalSeat
+    magrider.Seats += 0 -> driverSeat
+    magrider.Seats += 1 -> normalSeat
     magrider.controlledWeapons(seat = 0, weapon = 2)
     magrider.controlledWeapons(seat = 1, weapon = 3)
-    magrider.Weapons += 2           -> particle_beam_magrider
-    magrider.Weapons += 3           -> heavy_rail_beam_magrider
-    magrider.MountPoints += 1       -> MountInfo(0)
-    magrider.MountPoints += 2       -> MountInfo(1)
+    magrider.Weapons += 2     -> particle_beam_magrider
+    magrider.Weapons += 3     -> heavy_rail_beam_magrider
+    magrider.MountPoints += 1 -> MountInfo(0)
+    magrider.MountPoints += 2 -> MountInfo(1)
     magrider.subsystems = controlSubsystem
     magrider.TrunkSize = InventoryTile.Tile1511
     magrider.TrunkOffset = 30
@@ -7974,9 +7997,9 @@ object GlobalDefinitions {
     }
     router.DrownAtMaxDepth = true
     router.MaxDepth = 2
-    router.UnderwaterLifespan(suffocation = 45000L, recovery = 5000L) //but the router hovers over water, so ...?
+    router.UnderwaterLifespan(suffocation = 45000L, recovery = 5000L)                        //but the router hovers over water, so ...?
     router.Geometry = GeometryForm.representByCylinder(radius = 3.64845f, height = 3.51563f) //TODO hexahedron
-    router.collision.avatarCollisionDamageMax = 150 //it has to bonk you on the head when it falls?
+    router.collision.avatarCollisionDamageMax = 150                                          //it has to bonk you on the head when it falls?
     router.collision.xy = CollisionXYData(Array((0.1f, 1), (0.25f, 13), (0.5f, 35), (0.75f, 65), (1f, 90)))
     router.collision.z = CollisionZData(Array((6f, 1), (18f, 50), (30f, 150), (36f, 350), (39f, 900)))
     router.maxForwardSpeed = 60f
@@ -7988,11 +8011,11 @@ object GlobalDefinitions {
     switchblade.Repairable = true
     switchblade.RepairIfDestroyed = false
     switchblade.MaxShields = 350
-    switchblade.Seats += 0             -> normalSeat
+    switchblade.Seats += 0 -> normalSeat
     switchblade.controlledWeapons(seat = 0, weapon = 1)
-    switchblade.Weapons += 1           -> scythe
-    switchblade.MountPoints += 1       -> MountInfo(0)
-    switchblade.MountPoints += 2       -> MountInfo(0)
+    switchblade.Weapons += 1     -> scythe
+    switchblade.MountPoints += 1 -> MountInfo(0)
+    switchblade.MountPoints += 2 -> MountInfo(0)
     switchblade.subsystems = controlSubsystem
     switchblade.TrunkSize = InventoryTile.Tile1511
     switchblade.TrunkOffset = 30
@@ -8034,11 +8057,11 @@ object GlobalDefinitions {
     flail.Repairable = true
     flail.RepairIfDestroyed = false
     flail.MaxShields = 480
-    flail.Seats += 0             -> normalSeat
+    flail.Seats += 0 -> normalSeat
     flail.controlledWeapons(seat = 0, weapon = 1)
-    flail.Weapons += 1           -> flail_weapon
-    flail.Utilities += 2         -> UtilityType.targeting_laser_dispenser
-    flail.MountPoints += 1       -> MountInfo(0)
+    flail.Weapons += 1     -> flail_weapon
+    flail.Utilities += 2   -> UtilityType.targeting_laser_dispenser
+    flail.MountPoints += 1 -> MountInfo(0)
     flail.subsystems = controlSubsystem
     flail.TrunkSize = InventoryTile.Tile1511
     flail.TrunkOffset = 30
@@ -8090,11 +8113,11 @@ object GlobalDefinitions {
     mosquito.RepairIfDestroyed = false
     mosquito.MaxShields = 133
     mosquito.CanFly = true
-    mosquito.Seats += 0             -> bailableSeat
+    mosquito.Seats += 0 -> bailableSeat
     mosquito.controlledWeapons(seat = 0, weapon = 1)
-    mosquito.Weapons += 1           -> rotarychaingun_mosquito
-    mosquito.MountPoints += 1       -> MountInfo(0)
-    mosquito.MountPoints += 2       -> MountInfo(0)
+    mosquito.Weapons += 1     -> rotarychaingun_mosquito
+    mosquito.MountPoints += 1 -> MountInfo(0)
+    mosquito.MountPoints += 2 -> MountInfo(0)
     mosquito.subsystems = flightSubsystems :+ VehicleSubsystemEntry.MosquitoRadar
     mosquito.TrunkSize = InventoryTile.Tile1111
     mosquito.TrunkOffset = 30
@@ -8123,17 +8146,17 @@ object GlobalDefinitions {
     mosquito.mass = 53.6f
 
     lightgunship.Name = "lightgunship" // Reaver
-    lightgunship.MaxHealth = 855 // Temporary - Correct Reaver Health from pre-"Coder Madness 2" Event
+    lightgunship.MaxHealth = 855       // Temporary - Correct Reaver Health from pre-"Coder Madness 2" Event
     lightgunship.Damageable = true
     lightgunship.Repairable = true
     lightgunship.RepairIfDestroyed = false
     lightgunship.MaxShields = 171 // Temporary - Correct Reaver Shields from pre-"Coder Madness 2" Event
     lightgunship.CanFly = true
-    lightgunship.Seats += 0             -> bailableSeat
+    lightgunship.Seats += 0 -> bailableSeat
     lightgunship.controlledWeapons(seat = 0, weapon = 1)
-    lightgunship.Weapons += 1           -> lightgunship_weapon_system
-    lightgunship.MountPoints += 1       -> MountInfo(0)
-    lightgunship.MountPoints += 2       -> MountInfo(0)
+    lightgunship.Weapons += 1     -> lightgunship_weapon_system
+    lightgunship.MountPoints += 1 -> MountInfo(0)
+    lightgunship.MountPoints += 2 -> MountInfo(0)
     lightgunship.subsystems = flightSubsystems
     lightgunship.TrunkSize = InventoryTile.Tile1511
     lightgunship.TrunkOffset = 30
@@ -8169,11 +8192,11 @@ object GlobalDefinitions {
     wasp.RepairIfDestroyed = false
     wasp.MaxShields = 103
     wasp.CanFly = true
-    wasp.Seats += 0             -> bailableSeat
+    wasp.Seats += 0 -> bailableSeat
     wasp.controlledWeapons(seat = 0, weapon = 1)
-    wasp.Weapons += 1           -> wasp_weapon_system
-    wasp.MountPoints += 1       -> MountInfo(0)
-    wasp.MountPoints += 2       -> MountInfo(0)
+    wasp.Weapons += 1     -> wasp_weapon_system
+    wasp.MountPoints += 1 -> MountInfo(0)
+    wasp.MountPoints += 2 -> MountInfo(0)
     wasp.subsystems = flightSubsystems
     wasp.TrunkSize = InventoryTile.Tile1111
     wasp.TrunkOffset = 30
@@ -8195,7 +8218,8 @@ object GlobalDefinitions {
     wasp.MaxDepth = 2 //flying vehicles will automatically disable
     wasp.Geometry = GeometryForm.representByCylinder(radius = 2.88675f, height = 2.5f)
     wasp.collision.avatarCollisionDamageMax = 50 //mosquito numbers
-    wasp.collision.xy = CollisionXYData(Array((0.1f, 1), (0.25f, 50), (0.5f, 100), (0.75f, 150), (1f, 200))) //mosquito numbers
+    wasp.collision.xy =
+      CollisionXYData(Array((0.1f, 1), (0.25f, 50), (0.5f, 100), (0.75f, 150), (1f, 200)))          //mosquito numbers
     wasp.collision.z = CollisionZData(Array((3f, 1), (9f, 25), (15f, 50), (18f, 75), (19.5f, 100))) //mosquito numbers
     wasp.maxForwardSpeed = 120f
     wasp.mass = 53.6f
@@ -8207,19 +8231,19 @@ object GlobalDefinitions {
     liberator.RepairIfDestroyed = false
     liberator.MaxShields = 500
     liberator.CanFly = true
-    liberator.Seats += 0             -> bailableSeat //new SeatDefinition()
-    liberator.Seats += 1             -> bailableSeat
-    liberator.Seats += 2             -> bailableSeat
+    liberator.Seats += 0 -> bailableSeat //new SeatDefinition()
+    liberator.Seats += 1 -> bailableSeat
+    liberator.Seats += 2 -> bailableSeat
     liberator.controlledWeapons(seat = 0, weapon = 3)
     liberator.controlledWeapons(seat = 1, weapon = 4)
     liberator.controlledWeapons(seat = 2, weapon = 5)
-    liberator.Weapons += 3           -> liberator_weapon_system
-    liberator.Weapons += 4           -> liberator_bomb_bay
-    liberator.Weapons += 5           -> liberator_25mm_cannon
-    liberator.MountPoints += 1       -> MountInfo(0)
-    liberator.MountPoints += 2       -> MountInfo(1)
-    liberator.MountPoints += 3       -> MountInfo(1)
-    liberator.MountPoints += 4       -> MountInfo(2)
+    liberator.Weapons += 3     -> liberator_weapon_system
+    liberator.Weapons += 4     -> liberator_bomb_bay
+    liberator.Weapons += 5     -> liberator_25mm_cannon
+    liberator.MountPoints += 1 -> MountInfo(0)
+    liberator.MountPoints += 2 -> MountInfo(1)
+    liberator.MountPoints += 3 -> MountInfo(1)
+    liberator.MountPoints += 4 -> MountInfo(2)
     liberator.subsystems = flightSubsystems
     liberator.TrunkSize = InventoryTile.Tile1515
     liberator.TrunkOffset = 30
@@ -8255,19 +8279,19 @@ object GlobalDefinitions {
     vulture.RepairIfDestroyed = false
     vulture.MaxShields = 500
     vulture.CanFly = true
-    vulture.Seats += 0             -> bailableSeat //new SeatDefinition()
-    vulture.Seats += 1             -> bailableSeat
-    vulture.Seats += 2             -> bailableSeat
+    vulture.Seats += 0 -> bailableSeat //new SeatDefinition()
+    vulture.Seats += 1 -> bailableSeat
+    vulture.Seats += 2 -> bailableSeat
     vulture.controlledWeapons(seat = 0, weapon = 3)
     vulture.controlledWeapons(seat = 1, weapon = 4)
     vulture.controlledWeapons(seat = 2, weapon = 5)
-    vulture.Weapons += 3           -> vulture_nose_weapon_system
-    vulture.Weapons += 4           -> vulture_bomb_bay
-    vulture.Weapons += 5           -> vulture_tail_cannon
-    vulture.MountPoints += 1       -> MountInfo(0)
-    vulture.MountPoints += 2       -> MountInfo(1)
-    vulture.MountPoints += 3       -> MountInfo(1)
-    vulture.MountPoints += 4       -> MountInfo(2)
+    vulture.Weapons += 3     -> vulture_nose_weapon_system
+    vulture.Weapons += 4     -> vulture_bomb_bay
+    vulture.Weapons += 5     -> vulture_tail_cannon
+    vulture.MountPoints += 1 -> MountInfo(0)
+    vulture.MountPoints += 2 -> MountInfo(1)
+    vulture.MountPoints += 3 -> MountInfo(1)
+    vulture.MountPoints += 4 -> MountInfo(2)
     vulture.subsystems = flightSubsystems
     vulture.TrunkSize = InventoryTile.Tile1611
     vulture.TrunkOffset = 30
@@ -8322,13 +8346,13 @@ object GlobalDefinitions {
       bailable = true
       restriction = MaxOnly
     }
-    dropship.Seats += 11             -> bailableSeat
+    dropship.Seats += 11 -> bailableSeat
     dropship.controlledWeapons(seat = 1, weapon = 12)
     dropship.controlledWeapons(seat = 2, weapon = 13)
     dropship.controlledWeapons(seat = 11, weapon = 14)
-    dropship.Weapons += 12           -> cannon_dropship_20mm
-    dropship.Weapons += 13           -> cannon_dropship_20mm
-    dropship.Weapons += 14           -> dropship_rear_turret
+    dropship.Weapons += 12 -> cannon_dropship_20mm
+    dropship.Weapons += 13 -> cannon_dropship_20mm
+    dropship.Weapons += 14 -> dropship_rear_turret
     dropship.Cargo += 15 -> new CargoDefinition() {
       restriction = SmallCargo
     }
@@ -8381,28 +8405,28 @@ object GlobalDefinitions {
     galaxy_gunship.RepairIfDestroyed = false
     galaxy_gunship.MaxShields = 1200
     galaxy_gunship.CanFly = true
-    galaxy_gunship.Seats += 0             -> bailableSeat //new SeatDefinition()
-    galaxy_gunship.Seats += 1             -> bailableSeat
-    galaxy_gunship.Seats += 2             -> bailableSeat
-    galaxy_gunship.Seats += 3             -> bailableSeat
-    galaxy_gunship.Seats += 4             -> bailableSeat
-    galaxy_gunship.Seats += 5             -> bailableSeat
+    galaxy_gunship.Seats += 0 -> bailableSeat //new SeatDefinition()
+    galaxy_gunship.Seats += 1 -> bailableSeat
+    galaxy_gunship.Seats += 2 -> bailableSeat
+    galaxy_gunship.Seats += 3 -> bailableSeat
+    galaxy_gunship.Seats += 4 -> bailableSeat
+    galaxy_gunship.Seats += 5 -> bailableSeat
     galaxy_gunship.controlledWeapons(seat = 1, weapon = 6)
     galaxy_gunship.controlledWeapons(seat = 2, weapon = 7)
     galaxy_gunship.controlledWeapons(seat = 3, weapon = 8)
     galaxy_gunship.controlledWeapons(seat = 4, weapon = 9)
     galaxy_gunship.controlledWeapons(seat = 5, weapon = 10)
-    galaxy_gunship.Weapons += 6           -> galaxy_gunship_cannon
-    galaxy_gunship.Weapons += 7           -> galaxy_gunship_cannon
-    galaxy_gunship.Weapons += 8           -> galaxy_gunship_tailgun
-    galaxy_gunship.Weapons += 9           -> galaxy_gunship_gun
-    galaxy_gunship.Weapons += 10          -> galaxy_gunship_gun
-    galaxy_gunship.MountPoints += 1       -> MountInfo(0)
-    galaxy_gunship.MountPoints += 2       -> MountInfo(3)
-    galaxy_gunship.MountPoints += 3       -> MountInfo(1)
-    galaxy_gunship.MountPoints += 4       -> MountInfo(2)
-    galaxy_gunship.MountPoints += 5       -> MountInfo(4)
-    galaxy_gunship.MountPoints += 6       -> MountInfo(5)
+    galaxy_gunship.Weapons += 6     -> galaxy_gunship_cannon
+    galaxy_gunship.Weapons += 7     -> galaxy_gunship_cannon
+    galaxy_gunship.Weapons += 8     -> galaxy_gunship_tailgun
+    galaxy_gunship.Weapons += 9     -> galaxy_gunship_gun
+    galaxy_gunship.Weapons += 10    -> galaxy_gunship_gun
+    galaxy_gunship.MountPoints += 1 -> MountInfo(0)
+    galaxy_gunship.MountPoints += 2 -> MountInfo(3)
+    galaxy_gunship.MountPoints += 3 -> MountInfo(1)
+    galaxy_gunship.MountPoints += 4 -> MountInfo(2)
+    galaxy_gunship.MountPoints += 5 -> MountInfo(4)
+    galaxy_gunship.MountPoints += 6 -> MountInfo(5)
     galaxy_gunship.subsystems = flightSubsystems
     galaxy_gunship.TrunkSize = InventoryTile.Tile1816
     galaxy_gunship.TrunkOffset = 30
@@ -8625,8 +8649,8 @@ object GlobalDefinitions {
     aphelion_gunner.ShieldAutoRecharge = 45
     aphelion_gunner.ShieldAutoRechargeSpecial = 85
     aphelion_gunner.DefaultShields = aphelion_gunner.MaxShields
-    aphelion_gunner.Seats += 0       -> driverSeat
-    aphelion_gunner.Seats += 1       -> normalSeat
+    aphelion_gunner.Seats += 0 -> driverSeat
+    aphelion_gunner.Seats += 1 -> normalSeat
     aphelion_gunner.controlledWeapons(seat = 0, weapons = Set(2, 3))
     aphelion_gunner.controlledWeapons(seat = 1, weapon = 4)
     aphelion_gunner.Weapons += 2     -> aphelion_ppa_left
@@ -8676,8 +8700,8 @@ object GlobalDefinitions {
     colossus_gunner.ShieldAutoRecharge = 45
     colossus_gunner.ShieldAutoRechargeSpecial = 85
     colossus_gunner.DefaultShields = colossus_gunner.MaxShields
-    colossus_gunner.Seats += 0       -> driverSeat
-    colossus_gunner.Seats += 1       -> normalSeat
+    colossus_gunner.Seats += 0 -> driverSeat
+    colossus_gunner.Seats += 1 -> normalSeat
     colossus_gunner.controlledWeapons(seat = 0, weapons = Set(2, 3))
     colossus_gunner.controlledWeapons(seat = 1, weapon = 4)
     colossus_gunner.Weapons += 2     -> colossus_tank_cannon_left
@@ -8727,8 +8751,8 @@ object GlobalDefinitions {
     peregrine_gunner.ShieldAutoRecharge = 45
     peregrine_gunner.ShieldAutoRechargeSpecial = 85
     peregrine_gunner.DefaultShields = peregrine_gunner.MaxShields
-    peregrine_gunner.Seats += 0       -> driverSeat
-    peregrine_gunner.Seats += 1       -> normalSeat
+    peregrine_gunner.Seats += 0 -> driverSeat
+    peregrine_gunner.Seats += 1 -> normalSeat
     peregrine_gunner.controlledWeapons(seat = 0, weapons = Set(2, 3))
     peregrine_gunner.controlledWeapons(seat = 1, weapon = 4)
     peregrine_gunner.Weapons += 2     -> peregrine_dual_machine_gun_left
@@ -8781,7 +8805,7 @@ object GlobalDefinitions {
     aphelion_flight.ShieldAutoRechargeSpecial = 25
     aphelion_flight.ShieldDrain = 30
     aphelion_flight.DefaultShields = aphelion_flight.MaxShields
-    aphelion_flight.Seats += 0       -> bailableSeat
+    aphelion_flight.Seats += 0 -> bailableSeat
     aphelion_flight.controlledWeapons(seat = 0, weapons = Set(1, 2))
     aphelion_flight.Weapons += 1     -> aphelion_ppa_left
     aphelion_flight.Weapons += 2     -> aphelion_ppa_right
@@ -8835,7 +8859,7 @@ object GlobalDefinitions {
     colossus_flight.ShieldAutoRechargeSpecial = 25
     colossus_flight.ShieldDrain = 30
     colossus_flight.DefaultShields = colossus_flight.MaxShields
-    colossus_flight.Seats += 0       -> bailableSeat
+    colossus_flight.Seats += 0 -> bailableSeat
     colossus_flight.controlledWeapons(seat = 0, weapons = Set(1, 2))
     colossus_flight.Weapons += 1     -> colossus_tank_cannon_left
     colossus_flight.Weapons += 2     -> colossus_tank_cannon_right
@@ -8889,7 +8913,7 @@ object GlobalDefinitions {
     peregrine_flight.ShieldAutoRechargeSpecial = 25
     peregrine_flight.ShieldDrain = 30
     peregrine_flight.DefaultShields = peregrine_flight.MaxShields
-    peregrine_flight.Seats += 0       -> bailableSeat
+    peregrine_flight.Seats += 0 -> bailableSeat
     peregrine_flight.controlledWeapons(seat = 0, weapons = Set(1, 2))
     peregrine_flight.Weapons += 1     -> peregrine_dual_machine_gun_left
     peregrine_flight.Weapons += 2     -> peregrine_dual_machine_gun_right
@@ -8934,9 +8958,9 @@ object GlobalDefinitions {
     * Initialize `Deployable` globals.
     */
   private def init_deployables(): Unit = {
-    val mine = GeometryForm.representByCylinder(radius = 0.1914f, height = 0.0957f) _
+    val mine        = GeometryForm.representByCylinder(radius = 0.1914f, height = 0.0957f) _
     val smallTurret = GeometryForm.representByCylinder(radius = 0.48435f, height = 1.23438f) _
-    val sensor = GeometryForm.representByCylinder(radius = 0.1914f, height = 1.21875f) _
+    val sensor      = GeometryForm.representByCylinder(radius = 0.1914f, height = 1.21875f) _
     val largeTurret = GeometryForm.representByCylinder(radius = 0.8437f, height = 2.29687f) _
 
     boomer.Name = "boomer"
@@ -9034,7 +9058,7 @@ object GlobalDefinitions {
     spitfire_turret.Damageable = true
     spitfire_turret.Repairable = true
     spitfire_turret.RepairIfDestroyed = false
-    spitfire_turret.WeaponPaths += 1 -> new mutable.HashMap()
+    spitfire_turret.WeaponPaths += 1                     -> new mutable.HashMap()
     spitfire_turret.WeaponPaths(1) += TurretUpgrade.None -> spitfire_weapon
     spitfire_turret.ReserveAmmunition = false
     spitfire_turret.DeployCategory = DeployableCategory.SmallTurrets
@@ -9050,7 +9074,9 @@ object GlobalDefinitions {
       Modifiers = ExplodingRadialDegrade
     }
     spitfire_turret.Geometry = smallTurret
-    spitfire_turret.collision.xy = CollisionXYData(Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100)))
+    spitfire_turret.collision.xy = CollisionXYData(
+      Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100))
+    )
     spitfire_turret.collision.z = CollisionZData(Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100)))
     spitfire_turret.mass = 5f
 
@@ -9060,7 +9086,7 @@ object GlobalDefinitions {
     spitfire_cloaked.Damageable = true
     spitfire_cloaked.Repairable = true
     spitfire_cloaked.RepairIfDestroyed = false
-    spitfire_cloaked.WeaponPaths += 1 -> new mutable.HashMap()
+    spitfire_cloaked.WeaponPaths += 1                     -> new mutable.HashMap()
     spitfire_cloaked.WeaponPaths(1) += TurretUpgrade.None -> spitfire_weapon
     spitfire_cloaked.ReserveAmmunition = false
     spitfire_cloaked.DeployCategory = DeployableCategory.SmallTurrets
@@ -9076,7 +9102,9 @@ object GlobalDefinitions {
       Modifiers = ExplodingRadialDegrade
     }
     spitfire_cloaked.Geometry = smallTurret
-    spitfire_cloaked.collision.xy = CollisionXYData(Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100)))
+    spitfire_cloaked.collision.xy = CollisionXYData(
+      Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100))
+    )
     spitfire_cloaked.collision.z = CollisionZData(Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100)))
     spitfire_cloaked.mass = 5f
 
@@ -9086,7 +9114,7 @@ object GlobalDefinitions {
     spitfire_aa.Damageable = true
     spitfire_aa.Repairable = true
     spitfire_aa.RepairIfDestroyed = false
-    spitfire_aa.WeaponPaths += 1 -> new mutable.HashMap()
+    spitfire_aa.WeaponPaths += 1                     -> new mutable.HashMap()
     spitfire_aa.WeaponPaths(1) += TurretUpgrade.None -> spitfire_aa_weapon
     spitfire_aa.ReserveAmmunition = false
     spitfire_aa.DeployCategory = DeployableCategory.SmallTurrets
@@ -9158,10 +9186,10 @@ object GlobalDefinitions {
     portable_manned_turret.Repairable = true
     portable_manned_turret.RepairIfDestroyed = false
     portable_manned_turret.controlledWeapons(seat = 0, weapon = 1)
-    portable_manned_turret.WeaponPaths += 1 -> new mutable.HashMap()
+    portable_manned_turret.WeaponPaths += 1                     -> new mutable.HashMap()
     portable_manned_turret.WeaponPaths(1) += TurretUpgrade.None -> energy_gun
-    portable_manned_turret.MountPoints += 1 -> MountInfo(0)
-    portable_manned_turret.MountPoints += 2 -> MountInfo(0)
+    portable_manned_turret.MountPoints += 1                     -> MountInfo(0)
+    portable_manned_turret.MountPoints += 2                     -> MountInfo(0)
     portable_manned_turret.ReserveAmmunition = true
     portable_manned_turret.FactionLocked = true
     portable_manned_turret.Packet = fieldTurretConverter
@@ -9179,8 +9207,12 @@ object GlobalDefinitions {
       Modifiers = ExplodingRadialDegrade
     }
     portable_manned_turret.Geometry = largeTurret
-    portable_manned_turret.collision.xy = CollisionXYData(Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100)))
-    portable_manned_turret.collision.z = CollisionZData(Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100)))
+    portable_manned_turret.collision.xy = CollisionXYData(
+      Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100))
+    )
+    portable_manned_turret.collision.z = CollisionZData(
+      Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100))
+    )
     portable_manned_turret.mass = 100f
 
     portable_manned_turret_nc.Name = "portable_manned_turret_nc"
@@ -9189,7 +9221,7 @@ object GlobalDefinitions {
     portable_manned_turret_nc.Damageable = true
     portable_manned_turret_nc.Repairable = true
     portable_manned_turret_nc.RepairIfDestroyed = false
-    portable_manned_turret_nc.WeaponPaths += 1 -> new mutable.HashMap()
+    portable_manned_turret_nc.WeaponPaths += 1                     -> new mutable.HashMap()
     portable_manned_turret_nc.WeaponPaths(1) += TurretUpgrade.None -> energy_gun_nc
     portable_manned_turret_nc.controlledWeapons(seat = 0, weapon = 1)
     portable_manned_turret_nc.MountPoints += 1 -> MountInfo(0)
@@ -9210,8 +9242,12 @@ object GlobalDefinitions {
       Modifiers = ExplodingRadialDegrade
     }
     portable_manned_turret_nc.Geometry = largeTurret
-    portable_manned_turret_nc.collision.xy = CollisionXYData(Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100)))
-    portable_manned_turret_nc.collision.z = CollisionZData(Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100)))
+    portable_manned_turret_nc.collision.xy = CollisionXYData(
+      Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100))
+    )
+    portable_manned_turret_nc.collision.z = CollisionZData(
+      Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100))
+    )
     portable_manned_turret_nc.mass = 100f
 
     portable_manned_turret_tr.Name = "portable_manned_turret_tr"
@@ -9220,7 +9256,7 @@ object GlobalDefinitions {
     portable_manned_turret_tr.Damageable = true
     portable_manned_turret_tr.Repairable = true
     portable_manned_turret_tr.RepairIfDestroyed = false
-    portable_manned_turret_tr.WeaponPaths += 1 -> new mutable.HashMap()
+    portable_manned_turret_tr.WeaponPaths += 1                     -> new mutable.HashMap()
     portable_manned_turret_tr.WeaponPaths(1) += TurretUpgrade.None -> energy_gun_tr
     portable_manned_turret_tr.controlledWeapons(seat = 0, weapon = 1)
     portable_manned_turret_tr.MountPoints += 1 -> MountInfo(0)
@@ -9241,8 +9277,12 @@ object GlobalDefinitions {
       Modifiers = ExplodingRadialDegrade
     }
     portable_manned_turret_tr.Geometry = largeTurret
-    portable_manned_turret_tr.collision.xy = CollisionXYData(Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100)))
-    portable_manned_turret_tr.collision.z = CollisionZData(Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100)))
+    portable_manned_turret_tr.collision.xy = CollisionXYData(
+      Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100))
+    )
+    portable_manned_turret_tr.collision.z = CollisionZData(
+      Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100))
+    )
     portable_manned_turret_tr.mass = 100f
 
     portable_manned_turret_vs.Name = "portable_manned_turret_vs"
@@ -9251,7 +9291,7 @@ object GlobalDefinitions {
     portable_manned_turret_vs.Damageable = true
     portable_manned_turret_vs.Repairable = true
     portable_manned_turret_vs.RepairIfDestroyed = false
-    portable_manned_turret_vs.WeaponPaths += 1 -> new mutable.HashMap()
+    portable_manned_turret_vs.WeaponPaths += 1                     -> new mutable.HashMap()
     portable_manned_turret_vs.WeaponPaths(1) += TurretUpgrade.None -> energy_gun_vs
     portable_manned_turret_vs.controlledWeapons(seat = 0, weapon = 1)
     portable_manned_turret_vs.MountPoints += 1 -> MountInfo(0)
@@ -9272,8 +9312,12 @@ object GlobalDefinitions {
       Modifiers = ExplodingRadialDegrade
     }
     portable_manned_turret_vs.Geometry = largeTurret
-    portable_manned_turret_vs.collision.xy = CollisionXYData(Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100)))
-    portable_manned_turret_vs.collision.z = CollisionZData(Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100)))
+    portable_manned_turret_vs.collision.xy = CollisionXYData(
+      Array((0.01f, 10), (0.02f, 40), (0.03f, 60), (0.04f, 80), (0.05f, 100))
+    )
+    portable_manned_turret_vs.collision.z = CollisionZData(
+      Array((4f, 10), (4.25f, 40), (4.5f, 60), (4.75f, 80), (5f, 100))
+    )
     portable_manned_turret_vs.mass = 100f
 
     deployable_shield_generator.Name = "deployable_shield_generator"
@@ -9936,7 +9980,7 @@ object GlobalDefinitions {
     manned_turret.WeaponPaths(1) += TurretUpgrade.AVCombo   -> phalanx_avcombo
     manned_turret.WeaponPaths(1) += TurretUpgrade.FlakCombo -> phalanx_flakcombo
     manned_turret.controlledWeapons(seat = 0, weapon = 1)
-    manned_turret.MountPoints += 1                          -> MountInfo(0)
+    manned_turret.MountPoints += 1 -> MountInfo(0)
     manned_turret.FactionLocked = true
     manned_turret.ReserveAmmunition = false
     manned_turret.RadiationShielding = 0.5f
@@ -9960,8 +10004,8 @@ object GlobalDefinitions {
     vanu_sentry_turret.WeaponPaths += 1                     -> new mutable.HashMap()
     vanu_sentry_turret.WeaponPaths(1) += TurretUpgrade.None -> vanu_sentry_turret_weapon
     vanu_sentry_turret.controlledWeapons(seat = 0, weapon = 1)
-    vanu_sentry_turret.MountPoints += 1                     -> MountInfo(0)
-    vanu_sentry_turret.MountPoints += 2                     -> MountInfo(0)
+    vanu_sentry_turret.MountPoints += 1 -> MountInfo(0)
+    vanu_sentry_turret.MountPoints += 2 -> MountInfo(0)
     vanu_sentry_turret.FactionLocked = false
     vanu_sentry_turret.ReserveAmmunition = false
     vanu_sentry_turret.Geometry = GeometryForm.representByCylinder(radius = 1.76311f, height = 3.984375f)

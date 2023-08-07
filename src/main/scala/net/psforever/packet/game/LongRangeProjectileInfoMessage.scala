@@ -7,11 +7,10 @@ import scodec.Codec
 import scodec.codecs._
 
 final case class LongRangeProjectileInfoMessage(
-                                                 guid: PlanetSideGUID,
-                                                 pos: Vector3,
-                                                 vel: Option[Vector3]
-                                               )
-  extends PlanetSideGamePacket {
+    guid: PlanetSideGUID,
+    pos: Vector3,
+    vel: Option[Vector3]
+) extends PlanetSideGamePacket {
   type Packet = LongRangeProjectileInfoMessage
   def opcode = GamePacketOpcode.LongRangeProjectileInfoMessage
   def encode = LongRangeProjectileInfoMessage.encode(this)
@@ -23,7 +22,7 @@ object LongRangeProjectileInfoMessage extends Marshallable[LongRangeProjectileIn
 
   implicit val codec: Codec[LongRangeProjectileInfoMessage] = (
     ("guid" | PlanetSideGUID.codec) ::
-    ("pos" | Vector3.codec_pos) ::
-    ("vel" | optional(bool, Vector3.codec_vel))
+      ("pos" | Vector3.codec_pos) ::
+      ("vel" | optional(bool, Vector3.codec_vel))
   ).as[LongRangeProjectileInfoMessage]
 }

@@ -19,7 +19,7 @@ trait ProximityDefinition {
   this: ObjectDefinition =>
 
   private var interval: FiniteDuration = Duration(0, "seconds")
-  private var useRadius: Float = 0f //TODO belongs on a wider range of object definitions
+  private var useRadius: Float         = 0f //TODO belongs on a wider range of object definitions
   private val targetValidation: mutable.HashMap[EffectTarget.Category.Value, PlanetSideGameObject => Boolean] =
     new mutable.HashMap[EffectTarget.Category.Value, PlanetSideGameObject => Boolean]()
 

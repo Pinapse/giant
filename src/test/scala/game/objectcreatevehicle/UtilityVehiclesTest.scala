@@ -131,7 +131,7 @@ class UtilityVehiclesTest extends Specification {
               ams.vehicle_format_data.contains(UtilityVehicleData(0)) mustEqual true
               val inv = ams.inventory match {
                 case Some(inv: InventoryData) => inv.contents
-                case _ => Nil
+                case _                        => Nil
               }
               //0
               val inv0 = inv.head
@@ -139,7 +139,13 @@ class UtilityVehiclesTest extends Specification {
               inv0.guid mustEqual PlanetSideGUID(3087)
               inv0.parentSlot mustEqual 0
               inv0.obj match {
-                case PlayerData(None, CharacterAppearanceData(a, b, r), char, Some(InventoryData(pinv)), DrawnSlot.None) =>
+                case PlayerData(
+                      None,
+                      CharacterAppearanceData(a, b, r),
+                      char,
+                      Some(InventoryData(pinv)),
+                      DrawnSlot.None
+                    ) =>
                   a.app.name mustEqual "PLAmingyueTR"
                   a.app.faction mustEqual PlanetSideEmpire.TR
                   a.app.sex mustEqual CharacterSex.Female
@@ -197,14 +203,140 @@ class UtilityVehiclesTest extends Specification {
                   char.unk mustEqual 2
                   char.cosmetics.contains(Set(Cosmetic.Earpiece, Cosmetic.Sunglasses, Cosmetic.NoHelmet)) mustEqual true
                   pinv mustEqual List(
-                    InternalSlot(728, ValidPlanetSideGUID(3312), 0, REKData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)),3,0)),
-                    InternalSlot(132, ValidPlanetSideGUID(3665), 1, WeaponData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,None,None,ValidPlanetSideGUID(0)),0,List(
-                      InternalSlot(111,ValidPlanetSideGUID(4538),0,CommonFieldData(PlanetSideEmpire.NEUTRAL,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)))),false)
+                    InternalSlot(
+                      728,
+                      ValidPlanetSideGUID(3312),
+                      0,
+                      REKData(
+                        CommonFieldData(
+                          PlanetSideEmpire.TR,
+                          false,
+                          false,
+                          false,
+                          None,
+                          false,
+                          Some(false),
+                          None,
+                          ValidPlanetSideGUID(0)
+                        ),
+                        3,
+                        0
+                      )
                     ),
-                    InternalSlot(556, ValidPlanetSideGUID(3179), 2, WeaponData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,None,None,ValidPlanetSideGUID(0)),0,List(
-                      InternalSlot(28,ValidPlanetSideGUID(3221),0,CommonFieldData(PlanetSideEmpire.NEUTRAL,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)))),false)
+                    InternalSlot(
+                      132,
+                      ValidPlanetSideGUID(3665),
+                      1,
+                      WeaponData(
+                        CommonFieldData(
+                          PlanetSideEmpire.TR,
+                          false,
+                          false,
+                          false,
+                          None,
+                          false,
+                          None,
+                          None,
+                          ValidPlanetSideGUID(0)
+                        ),
+                        0,
+                        List(
+                          InternalSlot(
+                            111,
+                            ValidPlanetSideGUID(4538),
+                            0,
+                            CommonFieldData(
+                              PlanetSideEmpire.NEUTRAL,
+                              false,
+                              false,
+                              false,
+                              None,
+                              false,
+                              Some(false),
+                              None,
+                              ValidPlanetSideGUID(0)
+                            )
+                          )
+                        ),
+                        false
+                      )
                     ),
-                    InternalSlot(175,ValidPlanetSideGUID(4334),4,WeaponData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,None,None,ValidPlanetSideGUID(0)),0,List(InternalSlot(540,ValidPlanetSideGUID(3833),0,CommonFieldData(PlanetSideEmpire.NEUTRAL,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)))),false))
+                    InternalSlot(
+                      556,
+                      ValidPlanetSideGUID(3179),
+                      2,
+                      WeaponData(
+                        CommonFieldData(
+                          PlanetSideEmpire.TR,
+                          false,
+                          false,
+                          false,
+                          None,
+                          false,
+                          None,
+                          None,
+                          ValidPlanetSideGUID(0)
+                        ),
+                        0,
+                        List(
+                          InternalSlot(
+                            28,
+                            ValidPlanetSideGUID(3221),
+                            0,
+                            CommonFieldData(
+                              PlanetSideEmpire.NEUTRAL,
+                              false,
+                              false,
+                              false,
+                              None,
+                              false,
+                              Some(false),
+                              None,
+                              ValidPlanetSideGUID(0)
+                            )
+                          )
+                        ),
+                        false
+                      )
+                    ),
+                    InternalSlot(
+                      175,
+                      ValidPlanetSideGUID(4334),
+                      4,
+                      WeaponData(
+                        CommonFieldData(
+                          PlanetSideEmpire.TR,
+                          false,
+                          false,
+                          false,
+                          None,
+                          false,
+                          None,
+                          None,
+                          ValidPlanetSideGUID(0)
+                        ),
+                        0,
+                        List(
+                          InternalSlot(
+                            540,
+                            ValidPlanetSideGUID(3833),
+                            0,
+                            CommonFieldData(
+                              PlanetSideEmpire.NEUTRAL,
+                              false,
+                              false,
+                              false,
+                              None,
+                              false,
+                              Some(false),
+                              None,
+                              ValidPlanetSideGUID(0)
+                            )
+                          )
+                        ),
+                        false
+                      )
+                    )
                   )
                 case _ =>
                   ko
@@ -329,101 +461,253 @@ class UtilityVehiclesTest extends Specification {
         unk6 = false,
         cloak = false,
         Some(UtilityVehicleData(0)),
-        Some(InventoryData(
-          List(
-            InternalSlot(
-              ObjectClass.avatar, PlanetSideGUID(3087), 0, {
-                val a: Int => CharacterAppearanceA = CharacterAppearanceA(
-                  BasicCharacterData(
-                    "PLAmingyueTR",
-                    PlanetSideEmpire.TR,
-                    CharacterSex.Female,
-                    head = 16,
-                    CharacterVoice.Voice5
-                  ),
-                  CommonFieldData(PlanetSideEmpire.TR, false, false, false, None, false, None, None, PlanetSideGUID(0)),
-                  ExoSuitType.Agile,
-                  unk5 = 0,
-                  char_id = 41555698L,
-                  unk7 = 0,
-                  unk8 = 0,
-                  unk9 = 0,
-                  unkA = 0
-                )
-                val b: (Boolean, Int) => CharacterAppearanceB = CharacterAppearanceB(
-                  outfit_id = 527764L,
-                  outfit_name = "****PLA****",
-                  outfit_logo = 1,
-                  unk1 = false,
-                  backpack = false,
-                  unk2 = false,
-                  unk3 = false,
-                  unk4 = false,
-                  facingPitch = -5.625f,
-                  facingYawUpper = 5.625f,
-                  lfs = false,
-                  GrenadeState.None,
-                  is_cloaking = false,
-                  unk5 = false,
-                  unk6 = false,
-                  charging_pose = false,
-                  unk7 = false,
-                  on_zipline = None
-                )
-                val app: Int => CharacterAppearanceData = CharacterAppearanceData(
-                  a,
-                  b,
-                  RibbonBars(
-                    MeritCommendation.AMSSupport2,
-                    MeritCommendation.HeavyAssault1,
-                    MeritCommendation.ScavengerTR1,
-                    MeritCommendation.ThreeYearTR
-                  )
-                )
-                val char: (Boolean, Boolean) => CharacterData = CharacterData(
-                  health = 100,
-                  armor = 0,
-                  UniformStyle.ThirdUpgrade,
-                  unk = 2,
-                  command_rank = 4,
-                  implant_effects = List(),
-                  Some(Set(Cosmetic.Earpiece, Cosmetic.Sunglasses, Cosmetic.NoHelmet))
-                )
-                val inv = InventoryData(
-                  List(
-                    InternalSlot(728, ValidPlanetSideGUID(3312), 0, REKData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)),3,0)),
-                    InternalSlot(132, ValidPlanetSideGUID(3665), 1, WeaponData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,None,None,ValidPlanetSideGUID(0)),0,List(
-                      InternalSlot(111, ValidPlanetSideGUID(4538), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)))),false)
+        Some(
+          InventoryData(
+            List(
+              InternalSlot(
+                ObjectClass.avatar,
+                PlanetSideGUID(3087),
+                0, {
+                  val a: Int => CharacterAppearanceA = CharacterAppearanceA(
+                    BasicCharacterData(
+                      "PLAmingyueTR",
+                      PlanetSideEmpire.TR,
+                      CharacterSex.Female,
+                      head = 16,
+                      CharacterVoice.Voice5
                     ),
-                    InternalSlot(556, ValidPlanetSideGUID(3179), 2, WeaponData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,None,None,ValidPlanetSideGUID(0)),0,List(
-                      InternalSlot(28, ValidPlanetSideGUID(3221), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)))),false)
+                    CommonFieldData(
+                      PlanetSideEmpire.TR,
+                      false,
+                      false,
+                      false,
+                      None,
+                      false,
+                      None,
+                      None,
+                      PlanetSideGUID(0)
                     ),
-                    InternalSlot(175, ValidPlanetSideGUID(4334), 4, WeaponData(CommonFieldData(PlanetSideEmpire.TR,false,false,false,None,false,None,None,ValidPlanetSideGUID(0)),0,List(InternalSlot(540,ValidPlanetSideGUID(3833),0,CommonFieldData(PlanetSideEmpire.NEUTRAL,false,false,false,None,false,Some(false),None,ValidPlanetSideGUID(0)))),false))
+                    ExoSuitType.Agile,
+                    unk5 = 0,
+                    char_id = 41555698L,
+                    unk7 = 0,
+                    unk8 = 0,
+                    unk9 = 0,
+                    unkA = 0
                   )
-                )
-                MountableInventory.PlayerData(
-                  app,
-                  char,
-                  inv,
-                  DrawnSlot.None,
-                  MountableInventory.InitialStreamLengthToSeatEntries(hasVelocity=true, VehicleFormat.Utility)
-                )
-              }
-            ),
-            InternalSlot(
-              ObjectClass.matrix_terminalc, PlanetSideGUID(3265), 1, CommonFieldData(PlanetSideEmpire.TR)(flag = false)
-            ),
-            InternalSlot(
-              ObjectClass.ams_respawn_tube, PlanetSideGUID(4346), 2, CommonFieldData(PlanetSideEmpire.TR)(flag = false)
-            ),
-            InternalSlot(
-              ObjectClass.order_terminala, PlanetSideGUID(4363), 3, CommonFieldData(PlanetSideEmpire.TR)(flag = false)
-            ),
-            InternalSlot(
-              ObjectClass.order_terminalb, PlanetSideGUID(4074), 4, CommonFieldData(PlanetSideEmpire.TR)(flag = false)
+                  val b: (Boolean, Int) => CharacterAppearanceB = CharacterAppearanceB(
+                    outfit_id = 527764L,
+                    outfit_name = "****PLA****",
+                    outfit_logo = 1,
+                    unk1 = false,
+                    backpack = false,
+                    unk2 = false,
+                    unk3 = false,
+                    unk4 = false,
+                    facingPitch = -5.625f,
+                    facingYawUpper = 5.625f,
+                    lfs = false,
+                    GrenadeState.None,
+                    is_cloaking = false,
+                    unk5 = false,
+                    unk6 = false,
+                    charging_pose = false,
+                    unk7 = false,
+                    on_zipline = None
+                  )
+                  val app: Int => CharacterAppearanceData = CharacterAppearanceData(
+                    a,
+                    b,
+                    RibbonBars(
+                      MeritCommendation.AMSSupport2,
+                      MeritCommendation.HeavyAssault1,
+                      MeritCommendation.ScavengerTR1,
+                      MeritCommendation.ThreeYearTR
+                    )
+                  )
+                  val char: (Boolean, Boolean) => CharacterData = CharacterData(
+                    health = 100,
+                    armor = 0,
+                    UniformStyle.ThirdUpgrade,
+                    unk = 2,
+                    command_rank = 4,
+                    implant_effects = List(),
+                    Some(Set(Cosmetic.Earpiece, Cosmetic.Sunglasses, Cosmetic.NoHelmet))
+                  )
+                  val inv = InventoryData(
+                    List(
+                      InternalSlot(
+                        728,
+                        ValidPlanetSideGUID(3312),
+                        0,
+                        REKData(
+                          CommonFieldData(
+                            PlanetSideEmpire.TR,
+                            false,
+                            false,
+                            false,
+                            None,
+                            false,
+                            Some(false),
+                            None,
+                            ValidPlanetSideGUID(0)
+                          ),
+                          3,
+                          0
+                        )
+                      ),
+                      InternalSlot(
+                        132,
+                        ValidPlanetSideGUID(3665),
+                        1,
+                        WeaponData(
+                          CommonFieldData(
+                            PlanetSideEmpire.TR,
+                            false,
+                            false,
+                            false,
+                            None,
+                            false,
+                            None,
+                            None,
+                            ValidPlanetSideGUID(0)
+                          ),
+                          0,
+                          List(
+                            InternalSlot(
+                              111,
+                              ValidPlanetSideGUID(4538),
+                              0,
+                              CommonFieldData(
+                                PlanetSideEmpire.NEUTRAL,
+                                false,
+                                false,
+                                false,
+                                None,
+                                false,
+                                Some(false),
+                                None,
+                                ValidPlanetSideGUID(0)
+                              )
+                            )
+                          ),
+                          false
+                        )
+                      ),
+                      InternalSlot(
+                        556,
+                        ValidPlanetSideGUID(3179),
+                        2,
+                        WeaponData(
+                          CommonFieldData(
+                            PlanetSideEmpire.TR,
+                            false,
+                            false,
+                            false,
+                            None,
+                            false,
+                            None,
+                            None,
+                            ValidPlanetSideGUID(0)
+                          ),
+                          0,
+                          List(
+                            InternalSlot(
+                              28,
+                              ValidPlanetSideGUID(3221),
+                              0,
+                              CommonFieldData(
+                                PlanetSideEmpire.NEUTRAL,
+                                false,
+                                false,
+                                false,
+                                None,
+                                false,
+                                Some(false),
+                                None,
+                                ValidPlanetSideGUID(0)
+                              )
+                            )
+                          ),
+                          false
+                        )
+                      ),
+                      InternalSlot(
+                        175,
+                        ValidPlanetSideGUID(4334),
+                        4,
+                        WeaponData(
+                          CommonFieldData(
+                            PlanetSideEmpire.TR,
+                            false,
+                            false,
+                            false,
+                            None,
+                            false,
+                            None,
+                            None,
+                            ValidPlanetSideGUID(0)
+                          ),
+                          0,
+                          List(
+                            InternalSlot(
+                              540,
+                              ValidPlanetSideGUID(3833),
+                              0,
+                              CommonFieldData(
+                                PlanetSideEmpire.NEUTRAL,
+                                false,
+                                false,
+                                false,
+                                None,
+                                false,
+                                Some(false),
+                                None,
+                                ValidPlanetSideGUID(0)
+                              )
+                            )
+                          ),
+                          false
+                        )
+                      )
+                    )
+                  )
+                  MountableInventory.PlayerData(
+                    app,
+                    char,
+                    inv,
+                    DrawnSlot.None,
+                    MountableInventory.InitialStreamLengthToSeatEntries(hasVelocity = true, VehicleFormat.Utility)
+                  )
+                }
+              ),
+              InternalSlot(
+                ObjectClass.matrix_terminalc,
+                PlanetSideGUID(3265),
+                1,
+                CommonFieldData(PlanetSideEmpire.TR)(flag = false)
+              ),
+              InternalSlot(
+                ObjectClass.ams_respawn_tube,
+                PlanetSideGUID(4346),
+                2,
+                CommonFieldData(PlanetSideEmpire.TR)(flag = false)
+              ),
+              InternalSlot(
+                ObjectClass.order_terminala,
+                PlanetSideGUID(4363),
+                3,
+                CommonFieldData(PlanetSideEmpire.TR)(flag = false)
+              ),
+              InternalSlot(
+                ObjectClass.order_terminalb,
+                PlanetSideGUID(4074),
+                4,
+                CommonFieldData(PlanetSideEmpire.TR)(flag = false)
+              )
             )
           )
-        ))
+        )
       )(VehicleFormat.Utility)
       val msg = ObjectCreateMessage(ObjectClass.ams, PlanetSideGUID(4094), obj)
       val pkt = PacketCoding.encodePacket(msg).require.toByteVector

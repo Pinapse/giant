@@ -151,41 +151,42 @@ object WeaponData extends Marshallable[WeaponData] {
     )
   }
 
-  private def baseCodec(commonFieldCodec: Codec[CommonFieldData]): Codec[WeaponData] = (
-    ("data" | commonFieldCodec) ::
-    ("fire_mode" | int8) ::
-    bool ::
-    optional(bool, "ammo" | InventoryData.codec) ::
-    ("unk" | bool)
+  private def baseCodec(commonFieldCodec: Codec[CommonFieldData]): Codec[WeaponData] =
+    (
+      ("data" | commonFieldCodec) ::
+        ("fire_mode" | int8) ::
+        bool ::
+        optional(bool, "ammo" | InventoryData.codec) ::
+        ("unk" | bool)
     ).exmap[WeaponData](
-    {
-      case data :: fmode :: false :: Some(InventoryData(ammo)) :: unk :: HNil =>
-        val magSize = ammo.size
-        if (magSize == 0) {
-          Attempt.failure(Err("weapon must decode some ammunition"))
-        } else {
-          Attempt.successful(WeaponData(data, fmode, ammo, unk))
-        }
-      case data :: fmode :: false :: None :: unk :: HNil =>
-        //rare pass condition, usually found in LockerContainer objects or temporarily existing as a dropped item
-        Attempt.successful(WeaponData(data, fmode, Nil, unk))
-      case data =>
-        Attempt.failure(Err(s"invalid weapon data format - $data"))
-    },
-    {
-      case WeaponData(data, fmode, ammo, unk) =>
-        val magSize = ammo.size
-        if (magSize == 0) {
-          Attempt.failure(Err("weapon must encode some ammunition"))
-        } else if (magSize >= 255) {
-          Attempt.failure(Err("weapon encodes too much ammunition (255+ types!)"))
-        } else {
-          Attempt.successful(data :: fmode :: false :: Some(InventoryData(ammo)) :: unk :: HNil)
-        }
-      case _ =>
-        Attempt.failure(Err("invalid weapon data format"))
-    }
-  )
+      {
+        case data :: fmode :: false :: Some(InventoryData(ammo)) :: unk :: HNil =>
+          val magSize = ammo.size
+          if (magSize == 0) {
+            Attempt.failure(Err("weapon must decode some ammunition"))
+          } else {
+            Attempt.successful(WeaponData(data, fmode, ammo, unk))
+          }
+        case data :: fmode :: false :: None :: unk :: HNil =>
+          //rare pass condition, usually found in LockerContainer objects or temporarily existing as a dropped item
+          Attempt.successful(WeaponData(data, fmode, Nil, unk))
+        case data =>
+          Attempt.failure(Err(s"invalid weapon data format - $data"))
+      },
+      {
+        case WeaponData(data, fmode, ammo, unk) =>
+          val magSize = ammo.size
+          if (magSize == 0) {
+            Attempt.failure(Err("weapon must encode some ammunition"))
+          } else if (magSize >= 255) {
+            Attempt.failure(Err("weapon encodes too much ammunition (255+ types!)"))
+          } else {
+            Attempt.successful(data :: fmode :: false :: Some(InventoryData(ammo)) :: unk :: HNil)
+          }
+        case _ =>
+          Attempt.failure(Err("invalid weapon data format"))
+      }
+    )
 
   implicit val codec: Codec[WeaponData] = baseCodec(CommonFieldData.codec)
 

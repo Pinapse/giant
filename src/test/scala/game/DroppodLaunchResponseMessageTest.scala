@@ -74,19 +74,20 @@ class DroppodLaunchResponseMessageTest extends Specification {
         DroppodError.BlockedBySOI,
         PlanetSideGUID(1557)
       ) mustEqual
-      DroppodLaunchResponseMessage(
-        DroppodError.BlockedBySOI,
-        DroppodLaunchInfo(PlanetSideGUID(1557), 0, Vector3.Zero),
-        None)
+        DroppodLaunchResponseMessage(
+          DroppodError.BlockedBySOI,
+          DroppodLaunchInfo(PlanetSideGUID(1557), 0, Vector3.Zero),
+          None
+        )
     }
 
     "equivalent constructors (2)" in {
       DroppodLaunchResponseMessage(PlanetSideGUID(1557), 5, 100, 10) mustEqual
-      DroppodLaunchResponseMessage(
-        DroppodError.ZoneFullWarpQueue,
-        DroppodLaunchInfo(PlanetSideGUID(1557), 5, Vector3.Zero),
-        Some(WarpQueuePrompt(100, 10))
-      )
+        DroppodLaunchResponseMessage(
+          DroppodError.ZoneFullWarpQueue,
+          DroppodLaunchInfo(PlanetSideGUID(1557), 5, Vector3.Zero),
+          Some(WarpQueuePrompt(100, 10))
+        )
     }
   }
 }

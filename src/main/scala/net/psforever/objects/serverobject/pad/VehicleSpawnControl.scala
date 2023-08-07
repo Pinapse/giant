@@ -73,7 +73,7 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
     }
   }
 
-  override def postStop() : Unit = {
+  override def postStop(): Unit = {
     periodicReminder.cancel()
     queueManagement.cancel()
   }
@@ -92,11 +92,11 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
 
       case VehicleSpawnControl.ProcessControl.OrderCancelled =>
         trackedOrder match {
-          case Some(entry)
-            if sender() == concealPlayer =>
+          case Some(entry) if sender() == concealPlayer =>
             CancelOrder(
               entry,
-              VehicleSpawnControl.validateOrderCredentials(pad, entry.driver, entry.vehicle)
+              VehicleSpawnControl
+                .validateOrderCredentials(pad, entry.driver, entry.vehicle)
                 .orElse(Some("@SVCP_RemovedFromVehicleQueue_Generic"))
             )
           case _ => ;
@@ -118,7 +118,7 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
       Normally, the player who wanted to spawn the vehicle will be automatically put into the driver mount.
       If this is blocked, the vehicle will idle on the pad and must be moved far enough away from the point of origin.
       During this time, a periodic message about the spawn pad being blocked will be broadcast to the order queue.
-      */
+       */
       case VehicleSpawnControl.ProcessControl.Reminder =>
         trackedOrder match {
           case Some(entry) =>
@@ -143,12 +143,12 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
         orders = Nil
         trackedOrder match {
           case Some(entry) => CancelOrder(entry, Some("@SVCP_RemovedFromVehicleQueue_Generic"))
-          case None => ;
+          case None        => ;
         }
         trackedOrder = None
         handleOrderFunc = NewTasking
         pad.Zone.VehicleEvents ! VehicleSpawnPad.ResetSpawnPad(pad) //cautious animation reset
-        concealPlayer ! akka.actor.Kill //should cause the actor to restart, which will abort any trapped messages
+        concealPlayer ! akka.actor.Kill                             //should cause the actor to restart, which will abort any trapped messages
 
       case _ => ;
     }
@@ -170,14 +170,16 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
     */
   def QueuedTasking(order: VehicleSpawnPad.VehicleOrder): Unit = {
     val name = order.player.Name
-    if (trackedOrder match {
-      case Some(tracked) =>
-        !tracked.driver.Name.equals(name)
-      case None =>
-        handleOrderFunc = NewTasking
-        NewTasking(order)
-        false
-    }) {
+    if (
+      trackedOrder match {
+        case Some(tracked) =>
+          !tracked.driver.Name.equals(name)
+        case None =>
+          handleOrderFunc = NewTasking
+          NewTasking(order)
+          false
+      }
+    ) {
       orders.indexWhere { _.player.Name.equals(name) } match {
         case -1 if orders.isEmpty =>
           //first queued order
@@ -199,10 +201,10 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
           )
         case n if orders(n).vehicle.Definition ne order.vehicle.Definition =>
           //replace existing order with new order
-          val zone = pad.Zone
-          val originalOrder = orders(n)
+          val zone            = pad.Zone
+          val originalOrder   = orders(n)
           val originalVehicle = originalOrder.vehicle.Definition.Name
-          orders = (orders.take(n) :+ order) ++ orders.drop(n+1)
+          orders = (orders.take(n) :+ order) ++ orders.drop(n + 1)
           VehicleSpawnControl.DisposeVehicle(originalOrder.vehicle, zone)
           zone.VehicleEvents ! VehicleSpawnPad.PeriodicReminder(
             name,
@@ -229,7 +231,10 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
   def SelectFirstOrder(): Option[VehicleSpawnPad.VehicleOrder] = {
     trackedOrder match {
       case None =>
-        val (completeOrder, remainingOrders): (Option[VehicleSpawnPad.VehicleOrder], List[VehicleSpawnPad.VehicleOrder]) =
+        val (completeOrder, remainingOrders): (
+            Option[VehicleSpawnPad.VehicleOrder],
+            List[VehicleSpawnPad.VehicleOrder]
+        ) =
           orderCredentialsCheck(orders) match {
             case x :: Nil =>
               queueManagement.cancel()
@@ -259,10 +264,10 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
     periodicReminder.cancel()
     order match {
       case Some(_order) =>
-        val size = orders.size + 1
-        val driver = _order.player
-        val name = driver.Name
-        val vehicle = _order.vehicle
+        val size     = orders.size + 1
+        val driver   = _order.player
+        val name     = driver.Name
+        val vehicle  = _order.vehicle
         val newOrder = VehicleSpawnControl.Order(driver, vehicle)
         recursiveOrderReminder(orders.iterator, size)
         trace(s"processing next order - a ${vehicle.Definition.Name} for $name")
@@ -306,7 +311,9 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
     * @param recipients the original list of orders
     * @return the list of still-acceptable orders
     */
-  def orderCredentialsCheck(recipients: Iterable[VehicleSpawnPad.VehicleOrder]): Iterable[VehicleSpawnPad.VehicleOrder] = {
+  def orderCredentialsCheck(
+      recipients: Iterable[VehicleSpawnPad.VehicleOrder]
+  ): Iterable[VehicleSpawnPad.VehicleOrder] = {
     recipients
       .map { order =>
         (order, VehicleSpawnControl.validateOrderCredentials(order.terminal, order.player, order.vehicle))
@@ -330,7 +337,8 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
     */
   def BlockedReminder(blockedOrder: VehicleSpawnControl.Order, recipients: Seq[VehicleSpawnPad.VehicleOrder]): Unit = {
     val user = blockedOrder.vehicle
-      .Seats(0).occupant
+      .Seats(0)
+      .occupant
       .orElse(pad.Zone.GUID(blockedOrder.vehicle.Owner))
       .orElse(pad.Zone.GUID(blockedOrder.DriverGUID))
     val relevantRecipients: Iterator[VehicleSpawnPad.VehicleOrder] = user match {
@@ -340,7 +348,7 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
         (VehicleSpawnPad.VehicleOrder(
           blockedOrder.driver,
           blockedOrder.vehicle,
-          null //permissible
+          null                    //permissible
         ) +: recipients).iterator //one who took possession of the vehicle
       case _ =>
         recipients.iterator
@@ -361,6 +369,7 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
   def CancelOrder(entry: VehicleSpawnControl.Order, msg: Option[String]): Unit = {
     CancelOrder(entry.vehicle, entry.driver, msg)
   }
+
   /**
     * Cancel this vehicle order and inform the person who made it, if possible.
     * @param entry the order being cancelled
@@ -368,6 +377,7 @@ class VehicleSpawnControl(pad: VehicleSpawnPad)
   def CancelOrder(entry: VehicleSpawnPad.VehicleOrder, msg: Option[String]): Unit = {
     CancelOrder(entry.vehicle, entry.player, msg)
   }
+
   /**
     * Cancel this vehicle order and inform the person who made it, if possible.
     * @param vehicle the vehicle from the order being cancelled
@@ -421,10 +431,10 @@ object VehicleSpawnControl {
   object ProcessControl {
     sealed trait ProcessControl
 
-    case object Flush extends ProcessControl
-    case object OrderCancelled extends ProcessControl
-    case object GetNewOrder extends ProcessControl
-    case object Reminder extends ProcessControl
+    case object Flush           extends ProcessControl
+    case object OrderCancelled  extends ProcessControl
+    case object GetNewOrder     extends ProcessControl
+    case object Reminder        extends ProcessControl
     case object QueueManagement extends ProcessControl
   }
 
@@ -437,7 +447,7 @@ object VehicleSpawnControl {
     assert(driver.HasGUID, s"when ordering a vehicle, the prospective driver ${driver.Name} does not have a GUID")
     assert(vehicle.HasGUID, s"when ordering a vehicle, the ${vehicle.Definition.Name} does not have a GUID")
     val DriverGUID = driver.GUID
-    val time = System.currentTimeMillis()
+    val time       = System.currentTimeMillis()
   }
 
   /**
@@ -454,11 +464,11 @@ object VehicleSpawnControl {
     *         explaining why the order should be cancelled
     */
   def validateOrderCredentials(
-                                inZoneThing: PlanetSideGameObject with WorldEntity with ZoneAware,
-                                player: Player,
-                                vehicle: Vehicle,
-                                tooFarDistance: Float = 1225
-                              ): Option[String] = {
+      inZoneThing: PlanetSideGameObject with WorldEntity with ZoneAware,
+      player: Player,
+      vehicle: Vehicle,
+      tooFarDistance: Float = 1225
+  ): Option[String] = {
     if (!player.HasGUID || player.Zone != inZoneThing.Zone || !vehicle.HasGUID || vehicle.Destroyed) {
       Some("@SVCP_RemovedFromVehicleQueue_Generic")
     } else if (!player.isAlive || player.isReleased) {
@@ -479,13 +489,13 @@ object VehicleSpawnControl {
         Some("@SVCP_RemovedFromVehicleQueue_VanuModule")
       } else if (player.Carrying.contains(SpecialCarry.MonolithUnit)) {
         Some("@SVCP_RemovedFromVehicleQueue_MonolithUnit")
-      } else if ( player.ZoningRequest == Zoning.Method.Quit) {
+      } else if (player.ZoningRequest == Zoning.Method.Quit) {
         Some("@SVCP_RemovedFromVehicleQueue_Quit")
-      } else if ( player.ZoningRequest == Zoning.Method.InstantAction) {
+      } else if (player.ZoningRequest == Zoning.Method.InstantAction) {
         Some("@SVCP_RemovedFromVehicleQueue_InstantAction")
-      } else if ( player.ZoningRequest == Zoning.Method.Recall) {
+      } else if (player.ZoningRequest == Zoning.Method.Recall) {
         Some("@SVCP_RemovedFromVehicleQueue_Recall")
-      } else if ( player.ZoningRequest == Zoning.Method.OutfitRecall) {
+      } else if (player.ZoningRequest == Zoning.Method.OutfitRecall) {
         Some("@SVCP_RemovedFromVehicleQueue_OutfitRecall")
       } else {
         None

@@ -13,16 +13,20 @@ import net.psforever.services.support.SupportActor
 
 class LocalService(zone: Zone) extends Actor {
   private val doorCloser = context.actorOf(
-    Props[DoorCloseActor](), s"${zone.id}-local-door-closer"
+    Props[DoorCloseActor](),
+    s"${zone.id}-local-door-closer"
   )
   private val hackClearer = context.actorOf(
-    Props[HackClearActor](), s"${zone.id}-local-hack-clearer"
+    Props[HackClearActor](),
+    s"${zone.id}-local-hack-clearer"
   )
   private val hackCapturer = context.actorOf(
-    Props[HackCaptureActor](), s"${zone.id}-local-hack-capturer"
+    Props[HackCaptureActor](),
+    s"${zone.id}-local-hack-capturer"
   )
   private val captureFlagManager = context.actorOf(
-    Props(classOf[CaptureFlagManager], zone), s"${zone.id}-local-capture-flag-manager"
+    Props(classOf[CaptureFlagManager], zone),
+    s"${zone.id}-local-capture-flag-manager"
   )
   private[this] val log = org.log4s.getLogger
 

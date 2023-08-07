@@ -18,16 +18,16 @@ class UniqueNumberOpsTest extends AsyncFlatSpec {
 
   it should "UniqueNumberOpsTest" in {
     val promise: Promise[Any] = Promise()
-    val sys = ActorSystem()
-    val source = new MaxNumberSource(max = 21)
-    val hub = new NumberPoolHub(source)
-    hub.AddPool(name = "default", List(0,1,2,3,5,8,13,21))
+    val sys                   = ActorSystem()
+    val source                = new MaxNumberSource(max = 21)
+    val hub                   = new NumberPoolHub(source)
+    hub.AddPool(name = "default", List(0, 1, 2, 3, 5, 8, 13, 21))
     val entity = new UniqueNumberOpsTest.EntityTestClass()
     assert(!entity.HasGUID)
     assert(source.countUsed == 0)
 
     ask(sys.actorOf(Props[UniqueNumberOpsTest.NumberPoolBuilder](), "test"), hub)(Timeout(2.seconds)).onComplete {
-      case Success(pools: Map[_,_]) =>
+      case Success(pools: Map[_, _]) =>
         val unops = new UniqueNumberOps(hub, pools.asInstanceOf[Map[String, ActorRef]])
         promise.completeWith { unops.Register(entity, poolName = "default") }
       case _ =>

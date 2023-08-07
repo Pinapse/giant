@@ -118,13 +118,13 @@ object Vehicles {
   }
 
   /**
-   * Disassociate a player from a vehicle that he owns without associating a different player as the owner.
-   * Set the vehicle's driver mount permissions and passenger and gunner mount permissions to "allow empire,"
-   * then reload them for all clients.
-   * This is the vehicle side of vehicle ownership removal.
-   * @param player the player
-   * @param vehicle the vehicle
-   */
+    * Disassociate a player from a vehicle that he owns without associating a different player as the owner.
+    * Set the vehicle's driver mount permissions and passenger and gunner mount permissions to "allow empire,"
+    * then reload them for all clients.
+    * This is the vehicle side of vehicle ownership removal.
+    * @param player the player
+    * @param vehicle the vehicle
+    */
   def Disown(player: Player, vehicle: Vehicle): Option[Vehicle] = {
     val pguid = player.GUID
     if (vehicle.Owner.contains(pguid)) {
@@ -235,12 +235,13 @@ object Vehicles {
     log.info(s"${hacker.Name} has jacked a ${target.Definition.Name}")
     val zone = target.Zone
     // Forcefully dismount any cargo
-    target.CargoHolds.foreach { case (_, cargoHold) =>
-      cargoHold.occupant match {
-        case Some(cargo: Vehicle) =>
-          cargo.Actor ! CargoBehavior.StartCargoDismounting(bailed = false)
-        case None => ;
-      }
+    target.CargoHolds.foreach {
+      case (_, cargoHold) =>
+        cargoHold.occupant match {
+          case Some(cargo: Vehicle) =>
+            cargo.Actor ! CargoBehavior.StartCargoDismounting(bailed = false)
+          case None => ;
+        }
     }
     // Forcefully dismount all seated occupants from the vehicle
     target.Seats.values.foreach(seat => {
@@ -342,22 +343,22 @@ object Vehicles {
   }
 
   def FindANTDischargingTarget(
-                                obj: TransferContainer,
-                                ntuChargingTarget: Option[TransferContainer]
-                              ): Option[TransferContainer] = {
+      obj: TransferContainer,
+      ntuChargingTarget: Option[TransferContainer]
+  ): Option[TransferContainer] = {
     FindResourceSiloToDischargeInto(obj, ntuChargingTarget, radius = 20)
   }
 
   def FindBfrChargingSource(
-                             obj: TransferContainer,
-                             ntuChargingTarget: Option[TransferContainer]
-                           ): Option[TransferContainer] = {
+      obj: TransferContainer,
+      ntuChargingTarget: Option[TransferContainer]
+  ): Option[TransferContainer] = {
     //determine if we are close enough to charge from something
     val position = obj.Position.xy
     ntuChargingTarget.orElse(
-      obj.Zone
-        .blockMap
-        .sector(position, range = 20f).buildingList
+      obj.Zone.blockMap
+        .sector(position, range = 20f)
+        .buildingList
         .sortBy { b => Vector3.DistanceSquared(position, b.Position.xy) }
         .flatMap { _.NtuSource }
         .headOption
@@ -365,9 +366,9 @@ object Vehicles {
       case out @ Some(_: WarpGate) =>
         out
       case Some(silo: ResourceSilo) if {
-        val radius = 20f//3.6135f
-        Vector3.DistanceSquared(position, silo.Position.xy) < radius * radius && obj.Faction != silo.Faction
-      } =>
+            val radius = 20f //3.6135f
+            Vector3.DistanceSquared(position, silo.Position.xy) < radius * radius && obj.Faction != silo.Faction
+          } =>
         Some(silo)
       case _ =>
         None
@@ -375,22 +376,21 @@ object Vehicles {
   }
 
   def FindBfrDischargingTarget(
-                                obj: TransferContainer,
-                                ntuChargingTarget: Option[TransferContainer]
-                              ): Option[TransferContainer] = {
+      obj: TransferContainer,
+      ntuChargingTarget: Option[TransferContainer]
+  ): Option[TransferContainer] = {
     FindResourceSiloToDischargeInto(obj, ntuChargingTarget, radius = 20) //3.6135f?
   }
 
   def FindResourceSiloToDischargeInto(
-                                obj: TransferContainer,
-                                ntuChargingTarget: Option[TransferContainer],
-                                radius: Float
-                              ): Option[TransferContainer] = {
+      obj: TransferContainer,
+      ntuChargingTarget: Option[TransferContainer],
+      radius: Float
+  ): Option[TransferContainer] = {
     //determine if we are close enough to charge from something
     val position = obj.Position.xy
     ntuChargingTarget.orElse(
-      obj.Zone
-        .blockMap
+      obj.Zone.blockMap
         .sector(position, range = 20f)
         .buildingList
         .sortBy { b => Vector3.DistanceSquared(position, b.Position.xy) }
@@ -398,8 +398,8 @@ object Vehicles {
         .headOption
     ) match {
       case out @ Some(silo: ResourceSilo)
-        if Vector3.DistanceSquared(position, silo.Position.xy) < radius * radius &&
-           silo.Faction == PlanetSideEmpire.NEUTRAL || silo.Faction == obj.Faction =>
+          if Vector3.DistanceSquared(position, silo.Position.xy) < radius * radius &&
+            silo.Faction == PlanetSideEmpire.NEUTRAL || silo.Faction == obj.Faction =>
         out
       case _ =>
         None

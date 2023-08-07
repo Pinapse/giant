@@ -85,8 +85,9 @@ trait RepairableEntity extends Repairable {
     val originalHealth = target.Health
     val updatedHealth =
       if (!(player.isMoving(test = 1f) || target.isMoving(test = 1f))) { //only allow stationary repairs within margin of error
-        val repairValue = Repairable.applyLevelModifier(player, item, RepairToolValue(item)).toInt + target.Definition.RepairMod
-        val magazine  = item.Discharge()
+        val repairValue =
+          Repairable.applyLevelModifier(player, item, RepairToolValue(item)).toInt + target.Definition.RepairMod
+        val magazine = item.Discharge()
         events ! AvatarServiceMessage(
           player.Name,
           AvatarAction.SendResponse(

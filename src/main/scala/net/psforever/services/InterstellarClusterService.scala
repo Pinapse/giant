@@ -80,11 +80,11 @@ object InterstellarClusterService {
   final case class PlayersResponse(players: Seq[Avatar])
 
   final case class DroppodLaunchRequest(
-                                         zoneNumber: Int,
-                                         position: Vector3,
-                                         faction: PlanetSideEmpire.Value,
-                                         replyTo: ActorRef[DroppodLaunchExchange]
-                                       ) extends Command
+      zoneNumber: Int,
+      position: Vector3,
+      faction: PlanetSideEmpire.Value,
+      replyTo: ActorRef[DroppodLaunchExchange]
+  ) extends Command
 
   final case class CavernRotation(msg: CavernRotationService.Command) extends Command
 
@@ -98,19 +98,19 @@ object InterstellarClusterService {
 }
 
 class InterstellarClusterService(context: ActorContext[InterstellarClusterService.Command], _zones: Iterable[Zone])
-  extends AbstractBehavior[InterstellarClusterService.Command](context) {
+    extends AbstractBehavior[InterstellarClusterService.Command](context) {
 
   import InterstellarClusterService._
 
-  private[this] val log = org.log4s.getLogger
-  private var intercontinentalSetup: Boolean = false
+  private[this] val log                                                       = org.log4s.getLogger
+  private var intercontinentalSetup: Boolean                                  = false
   private var cavernRotation: Option[ActorRef[CavernRotationService.Command]] = None
 
   val zoneActors: mutable.Map[String, (ActorRef[ZoneActor.Command], Zone)] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     //setup the callback upon each successful result
     val zoneLoadedList = _zones.map { _.ZoneInitialized() }
-    val continentLinkFunc: ()=>Unit = MakeIntercontinentalLattice(
+    val continentLinkFunc: () => Unit = MakeIntercontinentalLattice(
       zoneLoadedList.toList,
       context.system.receptionist,
       context.messageAdapter[Receptionist.Listing](ReceptionistListing)
@@ -118,15 +118,14 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
     zoneLoadedList.foreach {
       _.onComplete({
         case Success(true) => continentLinkFunc()
-        case _ => //log.error("")
+        case _             => //log.error("")
       })
     }
     //construct the zones, resulting in the callback
     mutable.Map(
-      _zones.map {
-        zone =>
-          val zoneActor = context.spawn(ZoneActor(zone), s"zone-${zone.id}")
-          (zone.id, (zoneActor, zone))
+      _zones.map { zone =>
+        val zoneActor = context.spawn(ZoneActor(zone), s"zone-${zone.id}")
+        (zone.id, (zoneActor, zone))
       }.toSeq: _*
     )
   }
@@ -175,8 +174,8 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
           .collect {
             case zone if !zone.map.cavern && zone.Players.nonEmpty =>
               zone.HotSpotData
-                .map {
-                  info => (zone, info, zone.findNearestSpawnPoints(faction, info.DisplayLocation, spawnTarget))
+                .map { info =>
+                  (zone, info, zone.findNearestSpawnPoints(faction, info.DisplayLocation, spawnTarget))
                 }
           }
           .flatten
@@ -199,7 +198,7 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
           }
           .map {
             case (zone, info, spawns) =>
-              val pos = info.DisplayLocation
+              val pos        = info.DisplayLocation
               val spawnPoint = spawns.minBy(point => Vector3.DistanceSquared(point.Position, pos))
               (zone, spawnPoint)
           }
@@ -243,13 +242,13 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
             //applies to transit across intercontinental lattice
             (((zones.find(_.Number == fromZoneNumber) match {
               case Some(zone) => zone.GUID(fromOriginGuid)
-              case _ => None
+              case _          => None
             }) match {
               case Some(warpGate: WarpGate) => warpGate.Neighbours //valid for warp gates only right now
-              case _ => None
+              case _                        => None
             }) match {
               case Some(neighbors) => neighbors.find(_ match { case _: WarpGate => true; case _ => false })
-              case _ => None
+              case _               => None
             }) match {
               case Some(outputGate: WarpGate) =>
                 //destination (next direct stopping point) found
@@ -288,8 +287,8 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
         }
 
       case CavernRotation(rotationMsg) =>
-        cavernRotation.foreach {
-          rotation => rotation ! rotationMsg
+        cavernRotation.foreach { rotation =>
+          rotation ! rotationMsg
         }
 
       case _ => ()
@@ -309,13 +308,15 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
     * @param adapter the callback for a particular typed actor resource request
     */
   private def MakeIntercontinentalLattice(
-                                           flags: List[Future[Boolean]],
-                                           receptionist: ActorRef[Receptionist.Command],
-                                           adapter: ActorRef[Receptionist.Listing]
-                                         )(): Unit = {
-    if (flags.forall {
-      _.value.contains(Success(true))
-    } && !intercontinentalSetup) {
+      flags: List[Future[Boolean]],
+      receptionist: ActorRef[Receptionist.Command],
+      adapter: ActorRef[Receptionist.Listing]
+  )(): Unit = {
+    if (
+      flags.forall {
+        _.value.contains(Success(true))
+      } && !intercontinentalSetup
+    ) {
       intercontinentalSetup = true
       //intercontinental lattice setup
       _zones.foreach { zone =>
@@ -327,20 +328,22 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
             case (source, target) =>
               val thisBuilding = source.split("/")(1)
               val (otherZone, otherBuilding) = target.split("/").take(2) match {
-                case Array(a : String, b : String) => (a, b)
-                case _ => ("", "")
+                case Array(a: String, b: String) => (a, b)
+                case _                           => ("", "")
               }
               (_zones.find {
                 _.id.equals(otherZone)
               } match {
                 case Some(_otherZone) => (zone.Building(thisBuilding), _otherZone.Building(otherBuilding), _otherZone)
-                case None => (None, None, Zone.Nowhere)
+                case None             => (None, None, Zone.Nowhere)
               }) match {
                 case (Some(sourceBuilding), Some(targetBuilding), _otherZone) =>
                   zone.AddIntercontinentalLatticeLink(sourceBuilding, targetBuilding)
                   _otherZone.AddIntercontinentalLatticeLink(targetBuilding, sourceBuilding)
                 case (a, b, _) =>
-                  log.error(s"InterstellarCluster: can't create lattice link between $source (${a.nonEmpty}) and $target (${b.nonEmpty})")
+                  log.error(
+                    s"InterstellarCluster: can't create lattice link between $source (${a.nonEmpty}) and $target (${b.nonEmpty})"
+                  )
               }
           }
       }
@@ -350,10 +353,14 @@ class InterstellarClusterService(context: ActorContext[InterstellarClusterServic
       // exception: the cavern gates are not be connected by default (see below)
       _zones.foreach { zone =>
         zone.Buildings.values
-          .collect { case gate : WarpGate if gate.Active => gate }
-          .filterNot { gate => gate.AllNeighbours.getOrElse(Nil).exists(_.isInstanceOf[WarpGate]) || !gate.Active || gate.Broadcast }
+          .collect { case gate: WarpGate if gate.Active => gate }
+          .filterNot { gate =>
+            gate.AllNeighbours.getOrElse(Nil).exists(_.isInstanceOf[WarpGate]) || !gate.Active || gate.Broadcast
+          }
           .foreach { gate =>
-            log.error(s"InterstellarCluster: found degenerate intercontinental lattice link - no paired warp gate for ${zone.id} ${gate.Name}")
+            log.error(
+              s"InterstellarCluster: found degenerate intercontinental lattice link - no paired warp gate for ${zone.id} ${gate.Name}"
+            )
           }
       }
       //error checking: connections between above-ground geowarp gates and subterranean cavern gates should exist

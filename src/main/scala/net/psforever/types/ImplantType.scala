@@ -51,25 +51,34 @@ case object ImplantType extends IntEnum[ImplantType] {
 
   case object SilentRun extends ImplantType(value = 8, shortcut = Shortcut.Implant("silent_run"))
 
-  case object Surge extends ImplantType(
-    value = 9,
-    shortcut = Shortcut.Implant("surge"),
-    disabledFor = Set(ExoSuitType.MAX),
-    effect = Some(ImplantEffects.SurgeEffects)
-  )
+  case object Surge
+      extends ImplantType(
+        value = 9,
+        shortcut = Shortcut.Implant("surge"),
+        disabledFor = Set(ExoSuitType.MAX),
+        effect = Some(ImplantEffects.SurgeEffects)
+      )
 
-  case object None extends ImplantType(
-    value = 15,
-    shortcut = Shortcut.Macro(acronym="ERR", msg=""),
-    disabledFor = ExoSuitType.values
-  )
+  case object None
+      extends ImplantType(
+        value = 15,
+        shortcut = Shortcut.Macro(acronym = "ERR", msg = ""),
+        disabledFor = ExoSuitType.values
+      )
 
   def values: IndexedSeq[ImplantType] = findValues
 
   final val names: Seq[String] = Seq(
-    "advanced_regen", "targeting", "audio_amplifier",
-    "darklight_vision", "melee_booster", "personal_shield", "range_magnifier",
-    "second_wind", "silent_run", "surge"
+    "advanced_regen",
+    "targeting",
+    "audio_amplifier",
+    "darklight_vision",
+    "melee_booster",
+    "personal_shield",
+    "range_magnifier",
+    "second_wind",
+    "silent_run",
+    "surge"
   )
 
   implicit val codec: Codec[ImplantType] = PacketHelpers.createIntEnumCodec(this, uint4L)

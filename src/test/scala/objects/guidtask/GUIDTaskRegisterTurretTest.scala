@@ -19,10 +19,12 @@ class GUIDTaskRegisterTurretTest extends ActorTest {
     assert(!obj_wep.HasGUID)
     assert(!obj_ammo.HasGUID)
     obj_res.foreach(box => !box.HasGUID)
-    TaskWorkflow.execute(TaskBundle(
-      new GUIDTaskTest.RegisterTestTask(probe.ref),
-      GUIDTask.registerDeployableTurret(uns, obj)
-    ))
+    TaskWorkflow.execute(
+      TaskBundle(
+        new GUIDTaskTest.RegisterTestTask(probe.ref),
+        GUIDTask.registerDeployableTurret(uns, obj)
+      )
+    )
     probe.expectMsg(5.second, scala.util.Success(true))
     assert(obj.HasGUID)
     assert(obj_wep.HasGUID)

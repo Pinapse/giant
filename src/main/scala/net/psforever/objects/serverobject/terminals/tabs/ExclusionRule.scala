@@ -13,6 +13,7 @@ import net.psforever.types.ExoSuitType
   * @see `ScrutinizedTab`
   */
 trait ExclusionRule {
+
   /**
     * An allowance test to be utilized by tabs and pages of an order terminal.
     * @param player the player
@@ -73,7 +74,7 @@ case object CavernEquipmentQuestion extends ExclusionRule {
     obj match {
       case equipment: Equipment =>
         import net.psforever.objects.serverobject.structures.Building
-        if(GlobalDefinitions.isCavernWeapon(equipment.Definition)) {
+        if (GlobalDefinitions.isCavernWeapon(equipment.Definition)) {
           (player.Zone.GUID(msg.terminal_guid) match {
             case Some(term: Amenity) => Some(term.Owner)
             case _                   => None
@@ -98,7 +99,7 @@ final case class NoVehicleRule(illegalDefinition: VehicleDefinition) extends Exc
   def checkRule(player: Player, msg: ItemTransactionMessage, obj: Any): Boolean = {
     obj match {
       case vehicleDef: VehicleDefinition => vehicleDef eq illegalDefinition
-      case _                => false
+      case _                             => false
     }
   }
 }

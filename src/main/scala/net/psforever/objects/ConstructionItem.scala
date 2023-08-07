@@ -23,7 +23,7 @@ import net.psforever.objects.equipment.{Equipment, FireModeSwitch}
 class ConstructionItem(private val cItemDef: ConstructionItemDefinition)
     extends Equipment
     with FireModeSwitch[ConstructionFireMode] {
-  private var fireModeIndex: Int = 0
+  private var fireModeIndex: Int          = 0
   private val ammoTypeIndices: Array[Int] = Array.fill[Int](cItemDef.Modes.size)(elem = 0)
 
   def FireModeIndex: Int = fireModeIndex
@@ -62,7 +62,6 @@ class ConstructionItem(private val cItemDef: ConstructionItemDefinition)
 
   def Definition: ConstructionItemDefinition = cItemDef
 }
-
 
 object ConstructionItem {
   def apply(cItemDef: ConstructionItemDefinition): ConstructionItem = {

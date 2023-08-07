@@ -19,17 +19,18 @@ import net.psforever.objects.vital.resolution.DamageAndResistance
   *                    typically, but not always, defined by the target
   */
 final case class EmpReason(
-                            entity: SourceEntry,
-                            source: DamageWithPosition,
-                            damageModel: DamageAndResistance,
-                            override val attribution: Int
-                          ) extends DamageReason {
+    entity: SourceEntry,
+    source: DamageWithPosition,
+    damageModel: DamageAndResistance,
+    override val attribution: Int
+) extends DamageReason {
   def resolution: DamageResolution.Value = DamageResolution.Splash
 
-  def same(test: DamageReason): Boolean = test match {
-    case eer: ExplodingEntityReason => eer.entity eq entity
-    case _                          => false
-  }
+  def same(test: DamageReason): Boolean =
+    test match {
+      case eer: ExplodingEntityReason => eer.entity eq entity
+      case _                          => false
+    }
 
   /** lay the blame on that which caused this emp to occur */
   def adversary: Option[SourceEntry] = Some(entity)
@@ -37,10 +38,10 @@ final case class EmpReason(
 
 object EmpReason {
   def apply(
-             owner: PlanetSideGameObject with FactionAffinity,
-             source: DamageWithPosition,
-             target: PlanetSideGameObject with Vitality
-           ): EmpReason = {
+      owner: PlanetSideGameObject with FactionAffinity,
+      source: DamageWithPosition,
+      target: PlanetSideGameObject with Vitality
+  ): EmpReason = {
     EmpReason(SourceEntry(owner), source, target.DamageModel, owner.Definition.ObjectId)
   }
 }

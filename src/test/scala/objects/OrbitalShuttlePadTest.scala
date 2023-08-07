@@ -9,7 +9,12 @@ import net.psforever.objects.{GlobalDefinitions, Vehicle}
 import net.psforever.objects.guid.{NumberPoolHub, UniqueNumberOps, UniqueNumberSetup}
 import net.psforever.objects.guid.source.MaxNumberSource
 import net.psforever.objects.serverobject.doors.Door
-import net.psforever.objects.serverobject.shuttle.{OrbitalShuttle, OrbitalShuttlePad, OrbitalShuttlePadControl, ShuttleAmenity}
+import net.psforever.objects.serverobject.shuttle.{
+  OrbitalShuttle,
+  OrbitalShuttlePad,
+  OrbitalShuttlePadControl,
+  ShuttleAmenity
+}
 import net.psforever.objects.serverobject.structures.{Building, StructureType}
 import net.psforever.objects.zones.{Zone, ZoneMap, ZoneVehicleActor}
 import net.psforever.services.{InterstellarClusterService, Service, ServiceManager}
@@ -27,25 +32,28 @@ class OrbitalShuttlePadControlTest extends FreedContextActorTest {
   services ! ServiceManager.Register(Props[GalaxyService](), "galaxy")
   services ! ServiceManager.Register(Props[HartService](), "hart")
   expectNoMessage(1000 milliseconds)
-  var buildingMap = new TrieMap[Int, Building]()
+  var buildingMap                           = new TrieMap[Int, Building]()
   val vehicles: mutable.ListBuffer[Vehicle] = mutable.ListBuffer[Vehicle]()
-  val guid = new NumberPoolHub(new MaxNumberSource(max = 20))
+  val guid                                  = new NumberPoolHub(new MaxNumberSource(max = 20))
   guid.AddPool("vehicles", (11 to 15).toList)
   guid.AddPool("tools", (16 to 19).toList)
-  val catchall: ActorRef = new TestProbe(system).ref
+  val catchall: ActorRef     = new TestProbe(system).ref
   val unops: UniqueNumberOps = new UniqueNumberOps(guid, UniqueNumberSetup.AllocateNumberPoolActors(context, guid))
   val zone: Zone = new Zone("test", new ZoneMap("test-map"), 0) {
-    val transport: ActorRef = context.actorOf(Props(classOf[ZoneVehicleActor], this, vehicles, mutable.HashMap[Int, Int]()), s"zone-test-vehicles")
+    val transport: ActorRef = context.actorOf(
+      Props(classOf[ZoneVehicleActor], this, vehicles, mutable.HashMap[Int, Int]()),
+      s"zone-test-vehicles"
+    )
 
     override def SetupNumberPools(): Unit = {}
     GUID(guid)
     override def GUID: UniqueNumberOps = { unops }
-    override def AvatarEvents: ActorRef = catchall
-    override def LocalEvents: ActorRef = catchall
+    override def AvatarEvents: ActorRef  = catchall
+    override def LocalEvents: ActorRef   = catchall
     override def VehicleEvents: ActorRef = catchall
-    override def Activity: ActorRef = catchall
+    override def Activity: ActorRef      = catchall
     override def Transport: ActorRef = { transport }
-    override def Vehicles:List[Vehicle] = { vehicles.toList }
+    override def Vehicles: List[Vehicle] = { vehicles.toList }
     override def Buildings: Map[Int, Building] = { buildingMap.toMap }
 
     import akka.actor.typed.scaladsl.adapter._
@@ -87,7 +95,7 @@ class OrbitalShuttlePadControlTest extends FreedContextActorTest {
       assert(building.Amenities.size == 10)
       assert(vehicles.size == 1)
       assert(building.Amenities(9).isInstanceOf[ShuttleAmenity]) //the shuttle is an amenity of the building now
-      assert(vehicles.head.isInstanceOf[OrbitalShuttle]) //here is the shuttle
+      assert(vehicles.head.isInstanceOf[OrbitalShuttle])         //here is the shuttle
     }
   }
 }

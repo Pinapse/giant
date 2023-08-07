@@ -36,10 +36,10 @@ object GUIDTask {
 
   //registration tasking
   protected case class RegisterObjectTask(
-                                         guid: UniqueNumberOps,
-                                         obj: IdentifiableEntity,
-                                         pool: String
-                                       ) extends Task {
+      guid: UniqueNumberOps,
+      obj: IdentifiableEntity,
+      pool: String
+  ) extends Task {
     def action(): Future[Any] = {
       guid.Register(obj, pool)
     }
@@ -48,15 +48,16 @@ object GUIDTask {
       guid.Unregister(obj)
     }
 
-    def isSuccessful() : Boolean = obj.HasGUID
+    def isSuccessful(): Boolean = obj.HasGUID
 
     override def description(): String = s"register $obj to $pool"
   }
 
-  def RegisterObjectTask(guid: UniqueNumberOps, obj: IdentifiableEntity): RegisterObjectTask = obj match {
-    case o: PlanetSideGameObject => RegisterObjectTask(guid, o)
-    case _                       => RegisterObjectTask(guid, obj, "generic")
-  }
+  def RegisterObjectTask(guid: UniqueNumberOps, obj: IdentifiableEntity): RegisterObjectTask =
+    obj match {
+      case o: PlanetSideGameObject => RegisterObjectTask(guid, o)
+      case _                       => RegisterObjectTask(guid, obj, "generic")
+    }
 
   def RegisterObjectTask(guid: UniqueNumberOps, obj: PlanetSideGameObject): RegisterObjectTask =
     RegisterObjectTask(guid, obj, obj.Definition.registerAs)
@@ -125,7 +126,7 @@ object GUIDTask {
   def registerEquipment(guid: UniqueNumberOps, obj: Equipment): TaskBundle = {
     obj match {
       case tool: Tool => registerTool(guid, tool)
-      case _ =>          registerObject(guid, obj)
+      case _          => registerObject(guid, obj)
     }
   }
 
@@ -139,7 +140,7 @@ object GUIDTask {
     * @return a list of `TaskBundle` messages
     */
   def registerInventory(guid: UniqueNumberOps, container: Container): List[TaskBundle] = {
-    container.Inventory.Items.map{ entry => registerEquipment(guid, entry.obj) }
+    container.Inventory.Items.map { entry => registerEquipment(guid, entry.obj) }
   }
 
   /**
@@ -237,16 +238,16 @@ object GUIDTask {
 
   //unregistration tasking
   protected case class UnregisterObjectTask(
-                                         guid: UniqueNumberOps,
-                                         obj: IdentifiableEntity
-                                       ) extends Task {
+      guid: UniqueNumberOps,
+      obj: IdentifiableEntity
+  ) extends Task {
     def action(): Future[Any] = {
       guid.Unregister(obj)
     }
 
     def undo(): Unit = RegisterObjectTask(guid, obj)
 
-    def isSuccessful() : Boolean = !obj.HasGUID
+    def isSuccessful(): Boolean = !obj.HasGUID
 
     override def description(): String = s"unregister $obj"
   }
@@ -261,7 +262,8 @@ object GUIDTask {
     * @see `GUIDTask.registerObjectTask`
     * @return a `TaskBundle` message
     */
-  def unregisterObject(guid: UniqueNumberOps, obj: IdentifiableEntity): TaskBundle = TaskBundle(UnregisterObjectTask(guid, obj))
+  def unregisterObject(guid: UniqueNumberOps, obj: IdentifiableEntity): TaskBundle =
+    TaskBundle(UnregisterObjectTask(guid, obj))
 
   /**
     * Construct tasking that unregisters an object from a globally unique identifier system
@@ -299,7 +301,7 @@ object GUIDTask {
   def unregisterEquipment(guid: UniqueNumberOps, obj: Equipment): TaskBundle = {
     obj match {
       case tool: Tool => unregisterTool(guid, tool)
-      case _ =>          unregisterObject(guid, obj)
+      case _          => unregisterObject(guid, obj)
     }
   }
 
@@ -313,7 +315,7 @@ object GUIDTask {
     * @return a list of `TaskBundle` messages
     */
   def unregisterInventory(guid: UniqueNumberOps, container: Container): List[TaskBundle] = {
-    container.Inventory.Items.map{ entry => unregisterEquipment(guid, entry.obj) }
+    container.Inventory.Items.map { entry => unregisterEquipment(guid, entry.obj) }
   }
 
   /**
@@ -406,10 +408,10 @@ object GUIDTask {
     * @return a list of `TaskBundle` messages
     */
   private def visibleSlotTaskBuilding(
-                               guid: UniqueNumberOps,
-                               list: Iterable[EquipmentSlot],
-                               func: (UniqueNumberOps, Equipment) => TaskBundle
-                             ): List[TaskBundle] = {
+      guid: UniqueNumberOps,
+      list: Iterable[EquipmentSlot],
+      func: (UniqueNumberOps, Equipment) => TaskBundle
+  ): List[TaskBundle] = {
     recursiveVisibleSlotTaskBuilding(guid, list.iterator, func)
   }
 
@@ -424,17 +426,17 @@ object GUIDTask {
     * @return a `List` of `Equipment` tasking
     */
   @tailrec private def recursiveVisibleSlotTaskBuilding(
-                                                         guid: UniqueNumberOps,
-                                                         iter: Iterator[EquipmentSlot],
-                                                         func: (UniqueNumberOps, Equipment) => TaskBundle,
-                                                         list: List[TaskBundle] = Nil
-                                                       ): List[TaskBundle] = {
+      guid: UniqueNumberOps,
+      iter: Iterator[EquipmentSlot],
+      func: (UniqueNumberOps, Equipment) => TaskBundle,
+      list: List[TaskBundle] = Nil
+  ): List[TaskBundle] = {
     if (!iter.hasNext) {
       list
     } else {
       iter.next().Equipment match {
         case Some(item) => recursiveVisibleSlotTaskBuilding(guid, iter, func, list :+ func(guid, item))
-        case None =>       recursiveVisibleSlotTaskBuilding(guid, iter, func, list)
+        case None       => recursiveVisibleSlotTaskBuilding(guid, iter, func, list)
       }
     }
   }

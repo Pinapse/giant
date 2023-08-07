@@ -189,17 +189,19 @@ class TurretUpgrader extends SupportActor[TurretUpgrader.Entry] {
         .map(box => GUIDTask.registerEquipment(guid, box))
         .toList
     )
-    TaskWorkflow.execute(TaskBundle(
-      new StraightforwardTask() {
-        private val tasks = oldBoxesTask
+    TaskWorkflow.execute(
+      TaskBundle(
+        new StraightforwardTask() {
+          private val tasks = oldBoxesTask
 
-        def action(): Future[Any] = {
-          tasks.foreach { TaskWorkflow.execute }
-          Future(this)
-        }
-      },
-      newBoxesTask
-    ))
+          def action(): Future[Any] = {
+            tasks.foreach { TaskWorkflow.execute }
+            Future(this)
+          }
+        },
+        newBoxesTask
+      )
+    )
   }
 
   /**

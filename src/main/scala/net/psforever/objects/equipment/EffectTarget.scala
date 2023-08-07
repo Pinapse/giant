@@ -40,35 +40,35 @@ object EffectTarget {
       }
 
     /**
-     * To repair at this silo, the vehicle:
-     * can not be a flight vehicle,
-     * must have some health already, but does not have all its health,
-     * and can not have taken damage in the last five seconds.
-    */
+      * To repair at this silo, the vehicle:
+      * can not be a flight vehicle,
+      * must have some health already, but does not have all its health,
+      * and can not have taken damage in the last five seconds.
+      */
     def RepairSilo(target: PlanetSideGameObject): Boolean =
       target match {
         case v: Vehicle => !GlobalDefinitions.isFlightVehicle(v.Definition) && CommonRepairConditions(v)
-        case _ => false
+        case _          => false
       }
 
     /**
-     * To repair at this landing pad, the vehicle:
-     * be a flight vehicle,
-     * must have some health already, but does not have all its health,
-     * and can not have taken damage in the last five seconds.
-     */
+      * To repair at this landing pad, the vehicle:
+      * be a flight vehicle,
+      * must have some health already, but does not have all its health,
+      * and can not have taken damage in the last five seconds.
+      */
     def PadLanding(target: PlanetSideGameObject): Boolean =
       target match {
         case v: Vehicle => GlobalDefinitions.isFlightVehicle(v.Definition) && CommonRepairConditions(v)
-        case _ => false
+        case _          => false
       }
 
     private def CommonRepairConditions(v: Vehicle): Boolean = {
       v.Health > 0 && v.Health < v.MaxHealth &&
-        (v.History.findLast { entry => entry.isInstanceOf[DamagingActivity] } match {
-          case Some(entry) if System.currentTimeMillis() - entry.time < 5000L => false
-          case _ => true
-        })
+      (v.History.findLast { entry => entry.isInstanceOf[DamagingActivity] } match {
+        case Some(entry) if System.currentTimeMillis() - entry.time < 5000L => false
+        case _                                                              => true
+      })
     }
 
     def Player(target: PlanetSideGameObject): Boolean =
@@ -155,13 +155,13 @@ object EffectTarget {
       target match {
         case v: Vehicle =>
           GlobalDefinitions.isCavernVehicle(v.Definition) && v.Health > 0 &&
-          v.Weapons.values
-            .map { _.Equipment }
-            .flatMap {
-              case Some(weapon: Tool) => weapon.AmmoSlots
-              case _                  => Nil
-            }
-            .exists { slot => slot.Box.Capacity < slot.Definition.Magazine }
+            v.Weapons.values
+              .map { _.Equipment }
+              .flatMap {
+                case Some(weapon: Tool) => weapon.AmmoSlots
+                case _                  => Nil
+              }
+              .exists { slot => slot.Box.Capacity < slot.Definition.Magazine }
         case _ =>
           false
       }

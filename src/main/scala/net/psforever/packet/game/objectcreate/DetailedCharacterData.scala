@@ -120,22 +120,22 @@ final case class DetailedCharacterA(
   *                  these flags do not exist if they are not applicable
   */
 final case class DetailedCharacterB(
-                                     unk1: Option[Long],
-                                     implants: List[ImplantEntry],
-                                     unk2: List[DCDExtra1],
-                                     unk3: List[DCDExtra1],
-                                     firstTimeEvents: List[String],
-                                     tutorials: List[String],
-                                     unk4: Long,
-                                     unk5: Long,
-                                     unk6: Long,
-                                     unk7: Long,
-                                     unk8: Long,
-                                     imprinting: Option[ImprintingProgress],
-                                     unkA: List[Long],
-                                     unkB: List[String],
-                                     unkC: Boolean,
-                                     cosmetics: Option[Set[Cosmetic]]
+    unk1: Option[Long],
+    implants: List[ImplantEntry],
+    unk2: List[DCDExtra1],
+    unk3: List[DCDExtra1],
+    firstTimeEvents: List[String],
+    tutorials: List[String],
+    unk4: Long,
+    unk5: Long,
+    unk6: Long,
+    unk7: Long,
+    unk8: Long,
+    imprinting: Option[ImprintingProgress],
+    unkA: List[Long],
+    unkB: List[String],
+    unkC: Boolean,
+    cosmetics: Option[Set[Cosmetic]]
 )(
     bep: Long,
     pad_length: Option[Int]

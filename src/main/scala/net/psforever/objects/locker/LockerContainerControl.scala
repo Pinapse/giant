@@ -16,9 +16,7 @@ import net.psforever.types.{PlanetSideEmpire, Vector3}
   * @param locker the governed player-facing locker component
   * @param toChannel the channel to which to publish events, typically the owning player's name
   */
-class LockerContainerControl(locker: LockerContainer, toChannel: String)
-  extends Actor
-  with ContainableBehavior {
+class LockerContainerControl(locker: LockerContainer, toChannel: String) extends Actor with ContainableBehavior {
   def ContainerObject = locker
 
   def receive: Receive =

@@ -28,21 +28,21 @@ object LocalAction {
   trait Action
 
   final case class DeployableMapIcon(
-                                      player_guid: PlanetSideGUID,
-                                      behavior: DeploymentAction.Value,
-                                      deployInfo: DeployableInfo
-                                    )                                                  extends Action
+      player_guid: PlanetSideGUID,
+      behavior: DeploymentAction.Value,
+      deployInfo: DeployableInfo
+  )                                                                                    extends Action
   final case class DeployableUIFor(obj: DeployedItem.Value)                            extends Action
   final case class Detonate(guid: PlanetSideGUID, obj: PlanetSideGameObject)           extends Action
   final case class DoorOpens(player_guid: PlanetSideGUID, continent: Zone, door: Door) extends Action
   final case class DoorCloses(player_guid: PlanetSideGUID, door_guid: PlanetSideGUID)  extends Action
   final case class DoorSlamsShut(door: Door)                                           extends Action
   final case class EliminateDeployable(
-                                        obj: Deployable,
-                                        object_guid: PlanetSideGUID,
-                                        pos: Vector3,
-                                        deletionEffect: Int
-                                      )                                                extends Action
+      obj: Deployable,
+      object_guid: PlanetSideGUID,
+      pos: Vector3,
+      deletionEffect: Int
+  ) extends Action
   final case class HackClear(player_guid: PlanetSideGUID, target: PlanetSideServerObject, unk1: Long, unk2: Long = 8L)
       extends Action
   final case class HackTemporarily(
@@ -56,10 +56,10 @@ object LocalAction {
   final case class ClearTemporaryHack(player_guid: PlanetSideGUID, target: PlanetSideServerObject with Hackable)
       extends Action
 
-  final case class ResecureCaptureTerminal(target: CaptureTerminal, hacker: PlayerSource) extends Action
-  final case class StartCaptureTerminalHack(target: CaptureTerminal) extends Action
-  final case class LluCaptured(llu: CaptureFlag) extends Action
-  final case class LluSpawned(player_guid: PlanetSideGUID, llu: CaptureFlag) extends Action
+  final case class ResecureCaptureTerminal(target: CaptureTerminal, hacker: PlayerSource)             extends Action
+  final case class StartCaptureTerminalHack(target: CaptureTerminal)                                  extends Action
+  final case class LluCaptured(llu: CaptureFlag)                                                      extends Action
+  final case class LluSpawned(player_guid: PlanetSideGUID, llu: CaptureFlag)                          extends Action
   final case class LluDespawned(player_guid: PlanetSideGUID, guid: PlanetSideGUID, position: Vector3) extends Action
 
   final case class SendPacket(packet: PlanetSideGamePacket) extends Action
@@ -70,41 +70,42 @@ object LocalAction {
       attribute_value: Long
   ) extends Action
   final case class SendGenericObjectActionMessage(
-     player_guid: PlanetSideGUID,
-     target: PlanetSideGUID,
-     action_number: GenericObjectActionEnum
-   ) extends Action
+      player_guid: PlanetSideGUID,
+      target: PlanetSideGUID,
+      action_number: GenericObjectActionEnum
+  ) extends Action
 
   final case class SendChatMsg(
-     player_guid: PlanetSideGUID,
-     msg: ChatMsg
-   ) extends Action
+      player_guid: PlanetSideGUID,
+      msg: ChatMsg
+  ) extends Action
 
   final case class SendGenericActionMessage(
-    player_guid: PlanetSideGUID,
-    action_number: GenericAction
-  ) extends Action
-  final case class RouterTelepadMessage(msg: String)                                      extends Action
+      player_guid: PlanetSideGUID,
+      action_number: GenericAction
+  )                                                  extends Action
+  final case class RouterTelepadMessage(msg: String) extends Action
   final case class RouterTelepadTransport(
       player_guid: PlanetSideGUID,
       passenger_guid: PlanetSideGUID,
       src_guid: PlanetSideGUID,
       dest_guid: PlanetSideGUID
-  )                                                                                       extends Action
-  final case class SendResponse(pkt: PlanetSideGamePacket)                                extends Action
-  final case class SetEmpire(object_guid: PlanetSideGUID, empire: PlanetSideEmpire.Value) extends Action
-  final case class ShuttleDock(pad_guid: PlanetSideGUID, shuttle_guid: PlanetSideGUID, toSlot: Int)   extends Action
+  )                                                                                                 extends Action
+  final case class SendResponse(pkt: PlanetSideGamePacket)                                          extends Action
+  final case class SetEmpire(object_guid: PlanetSideGUID, empire: PlanetSideEmpire.Value)           extends Action
+  final case class ShuttleDock(pad_guid: PlanetSideGUID, shuttle_guid: PlanetSideGUID, toSlot: Int) extends Action
   final case class ShuttleUndock(
       pad_guid: PlanetSideGUID,
       shuttle_guid: PlanetSideGUID,
-      pos: Vector3, orient: Vector3
-  ) extends Action
+      pos: Vector3,
+      orient: Vector3
+  )                                                                                                   extends Action
   final case class ShuttleEvent(ev: OrbitalShuttleEvent)                                              extends Action
   final case class ShuttleState(guid: PlanetSideGUID, pos: Vector3, orientation: Vector3, state: Int) extends Action
   final case class StartRouterInternalTelepad(
-    router_guid: PlanetSideGUID,
-    obj_guid: PlanetSideGUID,
-    obj: Utility.InternalTelepad
+      router_guid: PlanetSideGUID,
+      obj_guid: PlanetSideGUID,
+      obj: Utility.InternalTelepad
   ) extends Action
   final case class ToggleTeleportSystem(
       player_guid: PlanetSideGUID,

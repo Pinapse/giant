@@ -13,7 +13,6 @@ class AmmoBoxDefinition(objectId: Int) extends EquipmentDefinition(objectId) {
   var repairAmount: Float          = 0
   registerAs = "ammo"
 
-
   def AmmoType: Ammo.Value = ammoType
 
   def Capacity: Int = capacity

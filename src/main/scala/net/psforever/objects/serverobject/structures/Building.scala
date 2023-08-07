@@ -23,19 +23,19 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 
 class Building(
-                private val name: String,
-                private val building_guid: Int,
-                private val map_id: Int,
-                private val zone: Zone,
-                private val buildingType: StructureType,
-                private val buildingDefinition: BuildingDefinition
-              ) extends AmenityOwner
-  with BlockMapEntity {
+    private val name: String,
+    private val building_guid: Int,
+    private val map_id: Int,
+    private val zone: Zone,
+    private val buildingType: StructureType,
+    private val buildingDefinition: BuildingDefinition
+) extends AmenityOwner
+    with BlockMapEntity {
 
-  private var faction: PlanetSideEmpire.Value = PlanetSideEmpire.NEUTRAL
-  private var playersInSOI: List[Player]      = List.empty
-  private val capitols                        = List("Thoth", "Voltan", "Neit", "Anguta", "Eisa", "Verica")
-  private var forceDomeActive: Boolean        = false
+  private var faction: PlanetSideEmpire.Value                = PlanetSideEmpire.NEUTRAL
+  private var playersInSOI: List[Player]                     = List.empty
+  private val capitols                                       = List("Thoth", "Voltan", "Neit", "Anguta", "Eisa", "Verica")
+  private var forceDomeActive: Boolean                       = false
   private var participationFunc: Building.ParticipationLogic = Building.NoParticipation
   super.Zone_=(zone)
   super.GUID_=(PlanetSideGUID(building_guid)) //set
@@ -46,9 +46,9 @@ class Building(
   def Name: String = name
 
   /**
-   * The map_id is the identifier number used in BuildingInfoUpdateMessage. This is the index that the building appears in the MPO file starting from index 1
-   * The GUID is the identifier number used in SetEmpireMessage / Facility hacking / PlanetSideAttributeMessage.
-   */
+    * The map_id is the identifier number used in BuildingInfoUpdateMessage. This is the index that the building appears in the MPO file starting from index 1
+    * The GUID is the identifier number used in SetEmpireMessage / Facility hacking / PlanetSideAttributeMessage.
+    */
   def MapId: Int = map_id
 
   def IsCapitol: Boolean = capitols.contains(name)
@@ -140,10 +140,11 @@ class Building(
     }
   }
 
-  def IsCtfBase: Boolean = GetFlagSocket match {
-    case Some(_) => true
-    case _ => false
-  }
+  def IsCtfBase: Boolean =
+    GetFlagSocket match {
+      case Some(_) => true
+      case _       => false
+    }
 
   def GetFlagSocket: Option[CaptureFlagSocket] = {
     this.Amenities
@@ -207,15 +208,16 @@ class Building(
       val o = Amenities.collect({ case tube: SpawnTube if !tube.Destroyed => tube })
       (o.nonEmpty, false) //TODO poll pain field strength
     }
-    val cavernBenefit: Set[CavernBenefit] = if (
-      generatorState != PlanetSideGeneratorState.Destroyed &&
+    val cavernBenefit: Set[CavernBenefit] =
+      if (
+        generatorState != PlanetSideGeneratorState.Destroyed &&
         faction != PlanetSideEmpire.NEUTRAL &&
         connectedCavern().nonEmpty
-    ) {
-      Set(CavernBenefit.VehicleModule, CavernBenefit.EquipmentModule)
-    } else {
-      Set(CavernBenefit.None)
-    }
+      ) {
+        Set(CavernBenefit.VehicleModule, CavernBenefit.EquipmentModule)
+      } else {
+        Set(CavernBenefit.None)
+      }
 
     BuildingInfoUpdateMessage(
       Zone.Number,
@@ -235,7 +237,7 @@ class Building(
       unk4 = Nil,
       unk5 = 0,
       unk6 = false,
-      unk7 = 8,     // unk7 != 8 will cause malformed packet
+      unk7 = 8, // unk7 != 8 will cause malformed packet
       unk7x = None,
       boostSpawnPain,
       boostGeneratorPain
@@ -259,13 +261,12 @@ class Building(
       zone.Lattice find this match {
         case Some(_) =>
           val faction = Faction
-          val subGraph = Zone.Lattice filter (
-            (b: Building) =>
-              b.Faction == faction &&
-                !b.CaptureTerminalIsHacked &&
-                b.NtuLevel > 0 &&
-                (b.Generator.isEmpty || b.Generator.get.Condition != PlanetSideGeneratorState.Destroyed)
-            )
+          val subGraph = Zone.Lattice filter ((b: Building) =>
+            b.Faction == faction &&
+              !b.CaptureTerminalIsHacked &&
+              b.NtuLevel > 0 &&
+              (b.Generator.isEmpty || b.Generator.get.Condition != PlanetSideGeneratorState.Destroyed)
+          )
           findLatticeBenefit(wantedBenefit, subGraph)
         case None =>
           false
@@ -274,9 +275,9 @@ class Building(
   }
 
   private def findLatticeBenefit(
-                                  wantedBenefit: LatticeBenefit,
-                                  subGraph: Graph[Building, GraphEdge.UnDiEdge]
-                                ): Boolean = {
+      wantedBenefit: LatticeBenefit,
+      subGraph: Graph[Building, GraphEdge.UnDiEdge]
+  ): Boolean = {
     var found = false
     subGraph find this match {
       case Some(self) =>
@@ -298,7 +299,8 @@ class Building(
       case Some(obj) => obj.Condition
       case _         => PlanetSideGeneratorState.Normal
     }
-    if (genState == PlanetSideGeneratorState.Destroyed ||
+    if (
+      genState == PlanetSideGeneratorState.Destroyed ||
       Faction == PlanetSideEmpire.NEUTRAL ||
       CaptureTerminalIsHacked
     ) {
@@ -309,29 +311,32 @@ class Building(
   }
 
   def friendlyFunctionalNeighborhood(): Set[Building] = {
-    var (currBuilding, newNeighbors) = Neighbours(faction).getOrElse(Set.empty[Building]).toList.splitAt(1)
-    var visitedNeighbors: Set[Int] = Set(MapId)
+    var (currBuilding, newNeighbors)         = Neighbours(faction).getOrElse(Set.empty[Building]).toList.splitAt(1)
+    var visitedNeighbors: Set[Int]           = Set(MapId)
     var friendlyNeighborhood: List[Building] = List(this)
     while (currBuilding.nonEmpty) {
       val building = currBuilding.head
-      val neighborsToAdd = if (!visitedNeighbors.contains(building.MapId)
-        && (building match { case _ : WarpGate => false;  case _ => true })
-        && !building.CaptureTerminalIsHacked
-        && building.NtuLevel > 0
-        && (building.Generator match {
-        case Some(o) => o.Condition != PlanetSideGeneratorState.Destroyed
-        case _ => true
-      })
-      ) {
-        visitedNeighbors = visitedNeighbors ++ Set(building.MapId)
-        friendlyNeighborhood = friendlyNeighborhood :+ building
-        building.Neighbours(faction)
-          .getOrElse(Set.empty[Building])
-          .toList
-          .filterNot { b => visitedNeighbors.contains(b.MapId) }
-      } else {
-        Nil
-      }
+      val neighborsToAdd =
+        if (
+          !visitedNeighbors.contains(building.MapId)
+          && (building match { case _: WarpGate => false; case _ => true })
+          && !building.CaptureTerminalIsHacked
+          && building.NtuLevel > 0
+          && (building.Generator match {
+            case Some(o) => o.Condition != PlanetSideGeneratorState.Destroyed
+            case _       => true
+          })
+        ) {
+          visitedNeighbors = visitedNeighbors ++ Set(building.MapId)
+          friendlyNeighborhood = friendlyNeighborhood :+ building
+          building
+            .Neighbours(faction)
+            .getOrElse(Set.empty[Building])
+            .toList
+            .filterNot { b => visitedNeighbors.contains(b.MapId) }
+        } else {
+          Nil
+        }
       val allocatedNeighbors = newNeighbors ++ neighborsToAdd
       currBuilding = allocatedNeighbors.take(1)
       newNeighbors = allocatedNeighbors.drop(1)
@@ -340,15 +345,16 @@ class Building(
   }
 
   /**
-   * Starting from an overworld zone facility,
-   * find a lattice connected cavern facility that is the same faction as this starting building.
-   * Except for the necessary examination of the major facility on the other side of a warp gate pair,
-   * do not let the search escape the current zone into another.
-   * If we start in a cavern zone, do not continue a fruitless search;
-   * just fail.
-   * @return the discovered faction-aligned cavern facility
-   */
-  def connectedCavern(): Option[Building] = net.psforever.objects.zones.Zone.findConnectedCavernFacility(building = this)
+    * Starting from an overworld zone facility,
+    * find a lattice connected cavern facility that is the same faction as this starting building.
+    * Except for the necessary examination of the major facility on the other side of a warp gate pair,
+    * do not let the search escape the current zone into another.
+    * If we start in a cavern zone, do not continue a fruitless search;
+    * just fail.
+    * @return the discovered faction-aligned cavern facility
+    */
+  def connectedCavern(): Option[Building] =
+    net.psforever.objects.zones.Zone.findConnectedCavernFacility(building = this)
 
   def BuildingType: StructureType = buildingType
 
@@ -361,7 +367,7 @@ class Building(
   override def Amenities_=(obj: Amenity): List[Amenity] = {
     obj match {
       case _: CaptureTerminal => participationFunc = Building.FacilityHackParticipation
-      case _ => ;
+      case _                  => ;
     }
     super.Amenities_=(obj)
   }
@@ -371,7 +377,7 @@ class Building(
 
 object Building {
   trait ParticipationLogic {
-    def Players(building: Building, list: List[Player]): Unit = { }
+    def Players(building: Building, list: List[Player]): Unit = {}
     def Contribution(): Map[Player, Long]
   }
 
@@ -387,10 +393,11 @@ object Building {
         playerContribution.clear()
       } else {
         val hackTime = (building.CaptureTerminal.get.Definition.FacilityHackTime + 10.minutes).toMillis
-        val curr = System.currentTimeMillis()
-        val list2 = list.map { p => (p, curr) }
-        playerContribution = playerContribution.filterNot { case (p, t) =>
-          list2.contains(p) || curr - t > hackTime
+        val curr     = System.currentTimeMillis()
+        val list2    = list.map { p => (p, curr) }
+        playerContribution = playerContribution.filterNot {
+          case (p, t) =>
+            list2.contains(p) || curr - t > hackTime
         } ++ list2
       }
     }
@@ -410,11 +417,11 @@ object Building {
   }
 
   def Structure(
-                 buildingType: StructureType,
-                 location: Vector3,
-                 rotation: Vector3,
-                 definition: BuildingDefinition
-               )(name: String, guid: Int, map_id: Int, zone: Zone, context: ActorContext): Building = {
+      buildingType: StructureType,
+      location: Vector3,
+      rotation: Vector3,
+      definition: BuildingDefinition
+  )(name: String, guid: Int, map_id: Int, zone: Zone, context: ActorContext): Building = {
     val obj = new Building(name, guid, map_id, zone, buildingType, definition)
     obj.Position = location
     obj.Orientation = rotation
@@ -423,9 +430,9 @@ object Building {
   }
 
   def Structure(
-                 buildingType: StructureType,
-                 location: Vector3
-               )(name: String, guid: Int, map_id: Int, zone: Zone, context: ActorContext): Building = {
+      buildingType: StructureType,
+      location: Vector3
+  )(name: String, guid: Int, map_id: Int, zone: Zone, context: ActorContext): Building = {
     val obj = new Building(name, guid, map_id, zone, buildingType, GlobalDefinitions.building)
     obj.Position = location
     obj.Actor = context.spawn(BuildingActor(zone, obj), s"$map_id-$buildingType-building").toClassic
@@ -433,18 +440,18 @@ object Building {
   }
 
   def Structure(
-                 buildingType: StructureType
-               )(name: String, guid: Int, map_id: Int, zone: Zone, context: ActorContext): Building = {
+      buildingType: StructureType
+  )(name: String, guid: Int, map_id: Int, zone: Zone, context: ActorContext): Building = {
     val obj = new Building(name, guid, map_id, zone, buildingType, GlobalDefinitions.building)
     obj.Actor = context.spawn(BuildingActor(zone, obj), s"$map_id-$buildingType-building").toClassic
     obj
   }
 
   def Structure(
-                 buildingType: StructureType,
-                 buildingDefinition: BuildingDefinition,
-                 location: Vector3
-               )(name: String, guid: Int, id: Int, zone: Zone, context: ActorContext): Building = {
+      buildingType: StructureType,
+      buildingDefinition: BuildingDefinition,
+      location: Vector3
+  )(name: String, guid: Int, id: Int, zone: Zone, context: ActorContext): Building = {
     val obj = new Building(name, guid, id, zone, buildingType, buildingDefinition)
     obj.Position = location
     obj.Actor = context.spawn(BuildingActor(zone, obj), s"$id-$buildingType-building").toClassic

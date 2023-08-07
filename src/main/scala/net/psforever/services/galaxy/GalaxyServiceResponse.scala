@@ -10,7 +10,9 @@ import net.psforever.types.{PlanetSideEmpire, PlanetSideGUID}
 import net.psforever.services.GenericEventBusMsg
 
 final case class GalaxyServiceResponse(channel: String, replyMessage: GalaxyResponse.Response)
-    extends GenericEventBusMsg
+    extends GenericEventBusMsg {
+  def inner = replyMessage
+}
 
 object GalaxyResponse {
   trait Response
@@ -18,7 +20,6 @@ object GalaxyResponse {
   final case class HotSpotUpdate(zone_id: Int, priority: Int, host_spot_info: List[HotSpotInfo]) extends Response
   final case class MapUpdate(msg: BuildingInfoUpdateMessage)                                     extends Response
   final case class FlagMapUpdate(msg: CaptureFlagUpdateMessage)                                  extends Response
-
 
   final case class TransferPassenger(
       temp_channel: String,
@@ -28,11 +29,11 @@ object GalaxyResponse {
   ) extends Response
 
   final case class UpdateBroadcastPrivileges(
-                                              zoneId: Int,
-                                              gateMapId: Int,
-                                              fromFactions: Set[PlanetSideEmpire.Value],
-                                              toFactions: Set[PlanetSideEmpire.Value]
-                                            ) extends Response
+      zoneId: Int,
+      gateMapId: Int,
+      fromFactions: Set[PlanetSideEmpire.Value],
+      toFactions: Set[PlanetSideEmpire.Value]
+  ) extends Response
 
   final case class LockedZoneUpdate(zone: Zone, timeUntilUnlock: Long) extends Response
 

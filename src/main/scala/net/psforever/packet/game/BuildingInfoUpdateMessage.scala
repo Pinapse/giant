@@ -108,6 +108,7 @@ final case class BuildingInfoUpdateMessage(
 }
 
 object BuildingInfoUpdateMessage extends Marshallable[BuildingInfoUpdateMessage] {
+
   /**
     * A `Codec` for a set of additional fields.
     */
@@ -152,17 +153,15 @@ object BuildingInfoUpdateMessage extends Marshallable[BuildingInfoUpdateMessage]
         case 0 =>
           Set(objClass.values.find(_.value == 0).get)
         case n =>
-          val values = objClass
-            .values
+          val values = objClass.values
             .sortBy(_.value)(Ordering.Int.reverse)
             .dropRight(1) //drop value == 0
-        var curr = n
-          values
-            .collect {
-              case benefit if benefit.value <= curr =>
-                curr = curr - benefit.value
-                benefit
-            }.toSet
+          var curr = n
+          values.collect {
+            case benefit if benefit.value <= curr =>
+              curr = curr - benefit.value
+              benefit
+          }.toSet
       },
       benefits => benefits.foldLeft[Int](0)(_ + _.value)
     )

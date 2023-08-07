@@ -145,13 +145,15 @@ trait JammableBehavior {
         val interaction = cause.interaction
         JammingUnit.FindJammerDuration(interaction.cause.source.JammedEffectDuration.toList, obj) match {
           case Some(dur) =>
-            if(interaction.cause match {
-              case reason: ProjectileReason =>
-                val radius = reason.projectile.profile.DamageRadius
-                Vector3.DistanceSquared(interaction.hitPos, interaction.target.Position) < radius * radius
-              case _ =>
-                true
-            }) {
+            if (
+              interaction.cause match {
+                case reason: ProjectileReason =>
+                  val radius = reason.projectile.profile.DamageRadius
+                  Vector3.DistanceSquared(interaction.hitPos, interaction.target.Position) < radius * radius
+                case _ =>
+                  true
+              }
+            ) {
               StartJammeredSound(obj, dur)
               StartJammeredStatus(obj, dur)
             }
@@ -281,7 +283,10 @@ trait JammableMountedWeapons extends JammableBehavior {
     super.CancelJammeredStatus(target)
   }
 
-  def JammableMountedWeaponsJammeredStatus(target: PlanetSideServerObject with MountedWeapons, statusCode: Int): Unit = {
+  def JammableMountedWeaponsJammeredStatus(
+      target: PlanetSideServerObject with MountedWeapons,
+      statusCode: Int
+  ): Unit = {
     JammableMountedWeapons.JammeredStatus(target, statusCode)
   }
 }

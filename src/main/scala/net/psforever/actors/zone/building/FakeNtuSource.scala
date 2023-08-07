@@ -11,13 +11,11 @@ import net.psforever.objects.serverobject.structures.Building
   * In essence, "it does not exist".
   * @param building the building
   */
-protected class FakeNtuSource(private val building: Building)
-  extends PlanetSideServerObject
-    with NtuContainer {
-  override def NtuCapacitor = Int.MaxValue.toFloat
+protected class FakeNtuSource(private val building: Building) extends PlanetSideServerObject with NtuContainer {
+  override def NtuCapacitor             = Int.MaxValue.toFloat
   override def NtuCapacitor_=(a: Float) = Int.MaxValue.toFloat
-  override def MaxNtuCapacitor = Int.MaxValue.toFloat
-  override def Faction = building.Faction
-  override def Zone = building.Zone
-  override def Definition = GlobalDefinitions.resource_silo
+  override def MaxNtuCapacitor          = Int.MaxValue.toFloat
+  override def Faction                  = building.Faction
+  override def Zone                     = building.Zone
+  override def Definition               = GlobalDefinitions.resource_silo
 }

@@ -34,10 +34,10 @@ object VehicleResolutions
     )
 
 object BfrResolutions
-  extends DamageResistanceCalculations(
-    ResolutionCalculations.VehicleDamageAfterResist,
-    ResolutionCalculations.BfrApplication
-  )
+    extends DamageResistanceCalculations(
+      ResolutionCalculations.VehicleDamageAfterResist,
+      ResolutionCalculations.BfrApplication
+    )
 
 object SimpleResolutions
     extends DamageResistanceCalculations(

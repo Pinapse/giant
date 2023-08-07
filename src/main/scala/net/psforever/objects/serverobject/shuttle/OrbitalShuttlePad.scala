@@ -57,8 +57,8 @@ object OrbitalShuttlePad {
     * @return the `OrbitalShuttlePad` object
     */
   def Constructor(pos: Vector3, pdef: AmenityDefinition, orient: Vector3)(
-    id: Int,
-    context: ActorContext
+      id: Int,
+      context: ActorContext
   ): OrbitalShuttlePad = {
     import akka.actor.Props
 

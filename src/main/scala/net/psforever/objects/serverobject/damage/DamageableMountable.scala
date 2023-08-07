@@ -30,12 +30,12 @@ object DamageableMountable {
     * @param countableDamage the amount of damage being done, translating to the intensity of the damage indicator
     */
   def DamageAwareness(
-                       target: Damageable.Target with Mountable,
-                       cause: DamageResult,
-                       countableDamage: Int
-                     ): Unit = {
-    val zone   = target.Zone
-    val events = zone.AvatarEvents
+      target: Damageable.Target with Mountable,
+      cause: DamageResult,
+      countableDamage: Int
+  ): Unit = {
+    val zone      = target.Zone
+    val events    = zone.AvatarEvents
     val occupants = target.Seats.values.toSeq.flatMap { seat => seat.occupants.filter(_.isAlive) }
     ((cause.adversarial match {
       case Some(adversarial) => Some(adversarial.attacker)
@@ -47,7 +47,10 @@ object DamageableMountable {
           case Some(player) =>
             AvatarAction.HitHint(player.GUID, player.GUID)
           case None =>
-            AvatarAction.SendResponse(Service.defaultPlayerGUID, DamageWithPositionMessage(countableDamage, pSource.Position))
+            AvatarAction.SendResponse(
+              Service.defaultPlayerGUID,
+              DamageWithPositionMessage(countableDamage, pSource.Position)
+            )
         }) match {
           case AvatarAction.HitHint(_, guid) =>
             occupants.map { tplayer => (tplayer.Name, AvatarAction.HitHint(guid, tplayer.GUID)) }
@@ -55,7 +58,10 @@ object DamageableMountable {
             occupants.map { tplayer => (tplayer.Name, msg) }
         }
       case Some(source) => //object damage
-        val msg = AvatarAction.SendResponse(Service.defaultPlayerGUID, DamageWithPositionMessage(countableDamage, source.Position))
+        val msg = AvatarAction.SendResponse(
+          Service.defaultPlayerGUID,
+          DamageWithPositionMessage(countableDamage, source.Position)
+        )
         occupants.map { tplayer => (tplayer.Name, msg) }
       case None =>
         List.empty
@@ -75,14 +81,14 @@ object DamageableMountable {
     */
   def DestructionAwareness(target: Damageable.Target with Mountable, cause: DamageResult): Unit = {
     val interaction = cause.interaction
-    target.Seats
-      .values
+    target.Seats.values
       .flatMap { _.occupant }
-      .collect { case player if player.isAlive =>
-        //player.LogActivity(cause)
-        player.Actor ! Player.Die(
-          DamageInteraction(interaction.resolution, SourceEntry(player), interaction.cause, interaction.hitPos)
-        )
-    }
+      .collect {
+        case player if player.isAlive =>
+          //player.LogActivity(cause)
+          player.Actor ! Player.Die(
+            DamageInteraction(interaction.resolution, SourceEntry(player), interaction.cause, interaction.hitPos)
+          )
+      }
   }
 }

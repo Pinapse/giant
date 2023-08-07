@@ -13,8 +13,7 @@ import net.psforever.services.Service
 import net.psforever.services.avatar.{AvatarAction, AvatarServiceMessage}
 import net.psforever.types.PlanetSideEmpire
 
-class BoomerDeployable(cdef: ExplosiveDeployableDefinition)
-  extends ExplosiveDeployable(cdef) {
+class BoomerDeployable(cdef: ExplosiveDeployableDefinition) extends ExplosiveDeployable(cdef) {
   private var trigger: Option[BoomerTrigger] = None
 
   def Trigger: Option[BoomerTrigger] = trigger
@@ -47,8 +46,7 @@ object BoomerDeployableDefinition {
   }
 }
 
-class BoomerDeployableControl(mine: BoomerDeployable)
-  extends ExplosiveDeployableControl(mine) {
+class BoomerDeployableControl(mine: BoomerDeployable) extends ExplosiveDeployableControl(mine) {
 
   def receive: Receive =
     commonMineBehavior
@@ -80,7 +78,7 @@ class BoomerDeployableControl(mine: BoomerDeployable)
     super.gainOwnership(player, player.Faction)
   }
 
-  override def dismissDeployable() : Unit = {
+  override def dismissDeployable(): Unit = {
     super.dismissDeployable()
     val zone = mine.Zone
     mine.Trigger match {
@@ -95,7 +93,7 @@ class BoomerDeployableControl(mine: BoomerDeployable)
             zone.Ground ! Zone.Ground.RemoveItem(guid)
           case _ => ;
         }
-        zone.AvatarEvents! AvatarServiceMessage(
+        zone.AvatarEvents ! AvatarServiceMessage(
           zone.id,
           AvatarAction.ObjectDelete(Service.defaultPlayerGUID, guid)
         )

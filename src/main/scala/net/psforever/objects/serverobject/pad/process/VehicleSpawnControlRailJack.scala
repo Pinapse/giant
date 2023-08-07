@@ -51,34 +51,34 @@ class VehicleSpawnControlRailJack(pad: VehicleSpawnPad) extends VehicleSpawnCont
 
 object VehicleSpawnControlRailJack {
   def prepareSpawnExplosion(
-                             pad: VehicleSpawnPad,
-                             driver: SourceEntry,
-                             vehicle: SourceEntry
-                           ):
-                           (
-                             PlanetSideGameObject with FactionAffinity with Vitality,
-                             PlanetSideGameObject with FactionAffinity with Vitality
-                           ) => DamageInteraction = {
+      pad: VehicleSpawnPad,
+      driver: SourceEntry,
+      vehicle: SourceEntry
+  ): (
+      PlanetSideGameObject with FactionAffinity with Vitality,
+      PlanetSideGameObject with FactionAffinity with Vitality
+  ) => DamageInteraction = {
     vehicleSpawnExplosion(
       vehicle,
       pad.Definition.innateDamage.get,
-      Some(DamageInteraction(
-        SourceEntry(pad),
-        VehicleSpawnReason(driver, vehicle),
-        pad.Position
-      ).calculate()(pad))
+      Some(
+        DamageInteraction(
+          SourceEntry(pad),
+          VehicleSpawnReason(driver, vehicle),
+          pad.Position
+        ).calculate()(pad)
+      )
     )
   }
 
   def vehicleSpawnExplosion(
-                             vehicle: SourceEntry,
-                             properties: DamageProperties,
-                             cause: Option[DamageResult]
-                           )
-                           (
-                             source: PlanetSideGameObject with FactionAffinity with Vitality,
-                             target: PlanetSideGameObject with FactionAffinity with Vitality
-                           ): DamageInteraction = {
+      vehicle: SourceEntry,
+      properties: DamageProperties,
+      cause: Option[DamageResult]
+  )(
+      source: PlanetSideGameObject with FactionAffinity with Vitality,
+      target: PlanetSideGameObject with FactionAffinity with Vitality
+  ): DamageInteraction = {
     DamageInteraction(
       SourceEntry(target),
       ExplodingEntityReason(

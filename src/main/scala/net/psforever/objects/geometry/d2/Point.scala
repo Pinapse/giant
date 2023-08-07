@@ -13,9 +13,7 @@ import net.psforever.types.Vector3
   * @param inPlane the planar orientation of "out", e.g., the XY-axis excludes z-coordinates;
   *                includes the identity of the coordinates as they are in-order
   */
-final case class Point(a: Float, b: Float, inPlane: AxisAlignment2D)
-  extends Geometry2D
-  with geometry.Point {
+final case class Point(a: Float, b: Float, inPlane: AxisAlignment2D) extends Geometry2D with geometry.Point {
   def center: Point = this
 
   def moveCenter(point: geometry.Point): Point = {
@@ -29,12 +27,13 @@ final case class Point(a: Float, b: Float, inPlane: AxisAlignment2D)
 }
 
 object Point {
+
   /**
     * An overloaded constructor that assigns world origin coordinates.
     * By default, the planar frame is the common XY-axis.
     * @return a `Point2D` entity
     */
-  def apply(): Point = Point(0,0, AxisAlignment.XY)
+  def apply(): Point = Point(0, 0, AxisAlignment.XY)
 
   /**
     * An overloaded constructor that assigns world origin coordinates.
@@ -50,7 +49,7 @@ object Point {
     * An overloaded constructor that assigns world origin coordinates in the given planar frame.
     * @return a `Point2D` entity
     */
-  def apply(frame: AxisAlignment2D): Point = Point(0,0, frame)
+  def apply(frame: AxisAlignment2D): Point = Point(0, 0, frame)
 
   /**
     * An overloaded constructor that uses the same coordinates from a `Vector3` entity.

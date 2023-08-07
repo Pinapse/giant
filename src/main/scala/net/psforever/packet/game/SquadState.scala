@@ -59,9 +59,10 @@ final case class SquadState(guid: PlanetSideGUID, info_list: List[SquadStateInfo
 
 object SquadStateInfo {
   def apply(charId: Long, health: Int, armor: Int, pos: Vector3): SquadStateInfo =
-    SquadStateInfo(charId, health, armor, pos, 2, 2, unk6=false, 429, None, None)
+    SquadStateInfo(charId, health, armor, pos, 2, 2, unk6 = false, 429, None, None)
 
-  def apply(charId: Long, health: Int, armor: Int, pos: Vector3, unk4: Int, unk5: Int, unk6: Boolean, unk7: Int): SquadStateInfo =
+  def apply(charId: Long, health: Int, armor: Int, pos: Vector3, unk4: Int, unk5: Int, unk6: Boolean, unk7: Int)
+      : SquadStateInfo =
     SquadStateInfo(charId, health, armor, pos, unk4, unk5, unk6, unk7, None, None)
 
   def apply(
@@ -90,8 +91,8 @@ object SquadState extends Marshallable[SquadState] {
       ("unk6" | bool) ::
       ("unk7" | uint16L) ::
       (bool >>:~ { out =>
-        ("unk8" | conditional(out, uint16L)) ::
-          ("unk9" | conditional(out, bool))
+      ("unk8" | conditional(out, uint16L)) ::
+        ("unk9" | conditional(out, bool))
     })
   ).exmap[SquadStateInfo](
     {

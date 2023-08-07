@@ -13,8 +13,7 @@ import net.psforever.util.Config
 /**
   * The logic that governs warp gates.
   */
-case object WarpGateLogic
-  extends BuildingLogic {
+case object WarpGateLogic extends BuildingLogic {
   import BuildingActor.Command
 
   def amenityStateChange(details: BuildingWrapper, entity: Amenity, data: Option[Any]): Behavior[Command] = {
@@ -81,43 +80,47 @@ case object WarpGateLogic
       output: Building, WarpGate:Us, WarpGate, Building
       where ":Us" means `details.building`, and ":Msg" means the caller `building`
       it could be "Building:Msg, WarpGate:Us, x, y" or "x, Warpgate:Us, Warpgate:Msg, y"
-      */
-      val (thisBuilding, thisWarpGate, otherWarpGate, otherBuilding) = if (local.exists {
-        _ eq building
-      }) {
-        building match {
-          case _ : WarpGate =>
-            (
-              findNeighborhoodNormalBuilding(local), Some(warpgate),
-              Some(building), findNeighborhoodNormalBuilding(building.Neighbours.getOrElse(Nil))
-            )
-          case _ =>
-            findNeighborhoodWarpGate(local) match {
-              case out@Some(gate) =>
-                (
-                  Some(building), Some(warpgate),
-                  out, findNeighborhoodNormalBuilding(gate.Neighbours.getOrElse(Nil))
-                )
-              case None =>
-                (Some(building), Some(warpgate), None, None)
-            }
+       */
+      val (thisBuilding, thisWarpGate, otherWarpGate, otherBuilding) =
+        if (
+          local.exists {
+            _ eq building
+          }
+        ) {
+          building match {
+            case _: WarpGate =>
+              (
+                findNeighborhoodNormalBuilding(local),
+                Some(warpgate),
+                Some(building),
+                findNeighborhoodNormalBuilding(building.Neighbours.getOrElse(Nil))
+              )
+            case _ =>
+              findNeighborhoodWarpGate(local) match {
+                case out @ Some(gate) =>
+                  (
+                    Some(building),
+                    Some(warpgate),
+                    out,
+                    findNeighborhoodNormalBuilding(gate.Neighbours.getOrElse(Nil))
+                  )
+                case None =>
+                  (Some(building), Some(warpgate), None, None)
+              }
+          }
+        } else {
+          (None, None, None, None)
         }
-      }
-      else {
-        (None, None, None, None)
-      }
       (thisBuilding, thisWarpGate, otherWarpGate, otherBuilding) match {
-        case (Some(bldg), Some(wg : WarpGate), Some(otherWg : WarpGate), Some(otherBldg)) =>
+        case (Some(bldg), Some(wg: WarpGate), Some(otherWg: WarpGate), Some(otherBldg)) =>
           //standard case where a building connected to a warp gate pair changes faction
-          val bldgFaction = bldg.Faction
+          val bldgFaction      = bldg.Faction
           val otherBldgFaction = otherBldg.Faction
           val setBroadcastTo = if (Config.app.game.warpGates.broadcastBetweenConflictedFactions) {
             Set(bldgFaction, otherBldgFaction)
-          }
-          else if (bldgFaction == otherBldgFaction) {
+          } else if (bldgFaction == otherBldgFaction) {
             Set(bldgFaction)
-          }
-          else {
+          } else {
             Set(PlanetSideEmpire.NEUTRAL)
           }
           updateBroadcastCapabilitiesOfWarpGate(details, wg, setBroadcastTo)
@@ -126,10 +129,10 @@ case object WarpGateLogic
             otherWg.Zone.actor ! ZoneActor.ZoneMapUpdate()
           }
 
-        case (Some(_), Some(wg : WarpGate), Some(otherWg : WarpGate), None) =>
+        case (Some(_), Some(wg: WarpGate), Some(otherWg: WarpGate), None) =>
           handleWarpGateDeadendPair(details, otherWg, wg)
 
-        case (None, Some(wg : WarpGate), Some(otherWg : WarpGate), Some(_)) =>
+        case (None, Some(wg: WarpGate), Some(otherWg: WarpGate), Some(_)) =>
           handleWarpGateDeadendPair(details, wg, otherWg)
 
         case (_, Some(wg: WarpGate), None, None) if !wg.Active =>
@@ -139,7 +142,7 @@ case object WarpGateLogic
           updateBroadcastCapabilitiesOfWarpGate(details, wg, Set(PlanetSideEmpire.NEUTRAL))
 
         case _ => ;
-          //everything else is a degenerate pattern that should have been reported at an earlier point
+        //everything else is a degenerate pattern that should have been reported at an earlier point
       }
     }
     Behaviors.same
@@ -175,14 +178,14 @@ case object WarpGateLogic
     * @param pairedWg facility-paired (connected) side of a warp gate pair
     */
   private def handleWarpGateDeadendPair(
-                                         details: BuildingWrapper,
-                                         terminalWg: WarpGate,
-                                         pairedWg: WarpGate
-                                       ): Unit = {
+      details: BuildingWrapper,
+      terminalWg: WarpGate,
+      pairedWg: WarpGate
+  ): Unit = {
     //either the terminal warp gate messaged its connected gate, or the connected gate messaged the terminal gate
     //make certain the connected gate matches the terminal gate's faction
     val terminalWgFaction = terminalWg.Faction
-    val pairedWgFaction = pairedWg.Faction
+    val pairedWgFaction   = pairedWg.Faction
     if (pairedWgFaction != terminalWgFaction) {
       pairedWg.Faction = terminalWgFaction
       details.galaxyService ! GalaxyServiceMessage(GalaxyAction.MapUpdate(pairedWg.infoUpdateMessage()))
@@ -201,14 +204,17 @@ case object WarpGateLogic
     * @param setBroadcastTo factions(s) to which the warp gate is to broadcast going forward
     */
   private def updateBroadcastCapabilitiesOfWarpGate(
-                                                     details: BuildingWrapper,
-                                                     warpgate: WarpGate,
-                                                     setBroadcastTo: Set[PlanetSideEmpire.Value]
-                                                   ) : Unit = {
+      details: BuildingWrapper,
+      warpgate: WarpGate,
+      setBroadcastTo: Set[PlanetSideEmpire.Value]
+  ): Unit = {
     val previousAllowances = warpgate.AllowBroadcastFor
-    val events = details.galaxyService
+    val events             = details.galaxyService
     val msg = GalaxyAction.UpdateBroadcastPrivileges(
-      warpgate.Zone.Number, warpgate.MapId, previousAllowances, setBroadcastTo
+      warpgate.Zone.Number,
+      warpgate.MapId,
+      previousAllowances,
+      setBroadcastTo
     )
     warpgate.AllowBroadcastFor = setBroadcastTo
     (setBroadcastTo ++ previousAllowances).foreach { faction =>

@@ -20,11 +20,11 @@ import scala.concurrent.duration._
 
 trait CarrierBehavior {
   _: Actor =>
-  private var cargoMountTimer: Cancellable          = Default.Cancellable
-  private var cargoDismountTimer: Cancellable       = Default.Cancellable
+  private var cargoMountTimer: Cancellable    = Default.Cancellable
+  private var cargoDismountTimer: Cancellable = Default.Cancellable
 
   /* gate-keep mounting behavior so that another vehicle does not attempt to mount, or dismount in the middle */
-  private var isMounting: Option[PlanetSideGUID]    = None
+  private var isMounting: Option[PlanetSideGUID] = None
   /* gate-keep dismounting behavior so that another vehicle does not attempt to dismount, or dismount in the middle */
   private var isDismounting: Option[PlanetSideGUID] = None
 
@@ -33,16 +33,16 @@ trait CarrierBehavior {
   def endAllCarrierOperations(): Unit = {
     cargoMountTimer.cancel()
     cargoDismountTimer.cancel()
-    val obj = CarrierObject
+    val obj  = CarrierObject
     val zone = obj.Zone
     zone.GUID(isMounting) match {
-      case Some(v : Vehicle) => v.Actor ! CargoBehavior.EndCargoMounting(obj.GUID)
-      case _ => ;
+      case Some(v: Vehicle) => v.Actor ! CargoBehavior.EndCargoMounting(obj.GUID)
+      case _                => ;
     }
     isMounting = None
     zone.GUID(isDismounting) match {
-      case Some(v : Vehicle) => v.Actor ! CargoBehavior.EndCargoDismounting(obj.GUID)
-      case _ => ;
+      case Some(v: Vehicle) => v.Actor ! CargoBehavior.EndCargoDismounting(obj.GUID)
+      case _                => ;
     }
     isDismounting = None
   }
@@ -87,24 +87,23 @@ trait CarrierBehavior {
         self,
         CarrierBehavior.CheckCargoMounting(cargo_guid, mountPoint, iteration + 1)
       )
-    }
-    else {
+    } else {
       obj.Zone.GUID(isMounting) match {
         case Some(v: Vehicle) => v.Actor ! CargoBehavior.EndCargoMounting(obj.GUID)
-        case _ => ;
+        case _                => ;
       }
       isMounting = None
     }
   }
 
   def checkCargoDismount(cargo_guid: PlanetSideGUID, mountPoint: Int, iteration: Int, bailed: Boolean): Unit = {
-    val obj = CarrierObject
+    val obj  = CarrierObject
     val zone = obj.Zone
     val guid = obj.GUID
     if ((isDismounting.isEmpty || isDismounting.contains(cargo_guid)) && isMounting.isEmpty) {
       val prolongedDismount = if (iteration == 0) {
         zone.GUID(cargo_guid) match {
-          case Some(cargo : Vehicle) =>
+          case Some(cargo: Vehicle) =>
             CarrierBehavior.HandleVehicleCargoDismount(
               cargo_guid,
               cargo,
@@ -145,7 +144,7 @@ trait CarrierBehavior {
     } else {
       zone.GUID(isDismounting.getOrElse(cargo_guid)) match {
         case Some(cargo: Vehicle) => cargo.Actor ! CargoBehavior.EndCargoDismounting(guid)
-        case _ => ;
+        case _                    => ;
       }
       isDismounting = None
     }
@@ -156,7 +155,12 @@ object CarrierBehavior {
   private val log = org.log4s.getLogger(name = "CarrierBehavior")
 
   final case class CheckCargoMounting(cargo_guid: PlanetSideGUID, cargo_mountpoint: Int, iteration: Int)
-  final case class CheckCargoDismount(cargo_guid: PlanetSideGUID, cargo_mountpoint: Int, iteration: Int, bailed: Boolean)
+  final case class CheckCargoDismount(
+      cargo_guid: PlanetSideGUID,
+      cargo_mountpoint: Int,
+      iteration: Int,
+      bailed: Boolean
+  )
 
   /**
     * na
@@ -167,13 +171,13 @@ object CarrierBehavior {
     * @param iteration number of times a proper mounting for this combination has been queried
     */
   def HandleCheckCargoMounting(
-                                zone: Zone,
-                                carrierGUID: PlanetSideGUID,
-                                cargoGUID: PlanetSideGUID,
-                                carrier: Vehicle,
-                                mountPoint: Int,
-                                iteration: Int
-                              ): Boolean = {
+      zone: Zone,
+      carrierGUID: PlanetSideGUID,
+      cargoGUID: PlanetSideGUID,
+      carrier: Vehicle,
+      mountPoint: Int,
+      iteration: Int
+  ): Boolean = {
     zone.GUID(cargoGUID) match {
       case Some(cargo: Vehicle) =>
         HandleCheckCargoMounting(cargoGUID, cargo, carrierGUID, carrier, mountPoint, iteration)
@@ -196,13 +200,13 @@ object CarrierBehavior {
     * @param iteration number of times a proper mounting for this combination has been queried
     */
   private def HandleCheckCargoMounting(
-                                        cargoGUID: PlanetSideGUID,
-                                        cargo: Vehicle,
-                                        carrierGUID: PlanetSideGUID,
-                                        carrier: Vehicle,
-                                        mountPoint: Int,
-                                        iteration: Int
-                                      ): Boolean = {
+      cargoGUID: PlanetSideGUID,
+      cargo: Vehicle,
+      carrierGUID: PlanetSideGUID,
+      carrier: Vehicle,
+      mountPoint: Int,
+      iteration: Int
+  ): Boolean = {
     val zone     = carrier.Zone
     val distance = Vector3.DistanceSquared(cargo.Position, carrier.Position)
     carrier.CargoHold(mountPoint) match {
@@ -223,7 +227,10 @@ object CarrierBehavior {
           )
           zone.VehicleEvents ! VehicleServiceMessage(
             s"${cargo.Actor}",
-            VehicleAction.SendResponse(PlanetSideGUID(0), PlanetsideAttributeMessage(cargoGUID, cargo.Definition.shieldUiAttribute, cargo.Shields))
+            VehicleAction.SendResponse(
+              PlanetSideGUID(0),
+              PlanetsideAttributeMessage(cargoGUID, cargo.Definition.shieldUiAttribute, cargo.Shields)
+            )
           )
           CargoMountBehaviorForAll(carrier, cargo, mountPoint)
           zone.actor ! ZoneActor.RemoveFromBlockMap(cargo)
@@ -285,14 +292,14 @@ object CarrierBehavior {
     * @param iteration na
     */
   def HandleCheckCargoDismounting(
-                                   zone: Zone,
-                                   carrierGUID: PlanetSideGUID,
-                                   cargoGUID: PlanetSideGUID,
-                                   carrier: Vehicle,
-                                   mountPoint: Int,
-                                   iteration: Int,
-                                   bailed: Boolean
-                                 ): Boolean = {
+      zone: Zone,
+      carrierGUID: PlanetSideGUID,
+      cargoGUID: PlanetSideGUID,
+      carrier: Vehicle,
+      mountPoint: Int,
+      iteration: Int,
+      bailed: Boolean
+  ): Boolean = {
     zone.GUID(cargoGUID) match {
       case Some(cargo: Vehicle) =>
         HandleCheckCargoDismounting(cargoGUID, cargo, carrierGUID, carrier, mountPoint, iteration, bailed)
@@ -315,14 +322,14 @@ object CarrierBehavior {
     * @param iteration na
     */
   private def HandleCheckCargoDismounting(
-                                           cargoGUID: PlanetSideGUID,
-                                           cargo: Vehicle,
-                                           carrierGUID: PlanetSideGUID,
-                                           carrier: Vehicle,
-                                           mountPoint: Int,
-                                           iteration: Int,
-                                           bailed: Boolean
-                                         ): Boolean = {
+      cargoGUID: PlanetSideGUID,
+      cargo: Vehicle,
+      carrierGUID: PlanetSideGUID,
+      carrier: Vehicle,
+      mountPoint: Int,
+      iteration: Int,
+      bailed: Boolean
+  ): Boolean = {
     val zone = carrier.Zone
     carrier.CargoHold(mountPoint) match {
       case Some(hold) =>
@@ -396,12 +403,12 @@ object CarrierBehavior {
     * @param kicked na
     */
   def HandleVehicleCargoDismount(
-                                  zone: Zone,
-                                  cargo_guid: PlanetSideGUID,
-                                  bailed: Boolean,
-                                  requestedByPassenger: Boolean,
-                                  kicked: Boolean
-                                ): Boolean = {
+      zone: Zone,
+      cargo_guid: PlanetSideGUID,
+      bailed: Boolean,
+      requestedByPassenger: Boolean,
+      kicked: Boolean
+  ): Boolean = {
     zone.GUID(cargo_guid) match {
       case Some(cargo: Vehicle) =>
         zone.GUID(cargo.MountedIn) match {
@@ -430,14 +437,14 @@ object CarrierBehavior {
     * @param kicked the ferried vehicle is being kicked out of the cargo hold
     */
   def HandleVehicleCargoDismount(
-                                  cargoGUID: PlanetSideGUID,
-                                  cargo: Vehicle,
-                                  carrierGUID: PlanetSideGUID,
-                                  carrier: Vehicle,
-                                  bailed: Boolean,
-                                  requestedByPassenger: Boolean,
-                                  kicked: Boolean
-                                ): Boolean = {
+      cargoGUID: PlanetSideGUID,
+      cargo: Vehicle,
+      carrierGUID: PlanetSideGUID,
+      carrier: Vehicle,
+      bailed: Boolean,
+      requestedByPassenger: Boolean,
+      kicked: Boolean
+  ): Boolean = {
     val zone = carrier.Zone
     carrier.CargoHolds.find({ case (_, hold) => hold.occupant.contains(cargo) }) match {
       case Some((mountPoint, hold)) =>
@@ -470,7 +477,10 @@ object CarrierBehavior {
         )
         events ! VehicleServiceMessage(
           s"$cargoActor",
-          VehicleAction.SendResponse(GUID0, PlanetsideAttributeMessage(cargoGUID, cargo.Definition.shieldUiAttribute, cargo.Shields))
+          VehicleAction.SendResponse(
+            GUID0,
+            PlanetsideAttributeMessage(cargoGUID, cargo.Definition.shieldUiAttribute, cargo.Shields)
+          )
         )
         zone.actor ! ZoneActor.AddToBlockMap(cargo, carrier.Position)
         if (carrier.isFlying) {
@@ -527,10 +537,10 @@ object CarrierBehavior {
     * @param targetGUID the expected globally unique identifier of the target object
     */
   def LogCargoEventMissingVehicleError(
-                                        decorator: String,
-                                        target: Option[PlanetSideGameObject],
-                                        targetGUID: PlanetSideGUID
-                                      ): Unit = {
+      decorator: String,
+      target: Option[PlanetSideGameObject],
+      targetGUID: PlanetSideGUID
+  ): Unit = {
     target match {
       case Some(_: Vehicle) => ;
       case Some(_)          => log.error(s"$decorator target $targetGUID no longer identifies as a vehicle")
@@ -551,10 +561,10 @@ object CarrierBehavior {
     * @return a tuple composed of an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet
     */
   def CargoMountMessages(
-                          carrier: Vehicle,
-                          cargo: Vehicle,
-                          mountPoint: Int
-                        ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
+      carrier: Vehicle,
+      cargo: Vehicle,
+      mountPoint: Int
+  ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
     CargoMountMessages(carrier.GUID, cargo.GUID, mountPoint, Vehicles.CargoOrientation(cargo))
   }
 
@@ -570,11 +580,11 @@ object CarrierBehavior {
     * @return a tuple composed of an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet
     */
   def CargoMountMessages(
-                          carrierGUID: PlanetSideGUID,
-                          cargoGUID: PlanetSideGUID,
-                          mountPoint: Int,
-                          orientation: Int
-                        ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
+      carrierGUID: PlanetSideGUID,
+      cargoGUID: PlanetSideGUID,
+      mountPoint: Int,
+      orientation: Int
+  ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
     (
       ObjectAttachMessage(carrierGUID, cargoGUID, mountPoint),
       CargoMountPointStatusMessage(
@@ -599,11 +609,11 @@ object CarrierBehavior {
     * @return a tuple composed of an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet
     */
   def CargoMountBehaviorForOthers(
-                                   carrier: Vehicle,
-                                   cargo: Vehicle,
-                                   mountPoint: Int,
-                                   exclude: PlanetSideGUID
-                                 ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
+      carrier: Vehicle,
+      cargo: Vehicle,
+      mountPoint: Int,
+      exclude: PlanetSideGUID
+  ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
     val msgs @ (attachMessage, mountPointStatusMessage) = CargoMountMessages(carrier, cargo, mountPoint)
     CargoMountMessagesForOthers(carrier.Zone, exclude, attachMessage, mountPointStatusMessage)
     msgs
@@ -617,11 +627,11 @@ object CarrierBehavior {
     * @param mountPointStatusMessage a `CargoMountPointStatusMessage` packet suitable for initializing cargo operations
     */
   def CargoMountMessagesForOthers(
-                                   zone: Zone,
-                                   exclude: PlanetSideGUID,
-                                   attachMessage: ObjectAttachMessage,
-                                   mountPointStatusMessage: CargoMountPointStatusMessage
-                                 ): Unit = {
+      zone: Zone,
+      exclude: PlanetSideGUID,
+      attachMessage: ObjectAttachMessage,
+      mountPointStatusMessage: CargoMountPointStatusMessage
+  ): Unit = {
     zone.VehicleEvents ! VehicleServiceMessage(zone.id, VehicleAction.SendResponse(exclude, attachMessage))
     zone.VehicleEvents ! VehicleServiceMessage(zone.id, VehicleAction.SendResponse(exclude, mountPointStatusMessage))
   }
@@ -636,10 +646,10 @@ object CarrierBehavior {
     * @return a tuple composed of an `ObjectAttachMessage` packet and a `CargoMountPointStatusMessage` packet
     */
   def CargoMountBehaviorForAll(
-                                carrier: Vehicle,
-                                cargo: Vehicle,
-                                mountPoint: Int
-                              ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
+      carrier: Vehicle,
+      cargo: Vehicle,
+      mountPoint: Int
+  ): (ObjectAttachMessage, CargoMountPointStatusMessage) = {
     val zone                                            = carrier.Zone
     val zoneId                                          = zone.id
     val msgs @ (attachMessage, mountPointStatusMessage) = CargoMountMessages(carrier, cargo, mountPoint)

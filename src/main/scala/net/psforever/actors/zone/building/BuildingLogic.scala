@@ -104,10 +104,10 @@ trait BuildingLogic {
     * @return the representation of the building and assorted connecting and reporting outlets
     */
   def wrapper(
-               building: Building,
-               context: ActorContext[BuildingActor.Command],
-               details: BuildingControlDetails
-             ): BuildingWrapper = {
+      building: Building,
+      context: ActorContext[BuildingActor.Command],
+      details: BuildingControlDetails
+  ): BuildingWrapper = {
     BasicBuildingWrapper(building, context, details.galaxyService, details.interstellarCluster)
   }
 }

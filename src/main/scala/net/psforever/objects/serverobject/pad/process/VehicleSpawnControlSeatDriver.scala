@@ -55,8 +55,10 @@ class VehicleSpawnControlSeatDriver(pad: VehicleSpawnPad) extends VehicleSpawnCo
     case VehicleSpawnControlSeatDriver.DriverInSeat(entry) =>
       val driver  = entry.driver
       val vehicle = entry.vehicle
-      if (VehicleSpawnControl.validateOrderCredentials(pad, driver, vehicle).isEmpty &&
-          entry.vehicle.PassengerInSeat(entry.driver).contains(0)) {
+      if (
+        VehicleSpawnControl.validateOrderCredentials(pad, driver, vehicle).isEmpty &&
+        entry.vehicle.PassengerInSeat(entry.driver).contains(0)
+      ) {
         trace(s"driver ${entry.driver.Name} has taken the wheel")
         pad.Zone.VehicleEvents ! VehicleSpawnPad.PlayerSeatedInVehicle(entry.driver.Name, entry.vehicle, pad)
       } else {

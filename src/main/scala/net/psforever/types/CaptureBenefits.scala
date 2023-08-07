@@ -27,14 +27,19 @@ object LatticeBenefit extends IntEnum[LatticeBenefit] {
 
   /** no perk */
   case object None extends LatticeBenefit(value = 0)
+
   /** perk attached to an amp_station */
   case object AmpStation extends LatticeBenefit(value = 1)
+
   /** perk attached to a comm_station_dsp */
   case object DropshipCenter extends LatticeBenefit(value = 2)
+
   /** perk attached to a cryo_facility */
   case object BioLaboratory extends LatticeBenefit(value = 4)
+
   /** perk attached to a comm_station */
   case object InterlinkFacility extends LatticeBenefit(value = 8)
+
   /** perk attached to a tech_plant */
   case object TechnologyPlant extends LatticeBenefit(value = 16)
 }
@@ -44,18 +49,25 @@ object CavernBenefit extends IntEnum[CavernBenefit] {
 
   /** no perk */
   case object None extends CavernBenefit(value = 0)
+
   /** similar to no perk; but can be used for positive statusing */
   case object NamelessBenefit extends CavernBenefit(value = 2)
+
   /** perk attached to a cavern or cavern module */
   case object SpeedModule extends CavernBenefit(value = 4)
+
   /** perk attached to a cavern or cavern module */
   case object ShieldModule extends CavernBenefit(value = 8)
+
   /** perk attached to a cavern or cavern module */
   case object VehicleModule extends CavernBenefit(value = 16)
+
   /** perk attached to a cavern or cavern module */
   case object EquipmentModule extends CavernBenefit(value = 32)
+
   /** perk attached to a cavern or cavern module */
   case object HealthModule extends CavernBenefit(value = 64)
+
   /** perk attached to a cavern or cavern module */
   case object PainModule extends CavernBenefit(value = 128)
 }

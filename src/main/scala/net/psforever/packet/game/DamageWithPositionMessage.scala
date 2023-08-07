@@ -30,7 +30,7 @@ object DamageWithPositionMessage extends Marshallable[DamageWithPositionMessage]
   implicit val codec: Codec[DamageWithPositionMessage] = (
     ("unk" | uint8L) ::
       ("pos" | Vector3.codec_pos)
-  ).xmap[DamageWithPositionMessage] (
+  ).xmap[DamageWithPositionMessage](
     {
       case unk :: pos :: HNil =>
         DamageWithPositionMessage(unk, pos)

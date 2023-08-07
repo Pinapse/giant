@@ -40,6 +40,13 @@ import net.psforever.packet.PlanetSidePacket
 import net.psforever.services.hart.HartService
 
 import scala.concurrent.duration.Duration
+import io.prometheus.client.exporter.HTTPServer
+import io.prometheus.client.hotspot.DefaultExports
+import com.sun.net.httpserver.BasicAuthenticator
+
+class PrometheusAuthenticator(realm: String, username: String, password: String) extends BasicAuthenticator(realm) {
+  def checkCredentials(x: String, y: String): Boolean = username.equals(x) && password.equals(y)
+}
 
 object Server {
   private val logger = org.log4s.getLogger
@@ -92,6 +99,18 @@ object Server {
       val options = new SentryOptions()
       options.setDsn(Config.app.sentry.dsn)
       Sentry.init(options)
+    }
+
+    if (Config.app.prometheus.http) {
+      logger.info(s"Enabling Prometheus")
+      DefaultExports.initialize()
+      val server =
+        (new HTTPServer.Builder())
+          .withPort(Config.app.prometheus.port)
+          .withAuthenticator(
+            new PrometheusAuthenticator("PSForever", Config.app.prometheus.username, Config.app.prometheus.password)
+          )
+          .build()
     }
 
     /** Start up the main actor system. This "system" is the home for all actors running on this server */

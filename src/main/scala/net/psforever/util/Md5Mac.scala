@@ -4,22 +4,22 @@ import scodec.bits.ByteVector
 import scala.collection.mutable.ArrayBuffer
 
 sealed case class PermanentMd5MacState(
-                                        buffer: Seq[Byte],
-                                        digest: Seq[Byte],
-                                        m: Seq[Byte],
-                                        k1: Seq[Byte],
-                                        k2: Seq[Byte],
-                                        k3: Seq[Byte]
-                                      )
+    buffer: Seq[Byte],
+    digest: Seq[Byte],
+    m: Seq[Byte],
+    k1: Seq[Byte],
+    k2: Seq[Byte],
+    k3: Seq[Byte]
+)
 
 sealed case class Md5MacState(
-                                buffer: ArrayBuffer[Byte],
-                                digest: ArrayBuffer[Byte],
-                                m: ArrayBuffer[Byte],
-                                k1: ArrayBuffer[Byte],
-                                k2: ArrayBuffer[Byte],
-                                k3: ArrayBuffer[Byte]
-                              )
+    buffer: ArrayBuffer[Byte],
+    digest: ArrayBuffer[Byte],
+    m: ArrayBuffer[Byte],
+    k1: ArrayBuffer[Byte],
+    k2: ArrayBuffer[Byte],
+    k3: ArrayBuffer[Byte]
+)
 
 object PermanentMd5MacState {
   def mutableCopy(in: PermanentMd5MacState): Md5MacState = {
@@ -29,7 +29,7 @@ object PermanentMd5MacState {
       ArrayBuffer[Byte]().addAll(in.m),
       ArrayBuffer[Byte]().addAll(in.k1),
       ArrayBuffer[Byte]().addAll(in.k2),
-      ArrayBuffer[Byte]().addAll(in.k3),
+      ArrayBuffer[Byte]().addAll(in.k3)
     )
   }
 }
@@ -47,18 +47,18 @@ object Md5Mac {
   ).map(_.map(_.toByte))
 
   /**
-   * na
-   * @param lb na
-   * @param pos na
-   * @return na
-   */
+    * na
+    * @param lb na
+    * @param pos na
+    * @return na
+    */
   private def mkInt(lb: Iterable[Byte], pos: Int): Int = {
     // get iterator
     val it = lb.iterator.drop(pos)
-    (it.next().toInt & 0xFF) << 24 |
-      (it.next().toInt & 0xFF) << 16 |
-      (it.next().toInt & 0xFF) << 8 |
-      (it.next().toInt & 0xFF)
+    (it.next().toInt & 0xff) << 24 |
+      (it.next().toInt & 0xff) << 16 |
+      (it.next().toInt & 0xff) << 8 |
+      (it.next().toInt & 0xff)
   }
 
   /** Checks if two Message Authentication Codes are the same in constant time,
@@ -81,23 +81,23 @@ object Md5Mac {
 }
 
 /**
- * MD5-MAC is a ancient MAC algorithm from the 90s that nobody uses anymore.
- * Not to be confused with HMAC-MD5.
- * A description of the algorithm can be found at http://cacr.uwaterloo.ca/hac/about/chap9.pdf, 9.69 Algorithm MD5-MAC.
- * There are two implementations:
- * one from older versions of CryptoPP (2007),
- * and one from OpenCL (2001) (nowadays called Botan and not to be confused with the OpenCL standard from Khronos).
- * Both libraries have since removed this code.
- * This file is a Scala port of the OpenCL implementation.
- * Source: https://github.com/sghiassy/Code-Reading-Book/blob/master/OpenCL/src/md5mac.cpp
- */
+  * MD5-MAC is a ancient MAC algorithm from the 90s that nobody uses anymore.
+  * Not to be confused with HMAC-MD5.
+  * A description of the algorithm can be found at http://cacr.uwaterloo.ca/hac/about/chap9.pdf, 9.69 Algorithm MD5-MAC.
+  * There are two implementations:
+  * one from older versions of CryptoPP (2007),
+  * and one from OpenCL (2001) (nowadays called Botan and not to be confused with the OpenCL standard from Khronos).
+  * Both libraries have since removed this code.
+  * This file is a Scala port of the OpenCL implementation.
+  * Source: https://github.com/sghiassy/Code-Reading-Book/blob/master/OpenCL/src/md5mac.cpp
+  */
 class Md5Mac(val key: ByteVector) {
   import Md5Mac._
   assert(key.length == KEYLENGTH, s"key length must be $KEYLENGTH, not ${key.length}")
 
-  private var count: Long   = 0
-  private var position: Int = 0
-  private var state: Md5MacState = _ //value initialized in doKey
+  private var count: Long                         = 0
+  private var position: Int                       = 0
+  private var state: Md5MacState                  = _ //value initialized in doKey
   private val originalState: PermanentMd5MacState = doKey()
 
   private def doKey(): PermanentMd5MacState = {
@@ -276,7 +276,7 @@ class Md5Mac(val key: ByteVector) {
     * @return the hash
     */
   def doFinal(length: Int = MACLENGTH): ByteVector = {
-    val (buffer, digest, k1, k3) = (state.buffer, state.digest, state.k1, state.k3)
+    val (buffer, digest, k1, k3)  = (state.buffer, state.digest, state.k1, state.k3)
     val output: ArrayBuffer[Byte] = ArrayBuffer.fill(MACLENGTH)(0)
     buffer(position) = 0x80.toByte
     (position + 1 until BLOCKSIZE).foreach(i => buffer(i) = 0)
@@ -310,12 +310,12 @@ class Md5Mac(val key: ByteVector) {
   }
 
   /**
-   * Restore the original cryptographic information (state) for this MAC algorithm.
-   * The primary key is being reused and,
-   * without random elements in the calculation,
-   * the original cryptographic information only needs to be reloaded.
-   * @return this MAC algorithm container
-   */
+    * Restore the original cryptographic information (state) for this MAC algorithm.
+    * The primary key is being reused and,
+    * without random elements in the calculation,
+    * the original cryptographic information only needs to be reloaded.
+    * @return this MAC algorithm container
+    */
   def reset(): Md5Mac = {
     count = 0
     position = 0

@@ -34,7 +34,6 @@ final case class VehicleManifest(
     cargo: List[ManifestPassengerEntry]
 )
 
-
 object VehicleManifest {
   def apply(vehicle: Vehicle): VehicleManifest = {
     val driverName = vehicle.Seats(0).occupant match {

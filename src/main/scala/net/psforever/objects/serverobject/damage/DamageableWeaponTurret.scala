@@ -17,9 +17,7 @@ import net.psforever.services.vehicle.{VehicleAction, VehicleServiceMessage}
 /**
   * The "control" `Actor` mixin for damage-handling code for `WeaponTurret` objects.
   */
-trait DamageableWeaponTurret
-  extends DamageableEntity
-  with AggravatedBehavior {
+trait DamageableWeaponTurret extends DamageableEntity with AggravatedBehavior {
   _: Actor =>
 
   def damageableWeaponTurretPostStop(): Unit = {
@@ -32,14 +30,14 @@ trait DamageableWeaponTurret
   override val takesDamage: Receive = originalTakesDamage.orElse(aggravatedBehavior)
 
   override protected def DamageAwareness(target: Damageable.Target, cause: DamageResult, amount: Any): Unit = {
-    val obj            = DamageableObject
-    val zone           = target.Zone
-    val events         = zone.VehicleEvents
-    val targetGUID     = target.GUID
-    val zoneId         = zone.id
+    val obj        = DamageableObject
+    val zone       = target.Zone
+    val events     = zone.VehicleEvents
+    val targetGUID = target.GUID
+    val zoneId     = zone.id
     val damageToHealth = amount match {
       case a: Int => a
-      case _ => 0
+      case _      => 0
     }
     var announceConfrontation: Boolean = damageToHealth > 0
     val aggravated = TryAggravationEffectActivate(cause) match {
@@ -71,14 +69,14 @@ trait DamageableWeaponTurret
     }
     if (announceConfrontation) {
       if (aggravated) {
-        val msg = VehicleAction.SendResponse(Service.defaultPlayerGUID, DamageWithPositionMessage(damageToHealth, Vector3.Zero))
+        val msg =
+          VehicleAction.SendResponse(Service.defaultPlayerGUID, DamageWithPositionMessage(damageToHealth, Vector3.Zero))
         obj.Seats.values
           .collect { case seat if seat.occupant.nonEmpty => seat.occupant.get.Name }
           .foreach { channel =>
             events ! VehicleServiceMessage(channel, msg)
           }
-      }
-      else {
+      } else {
         //activity on map
         zone.Activity ! Zone.HotSpot.Activity(cause)
         //alert to damage source

@@ -14,108 +14,108 @@ import org.specs2.mutable.Specification
 class EnvironmentCollisionTest extends Specification {
   "DeepPlane" should {
     val point: Float = 10f
-    val plane = DeepPlane(point)
+    val plane        = DeepPlane(point)
 
     "have altitude" in {
       plane.altitude mustEqual point
     }
 
     "must have interaction that passes" in {
-      plane.testInteraction(Vector3(0,0,10), varDepth = -1) mustEqual true
-      plane.testInteraction(Vector3(0,0, 9), varDepth =  0) mustEqual true
-      plane.testInteraction(Vector3(0,0, 8), varDepth =  1) mustEqual true
+      plane.testInteraction(Vector3(0, 0, 10), varDepth = -1) mustEqual true
+      plane.testInteraction(Vector3(0, 0, 9), varDepth = 0) mustEqual true
+      plane.testInteraction(Vector3(0, 0, 8), varDepth = 1) mustEqual true
     }
 
     "must have interaction that fails" in {
-      plane.testInteraction(Vector3(0,0,11), varDepth = -1) mustEqual false
-      plane.testInteraction(Vector3(0,0,10), varDepth =  0) mustEqual false
-      plane.testInteraction(Vector3(0,0, 9), varDepth =  1) mustEqual false
+      plane.testInteraction(Vector3(0, 0, 11), varDepth = -1) mustEqual false
+      plane.testInteraction(Vector3(0, 0, 10), varDepth = 0) mustEqual false
+      plane.testInteraction(Vector3(0, 0, 9), varDepth = 1) mustEqual false
     }
   }
 
   "DeepSquare" should {
     val point: Float = 10f
-    val square = DeepSquare(point, 9, 9, 1, 1)
+    val square       = DeepSquare(point, 9, 9, 1, 1)
 
     "must have altitude" in {
       square.altitude mustEqual point
     }
 
     "must have interaction that passes" in {
-      square.testInteraction(Vector3(1,1, 0), varDepth =  0) mustEqual true
-      square.testInteraction(Vector3(1,8, 0), varDepth =  0) mustEqual true
-      square.testInteraction(Vector3(8,8, 0), varDepth =  0) mustEqual true
-      square.testInteraction(Vector3(8,1, 0), varDepth =  0) mustEqual true
-      square.testInteraction(Vector3(1,1,10), varDepth = -1) mustEqual true
-      square.testInteraction(Vector3(1,1, 9), varDepth =  0) mustEqual true
-      square.testInteraction(Vector3(1,1, 8), varDepth =  1) mustEqual true
+      square.testInteraction(Vector3(1, 1, 0), varDepth = 0) mustEqual true
+      square.testInteraction(Vector3(1, 8, 0), varDepth = 0) mustEqual true
+      square.testInteraction(Vector3(8, 8, 0), varDepth = 0) mustEqual true
+      square.testInteraction(Vector3(8, 1, 0), varDepth = 0) mustEqual true
+      square.testInteraction(Vector3(1, 1, 10), varDepth = -1) mustEqual true
+      square.testInteraction(Vector3(1, 1, 9), varDepth = 0) mustEqual true
+      square.testInteraction(Vector3(1, 1, 8), varDepth = 1) mustEqual true
     }
 
     "must have interaction that fails" in {
-      square.testInteraction(Vector3(1,0, 0), varDepth =  0) mustEqual false
-      square.testInteraction(Vector3(1,9, 0), varDepth =  0) mustEqual false
-      square.testInteraction(Vector3(0,9, 0), varDepth =  0) mustEqual false
-      square.testInteraction(Vector3(0,1, 0), varDepth =  0) mustEqual false
-      square.testInteraction(Vector3(1,1,11), varDepth = -1) mustEqual false
-      square.testInteraction(Vector3(1,1,10), varDepth =  0) mustEqual false
-      square.testInteraction(Vector3(1,1, 9), varDepth =  1) mustEqual false
+      square.testInteraction(Vector3(1, 0, 0), varDepth = 0) mustEqual false
+      square.testInteraction(Vector3(1, 9, 0), varDepth = 0) mustEqual false
+      square.testInteraction(Vector3(0, 9, 0), varDepth = 0) mustEqual false
+      square.testInteraction(Vector3(0, 1, 0), varDepth = 0) mustEqual false
+      square.testInteraction(Vector3(1, 1, 11), varDepth = -1) mustEqual false
+      square.testInteraction(Vector3(1, 1, 10), varDepth = 0) mustEqual false
+      square.testInteraction(Vector3(1, 1, 9), varDepth = 1) mustEqual false
     }
   }
 
   "DeepSurface" should {
     val point: Float = 10f
-    val surface = DeepSurface(point, 9, 9, 1, 1)
+    val surface      = DeepSurface(point, 9, 9, 1, 1)
 
     "must have altitude" in {
       surface.altitude mustEqual point
     }
 
     "must have interaction that passes" in {
-      surface.testInteraction(Vector3(1,1,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(1,8,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(8,8,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(8,1,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(1,1,9), varDepth = -1) mustEqual true
-      surface.testInteraction(Vector3(1,1,9), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(1,1,9), varDepth =  1) mustEqual true
+      surface.testInteraction(Vector3(1, 1, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(1, 8, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(8, 8, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(8, 1, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(1, 1, 9), varDepth = -1) mustEqual true
+      surface.testInteraction(Vector3(1, 1, 9), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(1, 1, 9), varDepth = 1) mustEqual true
     }
 
     "must have interaction that fails" in {
-      surface.testInteraction(Vector3(1,0, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(1,9, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(0,9, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(0,1, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(1,1,11), varDepth = -1) mustEqual false
-      surface.testInteraction(Vector3(1,1,10), varDepth =  0) mustEqual false
+      surface.testInteraction(Vector3(1, 0, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(1, 9, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(0, 9, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(0, 1, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(1, 1, 11), varDepth = -1) mustEqual false
+      surface.testInteraction(Vector3(1, 1, 10), varDepth = 0) mustEqual false
     }
   }
 
   "DeepCircularSurface" should {
     val point: Float = 10f
-    val center = Vector3(3, 3, point)
-    val surface = DeepCircularSurface(center, 3)
+    val center       = Vector3(3, 3, point)
+    val surface      = DeepCircularSurface(center, 3)
 
     "must have altitude" in {
       surface.altitude mustEqual point
     }
 
     "must have interaction that passes" in {
-      surface.testInteraction(Vector3(3,1,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(1,3,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(3,5,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(5,3,0), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(2,2,9), varDepth = -1) mustEqual true
-      surface.testInteraction(Vector3(2,2,9), varDepth =  0) mustEqual true
-      surface.testInteraction(Vector3(2,2,9), varDepth =  1) mustEqual true
+      surface.testInteraction(Vector3(3, 1, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(1, 3, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(3, 5, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(5, 3, 0), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(2, 2, 9), varDepth = -1) mustEqual true
+      surface.testInteraction(Vector3(2, 2, 9), varDepth = 0) mustEqual true
+      surface.testInteraction(Vector3(2, 2, 9), varDepth = 1) mustEqual true
     }
 
     "must have interaction that fails" in {
-      surface.testInteraction(Vector3(3,0, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(0,3, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(3,6, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(6,3, 0), varDepth =  0) mustEqual false
-      surface.testInteraction(Vector3(2,2,11), varDepth = -1) mustEqual false
-      surface.testInteraction(Vector3(2,2,10), varDepth =  0) mustEqual false
+      surface.testInteraction(Vector3(3, 0, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(0, 3, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(3, 6, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(6, 3, 0), varDepth = 0) mustEqual false
+      surface.testInteraction(Vector3(2, 2, 11), varDepth = -1) mustEqual false
+      surface.testInteraction(Vector3(2, 2, 10), varDepth = 0) mustEqual false
     }
   }
 }
@@ -165,7 +165,7 @@ class EnvironmentAttributeTest extends Specification {
 
     "not interact with a vital object that is not damageable" in {
       val obj = Terminal(new TerminalDefinition(objectId = 455) {
-        def Request(player : Player, msg : Any) : Terminal.Exchange = null
+        def Request(player: Player, msg: Any): Terminal.Exchange = null
         Damageable = false
       })
       obj.isInstanceOf[Vitality] mustEqual true
@@ -190,7 +190,7 @@ class EnvironmentAttributeTest extends Specification {
 
     "not interact with a vital object that is not damageable" in {
       val obj = Terminal(new TerminalDefinition(objectId = 455) {
-        def Request(player : Player, msg : Any) : Terminal.Exchange = null
+        def Request(player: Player, msg: Any): Terminal.Exchange = null
         Damageable = false
       })
       obj.isInstanceOf[Vitality] mustEqual true
@@ -229,29 +229,29 @@ class EnvironmentAttributeTest extends Specification {
 class SeaLevelTest extends Specification {
   "SeaLevel" should {
     val point: Float = 10f
-    val plane = DeepPlane(point)
-    val level = SeaLevel(point)
+    val plane        = DeepPlane(point)
+    val level        = SeaLevel(point)
 
     "have altitude (same as DeepPlane)" in {
       plane.altitude mustEqual level.altitude
     }
 
     "must have interaction that passes (same as DeepPlane)" in {
-      plane.testInteraction(Vector3(0,0,10), varDepth = -1) mustEqual
-        level.testInteraction(Vector3(0,0,10), varDepth = -1)
-      plane.testInteraction(Vector3(0,0, 9), varDepth =  0) mustEqual
-        level.testInteraction(Vector3(0,0, 9), varDepth =  0)
-      plane.testInteraction(Vector3(0,0, 8), varDepth =  1) mustEqual
-        level.testInteraction(Vector3(0,0, 8), varDepth =  1)
+      plane.testInteraction(Vector3(0, 0, 10), varDepth = -1) mustEqual
+        level.testInteraction(Vector3(0, 0, 10), varDepth = -1)
+      plane.testInteraction(Vector3(0, 0, 9), varDepth = 0) mustEqual
+        level.testInteraction(Vector3(0, 0, 9), varDepth = 0)
+      plane.testInteraction(Vector3(0, 0, 8), varDepth = 1) mustEqual
+        level.testInteraction(Vector3(0, 0, 8), varDepth = 1)
     }
 
     "must have interaction that fails (same as DeepPlane)" in {
-      plane.testInteraction(Vector3(0,0,11), varDepth = -1) mustEqual
-        level.testInteraction(Vector3(0,0,11), varDepth = -1)
-      plane.testInteraction(Vector3(0,0,10), varDepth =  0) mustEqual
-        level.testInteraction(Vector3(0,0,10), varDepth =  0)
-      plane.testInteraction(Vector3(0,0, 9), varDepth =  1) mustEqual
-        level.testInteraction(Vector3(0,0, 9), varDepth =  1)
+      plane.testInteraction(Vector3(0, 0, 11), varDepth = -1) mustEqual
+        level.testInteraction(Vector3(0, 0, 11), varDepth = -1)
+      plane.testInteraction(Vector3(0, 0, 10), varDepth = 0) mustEqual
+        level.testInteraction(Vector3(0, 0, 10), varDepth = 0)
+      plane.testInteraction(Vector3(0, 0, 9), varDepth = 1) mustEqual
+        level.testInteraction(Vector3(0, 0, 9), varDepth = 1)
     }
   }
 }
@@ -259,45 +259,45 @@ class SeaLevelTest extends Specification {
 class PoolTest extends Specification {
   "Pool" should {
     val point: Float = 10f
-    val square = DeepSquare(point, 1, 10, 10, 1)
-    val pool = Pool(EnvironmentAttribute.Water, point, 1, 10, 10, 1)
+    val square       = DeepSquare(point, 1, 10, 10, 1)
+    val pool         = Pool(EnvironmentAttribute.Water, point, 1, 10, 10, 1)
 
     "have altitude (same as DeepSquare)" in {
       pool.collision.altitude mustEqual square.altitude
     }
 
     "must have interaction that passes (same as DeepSquare)" in {
-      pool.testInteraction(Vector3(1,1, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(1,1, 0), varDepth =  0)
-      pool.testInteraction(Vector3(1,8, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(1,8, 0), varDepth =  0)
-      pool.testInteraction(Vector3(8,8, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(8,8, 0), varDepth =  0)
-      pool.testInteraction(Vector3(8,1, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(8,1, 0), varDepth =  0)
-      pool.testInteraction(Vector3(1,1,10), varDepth = -1) mustEqual
-        square.testInteraction(Vector3(1,1,10), varDepth = -1)
-      pool.testInteraction(Vector3(1,1, 9), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(1,1, 9), varDepth =  0)
-      pool.testInteraction(Vector3(1,1, 8), varDepth =  1) mustEqual
-        square.testInteraction(Vector3(1,1, 8), varDepth =  1)
+      pool.testInteraction(Vector3(1, 1, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(1, 1, 0), varDepth = 0)
+      pool.testInteraction(Vector3(1, 8, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(1, 8, 0), varDepth = 0)
+      pool.testInteraction(Vector3(8, 8, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(8, 8, 0), varDepth = 0)
+      pool.testInteraction(Vector3(8, 1, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(8, 1, 0), varDepth = 0)
+      pool.testInteraction(Vector3(1, 1, 10), varDepth = -1) mustEqual
+        square.testInteraction(Vector3(1, 1, 10), varDepth = -1)
+      pool.testInteraction(Vector3(1, 1, 9), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(1, 1, 9), varDepth = 0)
+      pool.testInteraction(Vector3(1, 1, 8), varDepth = 1) mustEqual
+        square.testInteraction(Vector3(1, 1, 8), varDepth = 1)
     }
 
     "must have interaction that fails (same as DeepSquare)" in {
-      pool.testInteraction(Vector3(1,0, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(1,0, 0), varDepth =  0)
-      pool.testInteraction(Vector3(1,9, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(1,9, 0), varDepth =  0)
-      pool.testInteraction(Vector3(0,9, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(0,9, 0), varDepth =  0)
-      pool.testInteraction(Vector3(0,1, 0), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(0,1, 0), varDepth =  0)
-      pool.testInteraction(Vector3(1,1,11), varDepth = -1) mustEqual
-        square.testInteraction(Vector3(1,1,11), varDepth = -1)
-      pool.testInteraction(Vector3(1,1,10), varDepth =  0) mustEqual
-        square.testInteraction(Vector3(1,1,10), varDepth =  0)
-      pool.testInteraction(Vector3(1,1, 9), varDepth =  1) mustEqual
-        square.testInteraction(Vector3(1,1, 9), varDepth =  1)
+      pool.testInteraction(Vector3(1, 0, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(1, 0, 0), varDepth = 0)
+      pool.testInteraction(Vector3(1, 9, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(1, 9, 0), varDepth = 0)
+      pool.testInteraction(Vector3(0, 9, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(0, 9, 0), varDepth = 0)
+      pool.testInteraction(Vector3(0, 1, 0), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(0, 1, 0), varDepth = 0)
+      pool.testInteraction(Vector3(1, 1, 11), varDepth = -1) mustEqual
+        square.testInteraction(Vector3(1, 1, 11), varDepth = -1)
+      pool.testInteraction(Vector3(1, 1, 10), varDepth = 0) mustEqual
+        square.testInteraction(Vector3(1, 1, 10), varDepth = 0)
+      pool.testInteraction(Vector3(1, 1, 9), varDepth = 1) mustEqual
+        square.testInteraction(Vector3(1, 1, 9), varDepth = 1)
     }
   }
 }
@@ -319,21 +319,21 @@ class PieceOfEnvironmentTest extends Specification {
     val level = SeaLevel(10f)
 
     "detect entering a critical region" in {
-      testStepIntoInteraction(level, Vector3(0,0,9), Vector3(0,0,11), varDepth = 0).contains(true) mustEqual true
+      testStepIntoInteraction(level, Vector3(0, 0, 9), Vector3(0, 0, 11), varDepth = 0).contains(true) mustEqual true
     }
 
     "detect leaving a critical region" in {
-      testStepIntoInteraction(level, Vector3(0,0,11), Vector3(0,0,9), varDepth = 0).contains(false) mustEqual true
+      testStepIntoInteraction(level, Vector3(0, 0, 11), Vector3(0, 0, 9), varDepth = 0).contains(false) mustEqual true
     }
 
     "not detect moving outside of a critical region" in {
-      testStepIntoInteraction(level, Vector3(0,0,12), Vector3(0,0,11), varDepth = 0).isEmpty mustEqual true
+      testStepIntoInteraction(level, Vector3(0, 0, 12), Vector3(0, 0, 11), varDepth = 0).isEmpty mustEqual true
     }
 
     "not detect moving within a critical region" in {
-      testStepIntoInteraction(level, Vector3(0,0,9), Vector3(0,0,8), varDepth = 0).isEmpty mustEqual true
+      testStepIntoInteraction(level, Vector3(0, 0, 9), Vector3(0, 0, 8), varDepth = 0).isEmpty mustEqual true
     }
   }
 }
 
-object EnvironmentTest { }
+object EnvironmentTest {}

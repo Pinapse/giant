@@ -25,7 +25,7 @@ class VehicleSpawnControlFinalClearance(pad: VehicleSpawnPad) extends VehicleSpa
 
   var temp: Cancellable = Default.Cancellable
 
-  override def postStop() : Unit = {
+  override def postStop(): Unit = {
     temp.cancel()
   }
 

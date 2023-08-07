@@ -10,13 +10,13 @@ class Member {
   private var orders: String                   = ""
   private var requirements: Set[Certification] = Set()
   //about the individual filling the position
-  private var name: String      = ""
-  private var charId: Long      = 0L
-  private var guid: Int         = 0
-  private var health: Int       = 0
-  private var armor: Int        = 0
-  private var zoneId: Int       = 0
-  private var position: Vector3 = Vector3.Zero
+  private var name: String              = ""
+  private var charId: Long              = 0L
+  private var guid: Int                 = 0
+  private var health: Int               = 0
+  private var armor: Int                = 0
+  private var zoneId: Int               = 0
+  private var position: Vector3         = Vector3.Zero
   private var certs: Set[Certification] = Set()
 
   def Role: String = role

@@ -7,5 +7,5 @@ import net.psforever.objects.guid.key.{AvailabilityPolicy, Monitor}
 private class Key extends Monitor {
   var policy: AvailabilityPolicy = AvailabilityPolicy.Available
 
-  var obj: Option[IdentifiableEntity]  = None
+  var obj: Option[IdentifiableEntity] = None
 }

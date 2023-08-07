@@ -23,12 +23,12 @@ import scodec.codecs._
   * @param vs players belonging to the Vanu Sovereignty interact with this warp gate as a "broadcast gate"
   */
 final case class BroadcastWarpgateUpdateMessage(
-                                                 zone_id: Int,
-                                                 building_id: Int,
-                                                 tr: Boolean,
-                                                 nc: Boolean,
-                                                 vs: Boolean
-                                               ) extends PlanetSideGamePacket {
+    zone_id: Int,
+    building_id: Int,
+    tr: Boolean,
+    nc: Boolean,
+    vs: Boolean
+) extends PlanetSideGamePacket {
   type Packet = BroadcastWarpgateUpdateMessage
   def opcode = GamePacketOpcode.BroadcastWarpgateUpdateMessage
   def encode = BroadcastWarpgateUpdateMessage.encode(this)
@@ -36,18 +36,18 @@ final case class BroadcastWarpgateUpdateMessage(
 
 object BroadcastWarpgateUpdateMessage extends Marshallable[BroadcastWarpgateUpdateMessage] {
   def apply(
-             zoneId: Int,
-             buildingId: Int,
-             faction: PlanetSideEmpire.Value
-           ): BroadcastWarpgateUpdateMessage = {
+      zoneId: Int,
+      buildingId: Int,
+      faction: PlanetSideEmpire.Value
+  ): BroadcastWarpgateUpdateMessage = {
     BroadcastWarpgateUpdateMessage(zoneId, buildingId, Set(faction))
   }
 
   def apply(
-             zoneId: Int,
-             buildingId: Int,
-             factions: Set[PlanetSideEmpire.Value]
-           ): BroadcastWarpgateUpdateMessage = {
+      zoneId: Int,
+      buildingId: Int,
+      factions: Set[PlanetSideEmpire.Value]
+  ): BroadcastWarpgateUpdateMessage = {
     val f = {
       val out = Array.fill(PlanetSideEmpire.values.size)(false)
       factions.map(_.id).foreach { i => out.update(i, true) }

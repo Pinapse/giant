@@ -25,11 +25,13 @@ import scala.collection.mutable.ListBuffer
   * @param desiredSpanSize the amount of coordinate space attributed to each bucket in the blockmap (m)
   */
 class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
+
   /** a clamping of the desired span size to a realistic value to use for the span size;
     * blocks can not be too small, but also should not be much larger than the width of the representable region
     * a block spanning as wide as the map is an acceptable cap
     */
   val spanSize: Int = math.min(math.max(10, desiredSpanSize), fullMapWidth)
+
   /** how many sectors are in a row;
     * the far side sector may run off into un-navigable regions but will always contain a sliver of represented map space,
     * for example, on a 0-10 grid where the span size is 3, the spans will begin at (0, 3, 6, 9)
@@ -37,19 +39,23 @@ class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
     * the invalid, not represented regions should be silently ignored
     */
   val blocksInRow: Int = fullMapWidth / spanSize + (if (fullMapWidth % spanSize > 0) 1 else 0)
+
   /** the sectors / blocks / buckets into which entities that submit themselves are divided;
     * while the represented region need not be square, the sectors are defined as squares
     */
   val blocks: ListBuffer[Sector] = {
     val horizontal: List[Int] = List.range(0, fullMapWidth, spanSize)
-    val vertical: List[Int] = List.range(0, fullMapHeight, spanSize)
-    ListBuffer.newBuilder[Sector].addAll(
-      vertical.flatMap { latitude =>
-        horizontal.map { longitude =>
-          new Sector(longitude, latitude, spanSize)
+    val vertical: List[Int]   = List.range(0, fullMapHeight, spanSize)
+    ListBuffer
+      .newBuilder[Sector]
+      .addAll(
+        vertical.flatMap { latitude =>
+          horizontal.map { longitude =>
+            new Sector(longitude, latitude, spanSize)
+          }
         }
-      }
-    ).result()
+      )
+      .result()
   }
 
   /**
@@ -84,17 +90,17 @@ class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
   }
 
   /**
-   * Given a coordinate position within representable space and a range from that representable space,
-   * find the sector conglomerate to which this range allocates.
-   * @see `BlockMap.findSectorIndices`
-   * @see `BlockMap.quickToSectorGroup`
-   * @param indices an enumeration that directly associates with the structure of the block map
-   * @param range the axis distance from the provided coordinates
-   * @return a conglomerate sector which lists all of the entities in the discovered sector(s)
-   */
+    * Given a coordinate position within representable space and a range from that representable space,
+    * find the sector conglomerate to which this range allocates.
+    * @see `BlockMap.findSectorIndices`
+    * @see `BlockMap.quickToSectorGroup`
+    * @param indices an enumeration that directly associates with the structure of the block map
+    * @param range the axis distance from the provided coordinates
+    * @return a conglomerate sector which lists all of the entities in the discovered sector(s)
+    */
   def sector(indices: Iterable[Int], range: Float): SectorPopulation = {
     if (indices.max < blocks.size) {
-      BlockMap.quickToSectorGroup(range, BlockMap.sectorsOnlyWithinBlockStructure(indices, blocks) )
+      BlockMap.quickToSectorGroup(range, BlockMap.sectorsOnlyWithinBlockStructure(indices, blocks))
     } else {
       SectorGroup(Nil)
     }
@@ -120,7 +126,7 @@ class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
     * @return a conglomerate sector which lists all of the entities in the allocated sector(s)
     */
   def addTo(target: BlockMapEntity, toPosition: Vector3): SectorPopulation = {
-    val (y,x) = BlockMap.rangeFromEntity(target)
+    val (y, x) = BlockMap.rangeFromEntity(target)
     addTo(target, toPosition, x, y)
   }
 
@@ -160,7 +166,7 @@ class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
     * @return a conglomerate sector which lists all of the entities in the allocated sector(s)
     */
   def addTo(target: BlockMapEntity, toPosition: Vector3, rangeX: Float, rangeY: Float): SectorPopulation = {
-    val to = BlockMap.findSectorIndices(blockMap = this, toPosition, rangeX, rangeY)
+    val to        = BlockMap.findSectorIndices(blockMap = this, toPosition, rangeX, rangeY)
     val toSectors = BlockMap.sectorsOnlyWithinBlockStructure(to, blocks)
     toSectors.foreach { block => block.addTo(target) }
     target.blockMapEntry = Some(BlockMapEntry(this, toPosition, rangeX, rangeY, to.toSet))
@@ -231,7 +237,12 @@ class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
     * @param rangeY the distance from the central sector along the major y-axis
     * @return a conglomerate sector which lists all of the entities in the allocated sector(s)
     */
-  private def actuallyRemoveFrom(target: BlockMapEntity, fromPosition: Vector3, rangeX: Float, rangeY: Float): SectorPopulation = {
+  private def actuallyRemoveFrom(
+      target: BlockMapEntity,
+      fromPosition: Vector3,
+      rangeX: Float,
+      rangeY: Float
+  ): SectorPopulation = {
     target.blockMapEntry match {
       case Some(entry) =>
         target.blockMapEntry = None
@@ -303,22 +314,31 @@ class BlockMap(fullMapWidth: Int, fullMapHeight: Int, desiredSpanSize: Int) {
     * @param rangeY the distance from the location along the major y-axis
     * @return a conglomerate sector which lists all of the entities in the allocated sector(s)
     */
-  def move(target: BlockMapEntity, toPosition: Vector3, fromPosition: Vector3, rangeX: Float, rangeY: Float): SectorPopulation = {
+  def move(
+      target: BlockMapEntity,
+      toPosition: Vector3,
+      fromPosition: Vector3,
+      rangeX: Float,
+      rangeY: Float
+  ): SectorPopulation = {
     target.blockMapEntry match {
       case Some(entry) =>
         val from = entry.sectors
-        val to = BlockMap.findSectorIndices(blockMap = this, toPosition, rangeX, rangeY).toSet
+        val to   = BlockMap.findSectorIndices(blockMap = this, toPosition, rangeX, rangeY).toSet
         to.diff(from).foreach { index => BlockMap.sectorOnlyWithinBlockStructure(index, blocks).addTo(target) }
-        from.diff(to).foreach { index => BlockMap.sectorOnlyWithinBlockStructure(index, entry.map.blocks).removeFrom(target) }
+        from.diff(to).foreach { index =>
+          BlockMap.sectorOnlyWithinBlockStructure(index, entry.map.blocks).removeFrom(target)
+        }
         target.blockMapEntry = Some(BlockMapEntry(this, toPosition, rangeX, rangeY, to))
         BlockMap.quickToSectorGroup(rangeX, rangeY, BlockMap.sectorsOnlyWithinBlockStructure(to, blocks))
-      case None    =>
+      case None =>
         SectorGroup(Nil)
     }
   }
 }
 
 object BlockMap {
+
   /**
     * Overloaded constructor that uses a `MapScale` field, common with `Zone` entities.
     * @param scale the two-dimensional scale of the map
@@ -369,13 +389,13 @@ object BlockMap {
     * @return the indices of the sectors in the blockmap structure
     */
   private def findSectorIndices(
-                                 spanSize: Int,
-                                 blocksInRow: Int,
-                                 blocksTotal: Int,
-                                 p: Vector3,
-                                 rangeX: Float,
-                                 rangeY: Float
-                               ): Iterable[Int] = {
+      spanSize: Int,
+      blocksInRow: Int,
+      blocksTotal: Int,
+      p: Vector3,
+      rangeX: Float,
+      rangeY: Float
+  ): Iterable[Int] = {
     val corners = {
       /*
       find the corners of a rectangular region extending in all cardinal directions from the position;
@@ -398,13 +418,14 @@ object BlockMap {
         [----][----][----][----]      [----][----][----]
        */
       val blocksInColumn = blocksTotal / blocksInRow
-      val lowx = math.max(0, p.x - rangeX)
-      val highx = math.min(p.x + rangeX, (blocksInRow * spanSize - 1).toFloat)
-      val lowy = math.max(0, p.y - rangeY)
-      val highy = math.min(p.y + rangeY, (blocksInColumn * spanSize - 1).toFloat)
-      Seq( (lowx,  lowy), (highx, lowy), (lowx,  highy), (highx, highy) )
-    }.map { case (x, y) =>
-      (y / spanSize).toInt * blocksInRow + (x / spanSize).toInt
+      val lowx           = math.max(0, p.x - rangeX)
+      val highx          = math.min(p.x + rangeX, (blocksInRow * spanSize - 1).toFloat)
+      val lowy           = math.max(0, p.y - rangeY)
+      val highy          = math.min(p.y + rangeY, (blocksInColumn * spanSize - 1).toFloat)
+      Seq((lowx, lowy), (highx, lowy), (lowx, highy), (highx, highy))
+    }.map {
+      case (x, y) =>
+        (y / spanSize).toInt * blocksInRow + (x / spanSize).toInt
     }
     if (corners.head == corners(3)) {
       List(corners.head)
@@ -428,7 +449,11 @@ object BlockMap {
     *                      if no default case, the default-default case is a single unit (`1.0f`)
     * @return the distance from a central position along the major axes (y-axis, then x-axis)
     */
-  def rangeFromEntity(target: BlockMapEntity, defaultX: Option[Float] = None, defaultY: Option[Float] = None): (Float, Float) = {
+  def rangeFromEntity(
+      target: BlockMapEntity,
+      defaultX: Option[Float] = None,
+      defaultY: Option[Float] = None
+  ): (Float, Float) = {
     target match {
       case b: Building =>
         //use the building's sphere of influence
@@ -437,11 +462,15 @@ object BlockMap {
       case o: PlanetSideGameObject =>
         //use the server geometry
         val pos = target.Position
-        val v = o.Definition.Geometry(o)
-        val out = math.sqrt(math.max(
-          Vector3.DistanceSquared(pos, v.pointOnOutside(Vector3(1,0,0)).asVector3),
-          Vector3.DistanceSquared(pos, v.pointOnOutside(Vector3(0,1,0)).asVector3)
-        )).toFloat
+        val v   = o.Definition.Geometry(o)
+        val out = math
+          .sqrt(
+            math.max(
+              Vector3.DistanceSquared(pos, v.pointOnOutside(Vector3(1, 0, 0)).asVector3),
+              Vector3.DistanceSquared(pos, v.pointOnOutside(Vector3(0, 1, 0)).asVector3)
+            )
+          )
+          .toFloat
         (out, out)
 
       case e: PieceOfEnvironment =>
@@ -480,8 +509,6 @@ object BlockMap {
     quickToSectorGroup(range, range, to)
   }
 
-
-
   /**
     * If only one sector, just return that sector.
     * If a group of sectors, organize them into a single referential sector.
@@ -506,9 +533,9 @@ object BlockMap {
     * @return the sector at the index position, or a blank sector
     */
   private def sectorOnlyWithinBlockStructure(
-                                              index: Int,
-                                              structure: Iterable[Sector]
-                                            ): Sector = {
+      index: Int,
+      structure: Iterable[Sector]
+  ): Sector = {
     if (index < structure.size) {
       structure.toSeq(index)
     } else {
@@ -524,9 +551,9 @@ object BlockMap {
     * @return the collection of sectors at the index positions, or a blank collection
     */
   private def sectorsOnlyWithinBlockStructure(
-                                               list: Iterable[Int],
-                                               structure: Iterable[Sector]
-                                             ): Iterable[Sector] = {
+      list: Iterable[Int],
+      structure: Iterable[Sector]
+  ): Iterable[Sector] = {
     if (list.max < structure.size) {
       val structureSeq = structure.toSeq
       list.toSet.map { structureSeq }

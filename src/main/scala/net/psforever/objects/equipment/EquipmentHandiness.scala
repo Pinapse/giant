@@ -10,15 +10,15 @@ object Handiness extends StringEnum[Hand] {
   val values = findValues
 
   case object Generic extends Hand(value = "Generic")
-  case object Left extends Hand(value = "Left")
-  case object Right extends Hand(value = "Right")
+  case object Left    extends Hand(value = "Left")
+  case object Right   extends Hand(value = "Right")
 }
 
 final case class EquipmentHandiness(
-                                      generic: EquipmentDefinition,
-                                      left: EquipmentDefinition,
-                                      right: EquipmentDefinition
-                                    ) {
+    generic: EquipmentDefinition,
+    left: EquipmentDefinition,
+    right: EquipmentDefinition
+) {
   def transform(handiness: Hand): EquipmentDefinition = {
     handiness match {
       case Handiness.Generic => generic

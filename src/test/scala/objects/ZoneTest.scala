@@ -111,8 +111,8 @@ class ZoneTest extends Specification {
       zone.AddPool("pool1", (0 to 50).toList)
       zone.AddPool("pool2", (51 to 75).toList)
 
-      val obj = new TestObject()
-      val registration =  guid1.register(obj, "pool2")
+      val obj          = new TestObject()
+      val registration = guid1.register(obj, "pool2")
       registration.isSuccess mustEqual true
       guid1.WhichPool(obj).contains("pool2") mustEqual true
 

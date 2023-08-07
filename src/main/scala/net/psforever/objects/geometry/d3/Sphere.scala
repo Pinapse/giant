@@ -13,8 +13,7 @@ import net.psforever.types.Vector3
   * @param p the point
   * @param radius a distance that spans all points in any direction from the central point
   */
-final case class Sphere(p: Point, radius: Float)
-  extends VolumetricGeometry {
+final case class Sphere(p: Point, radius: Float) extends VolumetricGeometry {
   def center: Point = p
 
   def moveCenter(point: geometry.Point): Sphere = Sphere(Point(point), radius)
@@ -28,12 +27,13 @@ final case class Sphere(p: Point, radius: Float)
     */
   override def pointOnOutside(v: Vector3): Point = {
     val slope = Vector3.Unit(v)
-    val mult = radius / Vector3.Magnitude(slope)
+    val mult  = radius / Vector3.Magnitude(slope)
     Point(center.asVector3 + slope * mult)
   }
 }
 
 object Sphere {
+
   /**
     * An overloaded constructor that only defines the radius of the sphere
     * and places it at the world origin.
@@ -50,7 +50,7 @@ object Sphere {
     * @param radius a distance around the world origin coordinates
     * @return a `Sphere` entity
     */
-  def apply(x: Float, y: Float, z: Float, radius: Float): Sphere = Sphere(Point(x,y,z), radius)
+  def apply(x: Float, y: Float, z: Float, radius: Float): Sphere = Sphere(Point(x, y, z), radius)
 
   /**
     * An overloaded constructor that uses vector coordinates to define the central point.

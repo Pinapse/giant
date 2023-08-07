@@ -22,22 +22,22 @@ class ZoneGroundActor(zone: Zone, equipmentOnGround: ListBuffer[Equipment]) exte
   def receive: Receive = {
     case Zone.Ground.DropItem(item, pos, orient) =>
       sender() ! (if (!item.HasGUID) {
-        Zone.Ground.CanNotDropItem(zone, item, "not registered yet")
-      } else if (zone.GUID(item.GUID).isEmpty) {
-        Zone.Ground.CanNotDropItem(zone, item, "registered to some other zone")
-      } else if (equipmentOnGround.contains(item)) {
-        Zone.Ground.CanNotDropItem(zone, item, "already dropped")
-      } else {
-        equipmentOnGround += item
-        item.Position = pos
-        item.Orientation = orient
-        zone.AvatarEvents ! AvatarServiceMessage(
-          zone.id,
-          AvatarAction.DropItem(Service.defaultPlayerGUID, item)
-        )
-        zone.actor ! ZoneActor.AddToBlockMap(item, pos)
-        Zone.Ground.ItemOnGround(item, pos, orient)
-      })
+                    Zone.Ground.CanNotDropItem(zone, item, "not registered yet")
+                  } else if (zone.GUID(item.GUID).isEmpty) {
+                    Zone.Ground.CanNotDropItem(zone, item, "registered to some other zone")
+                  } else if (equipmentOnGround.contains(item)) {
+                    Zone.Ground.CanNotDropItem(zone, item, "already dropped")
+                  } else {
+                    equipmentOnGround += item
+                    item.Position = pos
+                    item.Orientation = orient
+                    zone.AvatarEvents ! AvatarServiceMessage(
+                      zone.id,
+                      AvatarAction.DropItem(Service.defaultPlayerGUID, item)
+                    )
+                    zone.actor ! ZoneActor.AddToBlockMap(item, pos)
+                    Zone.Ground.ItemOnGround(item, pos, orient)
+                  })
 
     case Zone.Ground.PickupItem(item_guid) =>
       sender() ! (FindItemOnGround(item_guid) match {

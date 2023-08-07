@@ -94,7 +94,8 @@ case class AppConfig(
     network: NetworkConfig,
     development: DevelopmentConfig,
     kamon: KamonConfig,
-    sentry: SentryConfig
+    sentry: SentryConfig,
+    prometheus: PrometheusConfig
 )
 
 case class LoginConfig(
@@ -199,6 +200,13 @@ case class KamonConfig(
 case class SentryConfig(
     enable: Boolean,
     dsn: String
+)
+
+case class PrometheusConfig(
+    http: Boolean,
+    port: Int,
+    username: String,
+    password: String
 )
 
 case class WarpGateConfig(

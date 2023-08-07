@@ -39,10 +39,10 @@ object RibbonBarSlot extends Enumeration {
   * @see `MeritCommendation`
   */
 final case class DisplayedAwardMessage(
-                                        player_guid: PlanetSideGUID,
-                                        ribbon: MeritCommendation.Value,
-                                        bar: RibbonBarSlot.Value
-                                      ) extends PlanetSideGamePacket {
+    player_guid: PlanetSideGUID,
+    ribbon: MeritCommendation.Value,
+    bar: RibbonBarSlot.Value
+) extends PlanetSideGamePacket {
   type Packet = DisplayedAwardMessage
   def opcode = GamePacketOpcode.DisplayedAwardMessage
   def encode = DisplayedAwardMessage.encode(this)
@@ -51,7 +51,7 @@ final case class DisplayedAwardMessage(
 object DisplayedAwardMessage extends Marshallable[DisplayedAwardMessage] {
   implicit val codec: Codec[DisplayedAwardMessage] = (
     ("player_guid" | PlanetSideGUID.codec) ::
-    ("ribbon" | MeritCommendation.codec) ::
-    ("bar" | RibbonBarSlot.codec)
+      ("ribbon" | MeritCommendation.codec) ::
+      ("bar" | RibbonBarSlot.codec)
   ).as[DisplayedAwardMessage]
 }

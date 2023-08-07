@@ -110,7 +110,7 @@ class DeployableMapIconTest extends ActorTest {
 class DoorClosesTest extends FreedContextActorTest {
   val probe = new TestProbe(system)
   val zone = new Zone("test", new ZoneMap("test-map"), 0) {
-    override def SetupNumberPools() : Unit = { }
+    override def SetupNumberPools(): Unit = {}
   }
   zone.init(context)
   expectNoMessage(500 milliseconds)
@@ -119,7 +119,9 @@ class DoorClosesTest extends FreedContextActorTest {
     "pass DoorCloses" in {
       zone.LocalEvents.tell(Service.Join("test"), probe.ref)
       zone.LocalEvents ! LocalServiceMessage("test", LocalAction.DoorCloses(PlanetSideGUID(10), PlanetSideGUID(40)))
-      probe.expectMsg(LocalServiceResponse("/test/Local", PlanetSideGUID(10), LocalResponse.DoorCloses(PlanetSideGUID(40))))
+      probe.expectMsg(
+        LocalServiceResponse("/test/Local", PlanetSideGUID(10), LocalResponse.DoorCloses(PlanetSideGUID(40)))
+      )
     }
   }
 }
@@ -138,7 +140,11 @@ class HackClearTest extends ActorTest {
       service ! Service.Join("test")
       service ! LocalServiceMessage("test", LocalAction.HackClear(PlanetSideGUID(10), obj, 0L, 1000L))
       expectMsg(
-        LocalServiceResponse("/test/Local", PlanetSideGUID(10), LocalResponse.SendHackMessageHackCleared(PlanetSideGUID(40), 0L, 1000L))
+        LocalServiceResponse(
+          "/test/Local",
+          PlanetSideGUID(10),
+          LocalResponse.SendHackMessageHackCleared(PlanetSideGUID(40), 0L, 1000L)
+        )
       )
     }
   }

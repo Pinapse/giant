@@ -8,8 +8,10 @@ import net.psforever.objects.{GlobalDefinitions, PlanetSideGameObject, Player}
 import net.psforever.types.{ExoSuitType, Vector3}
 
 object GeometryForm {
+
   /** this point can not be used for purposes of geometric representation */
-  lazy val invalidPoint: d3.Point     = d3.Point(Float.MinValue, Float.MinValue, Float.MinValue)
+  lazy val invalidPoint: d3.Point = d3.Point(Float.MinValue, Float.MinValue, Float.MinValue)
+
   /** this cylinder can not be used for purposes of geometric representation */
   lazy val invalidCylinder: Cylinder = Cylinder(invalidPoint.asVector3, Vector3.Zero, Float.MinValue, 0)
 
@@ -37,9 +39,9 @@ object GeometryForm {
     o match {
       case p: PlanetSideGameObject =>
         Sphere(p.Position, radius)
-      case s: SourceEntry          =>
+      case s: SourceEntry =>
         Sphere(s.Position, radius)
-      case _                       =>
+      case _ =>
         Sphere(invalidPoint, radius)
     }
   }
@@ -56,9 +58,9 @@ object GeometryForm {
     o match {
       case p: PlanetSideGameObject =>
         Sphere(p.Position + Vector3.z(radius), radius)
-      case s: SourceEntry          =>
+      case s: SourceEntry =>
         Sphere(s.Position + Vector3.z(radius), radius)
-      case _                       =>
+      case _ =>
         Sphere(invalidPoint, radius)
     }
   }
@@ -74,9 +76,9 @@ object GeometryForm {
     o match {
       case p: PlanetSideGameObject =>
         Sphere(p.Position + Vector3.relativeUp(p.Orientation) * radius, radius)
-      case s: SourceEntry          =>
+      case s: SourceEntry =>
         Sphere(s.Position + Vector3.relativeUp(s.Orientation) * radius, radius)
-      case _                       =>
+      case _ =>
         Sphere(invalidPoint, radius)
     }
   }
@@ -122,15 +124,15 @@ object GeometryForm {
   def representPlayerByCylinder(radius: Float)(o: Any): VolumetricGeometry = {
     o match {
       case p: Player =>
-        val radialOffset = if(p.ExoSuit == ExoSuitType.MAX) 0.25f else 0f
+        val radialOffset = if (p.ExoSuit == ExoSuitType.MAX) 0.25f else 0f
         Cylinder(
           p.Position,
           radius + radialOffset,
           GlobalDefinitions.MaxDepth(p)
         )
       case p: PlayerSource =>
-        val radialOffset = if(p.ExoSuit == ExoSuitType.MAX) 0.125f else 0f
-        val heightOffset = if(p.crouching) 1.093750f else GlobalDefinitions.avatar.MaxDepth
+        val radialOffset = if (p.ExoSuit == ExoSuitType.MAX) 0.125f else 0f
+        val heightOffset = if (p.crouching) 1.093750f else GlobalDefinitions.avatar.MaxDepth
         Cylinder(
           p.Position,
           radius + radialOffset,

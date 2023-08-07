@@ -78,7 +78,7 @@ class DoorControlOpenTest extends ActorTest {
       val reply = probe.receiveOne(1000 milliseconds)
       assert(reply match {
         case LocalServiceMessage("test", LocalAction.DoorOpens(PlanetSideGUID(0), _, d)) => d eq door
-        case _ => false
+        case _                                                                           => false
       })
       assert(door.Open.isDefined)
     }
@@ -89,7 +89,7 @@ class DoorControlTooFarTest extends ActorTest {
   "DoorControl" should {
     "do not open if the player is too far away" in {
       val (player, door, probe) = DoorControlTest.SetUpAgents(PlanetSideEmpire.TR)
-      player.Position = Vector3(10,0,0)
+      player.Position = Vector3(10, 0, 0)
       door.Actor ! CommonMessages.Use(player)
       probe.expectNoMessage(Duration.create(500, "ms"))
       assert(door.Open.isEmpty)
@@ -106,7 +106,7 @@ class DoorControlAlreadyOpenTest extends ActorTest {
       val reply = probe.receiveOne(1000 milliseconds)
       assert(reply match {
         case LocalServiceResponse("test", _, LocalResponse.DoorOpens(guid)) => guid == door.GUID
-        case _ => false
+        case _                                                              => false
       })
     }
   }
@@ -128,8 +128,8 @@ class DoorControlGarbageDataTest extends ActorTest {
 object DoorControlTest {
   def SetUpAgents(faction: PlanetSideEmpire.Value)(implicit system: ActorSystem): (Player, Door, TestProbe) = {
     val eventsProbe = new TestProbe(system)
-    val door = Door(GlobalDefinitions.door)
-    val guid = new NumberPoolHub(new MaxNumberSource(5))
+    val door        = Door(GlobalDefinitions.door)
+    val guid        = new NumberPoolHub(new MaxNumberSource(5))
     val zone = new Zone(id = "test", new ZoneMap(name = "test"), zoneNumber = 0) {
       override def SetupNumberPools(): Unit = {}
       GUID(guid)

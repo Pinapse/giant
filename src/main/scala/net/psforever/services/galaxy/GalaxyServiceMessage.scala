@@ -17,7 +17,7 @@ object GalaxyServiceMessage {
 object GalaxyAction {
   trait Action
 
-  final case class MapUpdate(msg: BuildingInfoUpdateMessage) extends Action
+  final case class MapUpdate(msg: BuildingInfoUpdateMessage)    extends Action
   final case class FlagMapUpdate(msg: CaptureFlagUpdateMessage) extends Action
 
   final case class TransferPassenger(
@@ -29,11 +29,11 @@ object GalaxyAction {
   ) extends Action
 
   final case class UpdateBroadcastPrivileges(
-                                              zoneId: Int,
-                                              gateMapId: Int,
-                                              fromFactions: Set[PlanetSideEmpire.Value],
-                                              toFactions: Set[PlanetSideEmpire.Value]
-                                            ) extends Action
+      zoneId: Int,
+      gateMapId: Int,
+      fromFactions: Set[PlanetSideEmpire.Value],
+      toFactions: Set[PlanetSideEmpire.Value]
+  ) extends Action
 
   final case class LockedZoneUpdate(zone: Zone, timeUntilUnlock: Long) extends Action
 

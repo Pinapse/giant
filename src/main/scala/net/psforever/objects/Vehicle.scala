@@ -99,9 +99,9 @@ class Vehicle(private val vehicleDef: VehicleDefinition)
   private var decal: Int                          = 0
   private var trunkAccess: Option[PlanetSideGUID] = None
 
-  private var cloaked: Boolean                    = false
-  private var flying: Option[Int]                 = None
-  private var capacitor: Int                      = 0
+  private var cloaked: Boolean    = false
+  private var flying: Option[Int] = None
+  private var capacitor: Int      = 0
 
   /**
     * Permissions control who gets to access different parts of the vehicle;
@@ -109,10 +109,10 @@ class Vehicle(private val vehicleDef: VehicleDefinition)
     */
   private val groupPermissions: Array[VehicleLockState.Value] =
     Array(VehicleLockState.Locked, VehicleLockState.Empire, VehicleLockState.Empire, VehicleLockState.Locked)
-  private var cargoHolds: Map[Int, Cargo]        = Map.empty
-  private var utilities: Map[Int, Utility]       = Map.empty
-  private var subsystems: List[VehicleSubsystem] = Nil
-  private val trunk: GridInventory               = GridInventory()
+  private var cargoHolds: Map[Int, Cargo]                            = Map.empty
+  private var utilities: Map[Int, Utility]                           = Map.empty
+  private var subsystems: List[VehicleSubsystem]                     = Nil
+  private val trunk: GridInventory                                   = GridInventory()
   private var vehicleGatingManifest: Option[VehicleManifest]         = None
   private var previousVehicleGatingManifest: Option[VehicleManifest] = None
 
@@ -409,9 +409,9 @@ class Vehicle(private val vehicleDef: VehicleDefinition)
   }
 
   @tailrec private def recursiveSlotFit(
-                                         iter: Iterator[(Int, EquipmentSlot)],
-                                         objSize: EquipmentSize.Value
-                                       ): Option[Int] = {
+      iter: Iterator[(Int, EquipmentSlot)],
+      objSize: EquipmentSize.Value
+  ): Option[Int] = {
     if (!iter.hasNext) {
       None
     } else {
@@ -431,7 +431,7 @@ class Vehicle(private val vehicleDef: VehicleDefinition)
           case Some(item) => Success(List(InventoryItem(item, dest)))
           case None       => Success(List())
         }
-      case None           => super.Collisions(dest, width, height)
+      case None => super.Collisions(dest, width, height)
     }
   }
 
@@ -607,7 +607,7 @@ object Vehicle {
     * It also forces passengers to update their internal understanding of their own drowning state.
     * @param passenger a player mounted in the vehicle
     */
-  final case class UpdateZoneInteractionProgressUI(passenger : Player)
+  final case class UpdateZoneInteractionProgressUI(passenger: Player)
 
   /**
     * Overloaded constructor.
@@ -638,31 +638,39 @@ object Vehicle {
     vehicle.Shields = vdef.DefaultShields
     vehicle.Capacitor = vdef.DefaultCapacitor
     //create weapons
-    vehicle.weapons = vdef.Weapons.map[Int, EquipmentSlot] {
-      case (num: Int, definition: ToolDefinition) =>
-        val slot = EquipmentSlot(definition.Size)
-        slot.Equipment = Tool(definition)
-        num -> slot
-    }.toMap
+    vehicle.weapons = vdef.Weapons
+      .map[Int, EquipmentSlot] {
+        case (num: Int, definition: ToolDefinition) =>
+          val slot = EquipmentSlot(definition.Size)
+          slot.Equipment = Tool(definition)
+          num -> slot
+      }
+      .toMap
     //create seats
-    vehicle.seats = vdef.Seats.map[Int, Seat] {
-      case (num: Int, definition: SeatDefinition) =>
-        num -> new Seat(definition)
-    }.toMap
+    vehicle.seats = vdef.Seats
+      .map[Int, Seat] {
+        case (num: Int, definition: SeatDefinition) =>
+          num -> new Seat(definition)
+      }
+      .toMap
     // create cargo holds
-    vehicle.cargoHolds = vdef.Cargo.map[Int, Cargo] {
-      case (num, definition) =>
-        num -> new Cargo(definition)
-    }.toMap
+    vehicle.cargoHolds = vdef.Cargo
+      .map[Int, Cargo] {
+        case (num, definition) =>
+          num -> new Cargo(definition)
+      }
+      .toMap
     //create utilities
-    vehicle.utilities = vdef.Utilities.map[Int, Utility] {
-      case (num: Int, util: UtilityType.Value) =>
-        val obj     = Utility(util, vehicle)
-        val utilObj = obj()
-        vehicle.Amenities = utilObj
-        utilObj.LocationOffset = vdef.UtilityOffset.get(num)
-        num -> obj
-    }.toMap
+    vehicle.utilities = vdef.Utilities
+      .map[Int, Utility] {
+        case (num: Int, util: UtilityType.Value) =>
+          val obj     = Utility(util, vehicle)
+          val utilObj = obj()
+          vehicle.Amenities = utilObj
+          utilObj.LocationOffset = vdef.UtilityOffset.get(num)
+          num -> obj
+      }
+      .toMap
     //subsystems
     vehicle.subsystems = vdef.subsystems.map { entry => new VehicleSubsystem(entry) }
     //trunk

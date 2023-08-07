@@ -87,6 +87,7 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
 
   /** The basic support structure for the globally unique number system used by this `Zone`. */
   private var guid: NumberPoolHub = new NumberPoolHub(new MaxNumberSource(65536))
+
   /** The core of the unique number system, to which requests may be submitted.
     * @see `UniqueNumberSys`
     * @see `Zone.Init(ActorContext)`
@@ -130,7 +131,7 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
     */
   private val corpses: ListBuffer[Player] = ListBuffer[Player]()
 
-  private var projectiles: ActorRef = Default.Actor
+  private var projectiles: ActorRef                  = Default.Actor
   private val projectileList: ListBuffer[Projectile] = ListBuffer[Projectile]()
 
   /**
@@ -211,9 +212,13 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
       SetupNumberPools()
       context.actorOf(Props(classOf[UniqueNumberSys], this, this.guid), s"zone-$id-uns")
       ground = context.actorOf(Props(classOf[ZoneGroundActor], this, equipmentOnGround), s"zone-$id-ground")
-      deployables = context.actorOf(Props(classOf[ZoneDeployableActor], this, constructions, linkDynamicTurretWeapon), s"zone-$id-deployables")
+      deployables = context.actorOf(
+        Props(classOf[ZoneDeployableActor], this, constructions, linkDynamicTurretWeapon),
+        s"zone-$id-deployables"
+      )
       projectiles = context.actorOf(Props(classOf[ZoneProjectileActor], this, projectileList), s"zone-$id-projectiles")
-      transport = context.actorOf(Props(classOf[ZoneVehicleActor], this, vehicles, linkDynamicTurretWeapon), s"zone-$id-vehicles")
+      transport =
+        context.actorOf(Props(classOf[ZoneVehicleActor], this, vehicles, linkDynamicTurretWeapon), s"zone-$id-vehicles")
       population = context.actorOf(Props(classOf[ZonePopulationActor], this, players, corpses), s"zone-$id-players")
       projector = context.actorOf(
         Props(classOf[ZoneHotSpotDisplay], this, hotspots, 15 seconds, hotspotHistory, 60 seconds),
@@ -358,21 +363,21 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
   ): List[(AmenityOwner, Iterable[SpawnPoint])] = {
     val ams = spawnGroups.contains(SpawnGroup.AMS)
     val structures = spawnGroups.collect {
-      case SpawnGroup.Facility => StructureType.Facility
-      case SpawnGroup.Tower => StructureType.Tower
-      case SpawnGroup.WarpGate => StructureType.WarpGate
+      case SpawnGroup.Facility  => StructureType.Facility
+      case SpawnGroup.Tower     => StructureType.Tower
+      case SpawnGroup.WarpGate  => StructureType.WarpGate
       case SpawnGroup.Sanctuary => StructureType.Building
     }
     SpawnGroups()
       .collect {
         case (building, spawns)
-          if (building match {
-            case warpGate: WarpGate => warpGate.Faction == faction || warpGate.Broadcast(faction)
-            case _ => building.Faction == faction
-          }) &&
-            structures.contains(building.BuildingType) &&
-            spawns.nonEmpty &&
-            spawns.exists(_.isOffline == false) =>
+            if (building match {
+              case warpGate: WarpGate => warpGate.Faction == faction || warpGate.Broadcast(faction)
+              case _                  => building.Faction == faction
+            }) &&
+              structures.contains(building.BuildingType) &&
+              spawns.nonEmpty &&
+              spawns.exists(_.isOffline == false) =>
           (building, spawns.filter(!_.isOffline))
       }
       .concat(
@@ -462,7 +467,7 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
     if (unops == null) {
       guid.AddPool(name, pool.toList) match {
         case _: Exception => None
-        case out => Some(out)
+        case out          => Some(out)
       }
     } else {
       None
@@ -660,16 +665,17 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
         (buildings.get(building_id), guid(object_guid)) match {
           case (Some(building), Some(amenity: Amenity)) =>
             building.Amenities = amenity
-            //amenity.History(EntitySpawn(SourceEntry(amenity), this))
+          //amenity.History(EntitySpawn(SourceEntry(amenity), this))
           case (Some(_), _) | (None, _) | (_, None) => ; //let ZoneActor's sanity check catch this error
         }
     })
     //doors with nearby locks use those locks as their unlocking mechanism
     //let ZoneActor's sanity check catch missing entities
     map.doorToLock
-      .map { case(doorGUID: Int, lockGUID: Int) => (guid(doorGUID), guid(lockGUID)) }
-      .collect { case (Some(door: Door), Some(lock: IFFLock)) =>
-        door.Actor ! Door.UpdateMechanism(IFFLock.testLock(lock))
+      .map { case (doorGUID: Int, lockGUID: Int) => (guid(doorGUID), guid(lockGUID)) }
+      .collect {
+        case (Some(door: Door), Some(lock: IFFLock)) =>
+          door.Actor ! Door.UpdateMechanism(IFFLock.testLock(lock))
       }
     //ntu management (eventually move to a generic building startup function)
     buildings.values
@@ -688,8 +694,9 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
     //the orbital_buildings in sanctuary zones have to establish their shuttle routes
     map.shuttleBays
       .map { guid(_) }
-      .collect { case Some(obj: OrbitalShuttlePad) =>
-        obj.Actor ! Service.Startup()
+      .collect {
+        case Some(obj: OrbitalShuttlePad) =>
+          obj.Actor ! Service.Startup()
       }
     //allocate soi information
     soi ! SOI.Build()
@@ -860,7 +867,7 @@ class Zone(val id: String, val map: ZoneMap, zoneNumber: Int) {
   * @param guid the number pool management class
   */
 private class UniqueNumberSys(zone: Zone, guid: NumberPoolHub)
-  extends UniqueNumberSetup(guid, UniqueNumberSetup.AllocateNumberPoolActors) {
+    extends UniqueNumberSetup(guid, UniqueNumberSetup.AllocateNumberPoolActors) {
   override def init(): UniqueNumberOps = {
     val unsys = super.init()
     zone.unops = unsys // zone.unops is accessible from here by virtue of being 'private[zones]`
@@ -1019,7 +1026,7 @@ object Zone {
       def apply(data: DamageResult): Activity = {
         data.adversarial match {
           case Some(adversity) => Conflict(adversity.defender, adversity.attacker, data.interaction.hitPos)
-          case None => NonEvent()
+          case None            => NonEvent()
         }
       }
 
@@ -1099,12 +1106,12 @@ object Zone {
       * and a token that qualifies the current location of the object in the zone is returned.
       * The following groups of objects are searched:
       * the inventories of all players and all corpses,
-     * the lockers of all players and corpses,
-     * all vehicles's weapon mounts and trunks,
-     * all weapon-mounted deployables's mounted turrets,
-     * all facilities's natural mounted turrets;
-     * and, if still not found, the ground is scoured too;
-     * and, if still not found after that, it __shouldn't__ exist (in this zone).
+      * the lockers of all players and corpses,
+      * all vehicles's weapon mounts and trunks,
+      * all weapon-mounted deployables's mounted turrets,
+      * all facilities's natural mounted turrets;
+      * and, if still not found, the ground is scoured too;
+      * and, if still not found after that, it __shouldn't__ exist (in this zone).
       * @see `ItemLocation`
       * @see `LockerContainer`
       * @param equipment the target object
@@ -1126,25 +1133,26 @@ object Zone {
             case Some(avatar) => Some((avatar.locker, avatar.locker.Find(guid)))
             case _            => None
           }).orElse({
-            (continent.DeployableList.filter( d => d.Definition.DeployCategory == DeployableCategory.FieldTurrets ) ++
-              continent.DeployableList.filter( d => d.Definition.DeployCategory == DeployableCategory.SmallTurrets )).find {
-              case w: MountedWeapons => w.Weapons.values.flatMap(_.Equipment).exists(_ eq equipment)
-              case _                 => false
-            } match {
+            (continent.DeployableList.filter(d => d.Definition.DeployCategory == DeployableCategory.FieldTurrets) ++
+              continent.DeployableList.filter(d => d.Definition.DeployCategory == DeployableCategory.SmallTurrets))
+              .find {
+                case w: MountedWeapons => w.Weapons.values.flatMap(_.Equipment).exists(_ eq equipment)
+                case _                 => false
+              } match {
               case Some(deployable) => Some((deployable, Some(0)))
               case _                => None
             }
           }).orElse({
             continent.Buildings.values
-              .flatMap(_.Amenities).find {
-              case w: MountedWeapons => w.Weapons.values.flatMap(_.Equipment).exists(_ eq equipment)
-              case _                 => false
-            } match {
+              .flatMap(_.Amenities)
+              .find {
+                case w: MountedWeapons => w.Weapons.values.flatMap(_.Equipment).exists(_ eq equipment)
+                case _                 => false
+              } match {
               case Some(turret) => Some((turret.asInstanceOf[MountedWeapons], Some(0)))
               case _            => None
             }
-          })
-          match {
+          }) match {
             case Some((obj: MountedWeapons, Some(index))) =>
               Some(Zone.EquipmentIs.Mounted(obj, index))
             case Some((obj: Container, Some(index))) =>
@@ -1177,7 +1185,12 @@ object Zone {
       None
     } else {
       val neighbors = building.AllNeighbours.getOrElse(Set.empty[Building]).toList
-      recursiveFindConnectedCavernFacility(building.Faction, neighbors.headOption, neighbors.drop(1), Set(building.MapId))
+      recursiveFindConnectedCavernFacility(
+        building.Faction,
+        neighbors.headOption,
+        neighbors.drop(1),
+        Set(building.MapId)
+      )
     }
   }
 
@@ -1193,30 +1206,31 @@ object Zone {
     */
   @tailrec
   private def recursiveFindConnectedCavernFacility(
-                                                    sampleFaction: PlanetSideEmpire.Value,
-                                                    currBuilding: Option[Building],
-                                                    nextNeighbors: List[Building],
-                                                    visitedNeighbors: Set[Int]
-                                                  ): Option[Building] = {
-    if(currBuilding.isEmpty) {
+      sampleFaction: PlanetSideEmpire.Value,
+      currBuilding: Option[Building],
+      nextNeighbors: List[Building],
+      visitedNeighbors: Set[Int]
+  ): Option[Building] = {
+    if (currBuilding.isEmpty) {
       None
     } else {
       val building = currBuilding.head
-      if (!visitedNeighbors.contains(building.MapId)
-          && (building match {
-        case wg: WarpGate => wg.Faction == sampleFaction || wg.Broadcast(sampleFaction)
-        case _            => building.Faction == sampleFaction
-      })
-          && !building.CaptureTerminalIsHacked
-          && building.NtuLevel > 0
-          && (building.Generator match {
-        case Some(o) => o.Condition != PlanetSideGeneratorState.Destroyed
-        case _       => true
-      })
+      if (
+        !visitedNeighbors.contains(building.MapId)
+        && (building match {
+          case wg: WarpGate => wg.Faction == sampleFaction || wg.Broadcast(sampleFaction)
+          case _            => building.Faction == sampleFaction
+        })
+        && !building.CaptureTerminalIsHacked
+        && building.NtuLevel > 0
+        && (building.Generator match {
+          case Some(o) => o.Condition != PlanetSideGeneratorState.Destroyed
+          case _       => true
+        })
       ) {
         (building match {
           case wg: WarpGate => traverseWarpGateInSearchOfOwnedCavernFaciity(sampleFaction, wg)
-          case _ => None
+          case _            => None
         }) match {
           case out @ Some(_) =>
             out
@@ -1251,9 +1265,9 @@ object Zone {
     * @return if discovered, the first faction affiliated facility in a connected cavern
     */
   private def traverseWarpGateInSearchOfOwnedCavernFaciity(
-                                                            faction: PlanetSideEmpire.Value,
-                                                            target: WarpGate
-                                                          ): Option[Building] = {
+      faction: PlanetSideEmpire.Value,
+      target: WarpGate
+  ): Option[Building] = {
     WarpGateLogic.findNeighborhoodWarpGate(target.Neighbours.getOrElse(Nil)) match {
       case Some(gate) if gate.Zone.map.cavern =>
         WarpGateLogic.findNeighborhoodNormalBuilding(gate.Neighbours(faction).getOrElse(Nil))
@@ -1275,12 +1289,19 @@ object Zone {
     *         only mostly complete due to the exclusion of objects whose damage resolution is different than usual
     */
   def serverSideDamage(
-                        zone: Zone,
-                        source: PlanetSideGameObject with FactionAffinity with Vitality,
-                        createInteraction: (PlanetSideGameObject with FactionAffinity with Vitality, PlanetSideGameObject with FactionAffinity with Vitality) => DamageInteraction,
-                        testTargetsFromZone: (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = distanceCheck,
-                        acquireTargetsFromZone: (Zone, PlanetSideGameObject with FactionAffinity with Vitality, DamageWithPosition) => List[PlanetSideServerObject with Vitality] = findAllTargets
-                    ): List[PlanetSideServerObject] = {
+      zone: Zone,
+      source: PlanetSideGameObject with FactionAffinity with Vitality,
+      createInteraction: (
+          PlanetSideGameObject with FactionAffinity with Vitality,
+          PlanetSideGameObject with FactionAffinity with Vitality
+      ) => DamageInteraction,
+      testTargetsFromZone: (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = distanceCheck,
+      acquireTargetsFromZone: (
+          Zone,
+          PlanetSideGameObject with FactionAffinity with Vitality,
+          DamageWithPosition
+      ) => List[PlanetSideServerObject with Vitality] = findAllTargets
+  ): List[PlanetSideServerObject] = {
     source.Definition.innateDamage match {
       case Some(damage) =>
         serverSideDamage(zone, source, damage, createInteraction, testTargetsFromZone, acquireTargetsFromZone)
@@ -1310,15 +1331,22 @@ object Zone {
     *         only mostly complete due to the exclusion of objects whose damage resolution is different than usual
     */
   def serverSideDamage(
-                        zone: Zone,
-                        source: PlanetSideGameObject with FactionAffinity with Vitality,
-                        properties: DamageWithPosition,
-                        createInteraction: (PlanetSideGameObject with FactionAffinity with Vitality, PlanetSideGameObject with FactionAffinity with Vitality) => DamageInteraction,
-                        testTargetsFromZone: (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean,
-                        acquireTargetsFromZone: (Zone, PlanetSideGameObject with FactionAffinity with Vitality, DamageWithPosition) => List[PlanetSideServerObject with Vitality]
-                      ): List[PlanetSideServerObject] = {
+      zone: Zone,
+      source: PlanetSideGameObject with FactionAffinity with Vitality,
+      properties: DamageWithPosition,
+      createInteraction: (
+          PlanetSideGameObject with FactionAffinity with Vitality,
+          PlanetSideGameObject with FactionAffinity with Vitality
+      ) => DamageInteraction,
+      testTargetsFromZone: (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean,
+      acquireTargetsFromZone: (
+          Zone,
+          PlanetSideGameObject with FactionAffinity with Vitality,
+          DamageWithPosition
+      ) => List[PlanetSideServerObject with Vitality]
+  ): List[PlanetSideServerObject] = {
     //collect targets that can be damaged
-    val pssos = acquireTargetsFromZone(zone, source, properties)
+    val pssos  = acquireTargetsFromZone(zone, source, properties)
     val radius = properties.DamageRadius * properties.DamageRadius
     //restrict to targets according to the detection plan
     val allAffectedTargets = pssos.filter { target => testTargetsFromZone(source, target, radius) }
@@ -1338,10 +1366,10 @@ object Zone {
     * @return a list of affected entities
     */
   def findAllTargets(
-                      zone: Zone,
-                      source: PlanetSideGameObject with Vitality,
-                      damagePropertiesBySource: DamageWithPosition
-                    ): List[PlanetSideServerObject with Vitality] = {
+      zone: Zone,
+      source: PlanetSideGameObject with Vitality,
+      damagePropertiesBySource: DamageWithPosition
+  ): List[PlanetSideServerObject with Vitality] = {
     findAllTargets(zone, source.Position, damagePropertiesBySource).filter { target => target ne source }
   }
 
@@ -1357,13 +1385,12 @@ object Zone {
     * @return a list of affected entities
     */
   def findAllTargets(
-                      sourcePosition: Vector3
-                    )
-                    (
-                      zone: Zone,
-                      source: PlanetSideGameObject with Vitality,
-                      damagePropertiesBySource: DamageWithPosition
-                    ): List[PlanetSideServerObject with Vitality] = {
+      sourcePosition: Vector3
+  )(
+      zone: Zone,
+      source: PlanetSideGameObject with Vitality,
+      damagePropertiesBySource: DamageWithPosition
+  ): List[PlanetSideServerObject with Vitality] = {
     findAllTargets(zone, sourcePosition, damagePropertiesBySource).filter { target => target ne source }
   }
 
@@ -1377,12 +1404,12 @@ object Zone {
     * @return a list of affected entities
     */
   def findAllTargets(
-                      zone: Zone,
-                      sourcePosition: Vector3,
-                      damagePropertiesBySource: DamageWithPosition
-                    ): List[PlanetSideServerObject with Vitality] = {
+      zone: Zone,
+      sourcePosition: Vector3,
+      damagePropertiesBySource: DamageWithPosition
+  ): List[PlanetSideServerObject with Vitality] = {
     val sourcePositionXY = sourcePosition.xy
-    val sectors = zone.blockMap.sector(sourcePositionXY, damagePropertiesBySource.DamageRadius)
+    val sectors          = zone.blockMap.sector(sourcePositionXY, damagePropertiesBySource.DamageRadius)
     //collect all targets that can be damaged
     //players
     val playerTargets = sectors.livePlayerList.filterNot { _.VehicleSeated.nonEmpty }
@@ -1404,14 +1431,13 @@ object Zone {
     * @return a `DamageInteraction` object
     */
   def explosionDamage(
-                       instigation: Option[DamageResult]
-                     )
-                     (
-                       source: PlanetSideGameObject with FactionAffinity with Vitality,
-                       target: PlanetSideGameObject with FactionAffinity with Vitality
-                     ): DamageInteraction = {
+      instigation: Option[DamageResult]
+  )(
+      source: PlanetSideGameObject with FactionAffinity with Vitality,
+      target: PlanetSideGameObject with FactionAffinity with Vitality
+  ): DamageInteraction = {
     explosionDamage(instigation, target.Position)(source, target)
-  }/**
+  } /**
     * na
     * @param instigation what previous event happened, if any, that caused this explosion
     * @param explosionPosition the coordinates of the detected explosion
@@ -1420,13 +1446,12 @@ object Zone {
     * @return a `DamageInteraction` object
     */
   def explosionDamage(
-                       instigation: Option[DamageResult],
-                       explosionPosition: Vector3
-                     )
-                     (
-                       source: PlanetSideGameObject with FactionAffinity with Vitality,
-                       target: PlanetSideGameObject with FactionAffinity with Vitality
-                     ): DamageInteraction = {
+      instigation: Option[DamageResult],
+      explosionPosition: Vector3
+  )(
+      source: PlanetSideGameObject with FactionAffinity with Vitality,
+      target: PlanetSideGameObject with FactionAffinity with Vitality
+  ): DamageInteraction = {
     DamageInteraction(
       SourceEntry(target),
       ExplodingEntityReason(source, target.DamageModel, instigation),
@@ -1463,6 +1488,7 @@ object Zone {
     Vector3.DistanceSquared(g1.center.asVector3, g2.center.asVector3) <= maxDistance ||
     distanceCheck(g1, g2) <= maxDistance
   }
+
   /**
     * Two game entities are considered "near" each other if they are within a certain distance of one another.
     * @see `PrimitiveGeometry.pointOnOutside`
@@ -1474,7 +1500,7 @@ object Zone {
     * @return the crude distance between the two geometric representations
     */
   def distanceCheck(g1: VolumetricGeometry, g2: VolumetricGeometry): Float = {
-    val dir = Vector3.Unit(g2.center.asVector3 - g1.center.asVector3)
+    val dir    = Vector3.Unit(g2.center.asVector3 - g1.center.asVector3)
     val point1 = g1.pointOnOutside(dir).asVector3
     val point2 = g2.pointOnOutside(Vector3.neg(dir)).asVector3
     Vector3.DistanceSquared(point1, point2)

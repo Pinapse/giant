@@ -36,8 +36,8 @@ class VehicleTest extends Specification {
       fury.Seats.size mustEqual 1
       fury.Seats(0).bailable mustEqual true
       fury.MountPoints.size mustEqual 2
-      fury.MountPoints.get(1).contains(MountInfo(0, Vector3(0,0,0))) mustEqual true
-      fury.MountPoints.get(2).contains(MountInfo(0, Vector3(0,0,0))) mustEqual true
+      fury.MountPoints.get(1).contains(MountInfo(0, Vector3(0, 0, 0))) mustEqual true
+      fury.MountPoints.get(2).contains(MountInfo(0, Vector3(0, 0, 0))) mustEqual true
       fury.Weapons.size mustEqual 1
       fury.Weapons.get(0).isEmpty mustEqual true
       fury.Weapons.get(1).contains(GlobalDefinitions.fury_weapon_systema)

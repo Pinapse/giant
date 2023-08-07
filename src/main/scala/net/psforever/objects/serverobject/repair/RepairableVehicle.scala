@@ -19,10 +19,10 @@ trait RepairableVehicle extends RepairableEntity {
 
   override def RepairToolValue(item: Tool): Float = {
     super.RepairToolValue(item) +
-    (if (RepairableObject.Definition.CanFly) {
-      item.FireMode.Add.Damage2
-    } else {
-      item.FireMode.Add.Damage1
-    })
+      (if (RepairableObject.Definition.CanFly) {
+         item.FireMode.Add.Damage2
+       } else {
+         item.FireMode.Add.Damage1
+       })
   }
 }

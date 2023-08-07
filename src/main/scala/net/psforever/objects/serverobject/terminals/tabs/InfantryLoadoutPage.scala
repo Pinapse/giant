@@ -29,8 +29,8 @@ final case class InfantryLoadoutPage() extends LoadoutTab {
   override def Buy(player: Player, msg: ItemTransactionMessage): Terminal.Exchange = {
     player.avatar.loadouts.suit(msg.unk1) match {
       case Some(loadout: InfantryLoadout)
-        if !Exclude.exists(_.checkRule(player, msg, loadout.exosuit)) &&
-           !Exclude.exists(_.checkRule(player, msg, (loadout.exosuit, loadout.subtype))) =>
+          if !Exclude.exists(_.checkRule(player, msg, loadout.exosuit)) &&
+            !Exclude.exists(_.checkRule(player, msg, (loadout.exosuit, loadout.subtype))) =>
         val holsters = loadout.visible_slots
           .map(entry => {
             InventoryItem(BuildSimplifiedPattern(entry.item), entry.index)

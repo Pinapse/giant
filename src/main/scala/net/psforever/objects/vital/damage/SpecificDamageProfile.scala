@@ -49,12 +49,12 @@ class SpecificDamageProfile extends DamageProfile {
 
 object SpecificDamageProfile {
   def apply(
-             damage0: Int = 0,
-             damage1: Int = 0,
-             damage2: Int = 0,
-             damage3: Int = 0,
-             damage4: Int = 0
-           ): SpecificDamageProfile = {
+      damage0: Int = 0,
+      damage1: Int = 0,
+      damage2: Int = 0,
+      damage3: Int = 0,
+      damage4: Int = 0
+  ): SpecificDamageProfile = {
     val obj = new SpecificDamageProfile
     obj.Damage0 = damage0
     obj.Damage1 = damage1

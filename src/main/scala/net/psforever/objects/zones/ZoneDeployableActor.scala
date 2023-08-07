@@ -18,10 +18,10 @@ import scala.collection.mutable.ListBuffer
   * @param zone the `Zone` object
   */
 class ZoneDeployableActor(
-                           zone: Zone,
-                           deployableList: ListBuffer[Deployable],
-                           turretToMount: mutable.HashMap[Int, Int]
-                         ) extends Actor {
+    zone: Zone,
+    deployableList: ListBuffer[Deployable],
+    turretToMount: mutable.HashMap[Int, Int]
+) extends Actor {
   import ZoneDeployableActor._
 
   private[this] val log = org.log4s.getLogger
@@ -33,9 +33,7 @@ class ZoneDeployableActor(
         obj match {
           case mounting: MountedWeapons =>
             val dguid = obj.GUID.guid
-            mounting
-              .Weapons
-              .values
+            mounting.Weapons.values
               .flatten { _.Equipment.map { _.GUID.guid } }
               .foreach { guid =>
                 turretToMount.put(guid, dguid)
@@ -57,9 +55,7 @@ class ZoneDeployableActor(
         obj match {
           case mounting: MountedWeapons =>
             val dguid = obj.GUID.guid
-            mounting
-              .Weapons
-              .values
+            mounting.Weapons.values
               .flatten { _.Equipment.map { _.GUID.guid } }
               .foreach { guid =>
                 turretToMount.put(guid, dguid)

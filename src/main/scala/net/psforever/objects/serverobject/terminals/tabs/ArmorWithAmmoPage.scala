@@ -18,7 +18,7 @@ import net.psforever.types.ExoSuitType
   *              the value is a curried function that produces an `Equipment` object
   */
 final case class ArmorWithAmmoPage(stock: Map[String, (ExoSuitType.Value, Int)], items: Map[String, () => Equipment])
-  extends Tab {
+    extends Tab {
   override def Buy(player: Player, msg: ItemTransactionMessage): Terminal.Exchange = {
     stock.get(msg.item_name) match {
       case Some((suit: ExoSuitType.Value, subtype: Int)) =>

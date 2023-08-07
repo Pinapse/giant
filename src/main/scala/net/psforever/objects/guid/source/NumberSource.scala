@@ -18,6 +18,7 @@ import net.psforever.objects.guid.key.{AvailabilityPolicy, LoanedKey, SecureKey}
   * The purpose of a `NumberSource` is to help facilitate globally unique identifiers (GUID, pl. GUIDs).
   */
 trait NumberSource {
+
   /**
     * The maximum number that can be produced by this source.
     * @return the max
@@ -38,11 +39,10 @@ trait NumberSource {
   def count(policy: AvailabilityPolicy): Int = {
     policy match {
       case AvailabilityPolicy.Available => countAvailable
-      case AvailabilityPolicy.Leased => countUsed
-      case AvailabilityPolicy.Dangling => countDangling
+      case AvailabilityPolicy.Leased    => countUsed
+      case AvailabilityPolicy.Dangling  => countDangling
     }
   }
-
 
   /**
     * The count of numbers that can still be drawn.
@@ -83,7 +83,7 @@ trait NumberSource {
     * @param obj the entity
     * @return the wrapped `Monitor`
     */
-  def get(obj: IdentifiableEntity) : Option[SecureKey]
+  def get(obj: IdentifiableEntity): Option[SecureKey]
 
   /**
     * Produce a modifiable wrapper for the `Monitor` for this number, only if the number has not been used.

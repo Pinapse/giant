@@ -54,6 +54,7 @@ final case class FavoritesMessage(
 }
 
 object FavoritesMessage extends Marshallable[FavoritesMessage] {
+
   /**
     * Overloaded constructor.
     * @param list the destination list
@@ -94,11 +95,11 @@ object FavoritesMessage extends Marshallable[FavoritesMessage] {
     * @return a `FavoritesMessage` object
     */
   def Infantry(
-                player_guid: PlanetSideGUID,
-                line: Int,
-                label: String,
-                armor: Int
-              ): FavoritesMessage = {
+      player_guid: PlanetSideGUID,
+      line: Int,
+      label: String,
+      armor: Int
+  ): FavoritesMessage = {
     FavoritesMessage(LoadoutType.Infantry, player_guid, line, label, Some(armor))
   }
 
@@ -110,10 +111,10 @@ object FavoritesMessage extends Marshallable[FavoritesMessage] {
     * @return a `FavoritesMessage` object
     */
   def Vehicle(
-               player_guid: PlanetSideGUID,
-               line: Int,
-               label: String
-             ): FavoritesMessage = {
+      player_guid: PlanetSideGUID,
+      line: Int,
+      label: String
+  ): FavoritesMessage = {
     FavoritesMessage(LoadoutType.Vehicle, player_guid, line, label, None)
   }
 
@@ -126,11 +127,11 @@ object FavoritesMessage extends Marshallable[FavoritesMessage] {
     * @return a `FavoritesMessage` object
     */
   def Battleframe(
-                   player_guid: PlanetSideGUID,
-                   line: Int,
-                   label: String,
-                   subtype: Int
-                 ): FavoritesMessage = {
+      player_guid: PlanetSideGUID,
+      line: Int,
+      label: String,
+      subtype: Int
+  ): FavoritesMessage = {
     FavoritesMessage(LoadoutType.Battleframe, player_guid, line, label, Some(subtype))
   }
 
@@ -138,12 +139,12 @@ object FavoritesMessage extends Marshallable[FavoritesMessage] {
     ("player_guid" | PlanetSideGUID.codec) ::
       ("line" | uint4L) ::
       ("label" | PacketHelpers.encodedWideStringAligned(adjustment = 2)) ::
-      ("armor_type" | conditional(value != LoadoutType.Vehicle,
-        {
-          if (value == LoadoutType.Infantry) uint(bits = 3)
-          else uint4
-        }
-      ))
+      ("armor_type" | conditional(
+      value != LoadoutType.Vehicle, {
+        if (value == LoadoutType.Infantry) uint(bits = 3)
+        else uint4
+      }
+    ))
   }).xmap[FavoritesMessage](
     {
       case lst :: guid :: ln :: str :: arm :: HNil =>
@@ -151,7 +152,8 @@ object FavoritesMessage extends Marshallable[FavoritesMessage] {
     },
     {
       case FavoritesMessage(lst, guid, ln, str, arm) =>
-        val armset = if (lst != LoadoutType.Vehicle && arm.isEmpty) { Some(0) } else { arm }
+        val armset = if (lst != LoadoutType.Vehicle && arm.isEmpty) { Some(0) }
+        else { arm }
         lst :: guid :: ln :: str :: armset :: HNil
     }
   )

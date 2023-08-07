@@ -29,9 +29,9 @@ abstract class DamageResistanceCalculations[A](
       resistances: ResistanceSelection.Format,
       data: DamageInteraction
   ): ResolutionCalculations.Output = {
-    val dam = modifiersFunc(damages, data)
-    val res = resistances(data)
-    val mod = calcFunc(data)
+    val dam    = modifiersFunc(damages, data)
+    val res    = resistances(data)
+    val mod    = calcFunc(data)
     val modDam = mod(dam, res)
     applyFunc(modDam, data)
   }

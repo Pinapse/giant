@@ -13,15 +13,17 @@ sealed case class BlockMapEntry(map: BlockMap, coords: Vector3, rangeX: Float, r
   * @see `BlockMap`
   * @see `WorldEntity`
   */
-trait BlockMapEntity
-  extends WorldEntity {
+trait BlockMapEntity extends WorldEntity {
+
   /** internal data regarding an active representation on a blockmap */
   private var _blockMapEntry: Option[BlockMapEntry] = None
+
   /** the function that allows for updates of the internal data */
   private var _updateBlockMapEntryFunc: (BlockMapEntity, Vector3) => Boolean = BlockMapEntity.doNotUpdateBlockMap
 
   /** internal data regarding an active representation on a blockmap */
   def blockMapEntry: Option[BlockMapEntry] = _blockMapEntry
+
   /** internal data regarding an active representation on a blockmap */
   def blockMapEntry_=(entry: Option[BlockMapEntry]): Option[BlockMapEntry] = {
     entry match {
@@ -47,7 +49,7 @@ trait BlockMapEntity
       //TODO same zone check?
       _blockMapEntry match {
         case Some(entry) => entry.coords
-        case None => Position
+        case None        => Position
       },
       range
     )
@@ -64,6 +66,7 @@ trait BlockMapEntity
 }
 
 object BlockMapEntity {
+
   /**
     * Overloaded constructor that uses a single range to construct a block map entry.
     * @param coords the absolute game world coordinates

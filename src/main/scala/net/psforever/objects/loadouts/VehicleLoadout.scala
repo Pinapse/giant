@@ -30,6 +30,7 @@ final case class VehicleLoadout(
 ) extends EquipmentLoadout(label, visible_slots, inventory)
 
 object VehicleLoadout {
+
   /**
     * The variant of the battleframe vehicle.
     * Why these numbers map to the specific type of battleframe is a mystery.

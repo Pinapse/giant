@@ -93,9 +93,10 @@ class TurretControl(turret: TurretDeployable)
       }
 
   override protected def mountTest(
-                                    obj: PlanetSideServerObject with Mountable,
-                                    seatNumber: Int,
-                                    player: Player): Boolean = {
+      obj: PlanetSideServerObject with Mountable,
+      seatNumber: Int,
+      player: Player
+  ): Boolean = {
     (!turret.Definition.FactionLocked || player.Faction == obj.Faction) && !obj.Destroyed
   }
 
@@ -106,8 +107,8 @@ class TurretControl(turret: TurretDeployable)
     Deployables.AnnounceDestroyDeployable(turret, None)
   }
 
-  override def deconstructDeployable(time: Option[FiniteDuration]) : Unit = {
-    val zone = turret.Zone
+  override def deconstructDeployable(time: Option[FiniteDuration]): Unit = {
+    val zone  = turret.Zone
     val seats = turret.Seats.values
     //either we have no seats or no one gets to sit
     val retime = if (seats.count(_.isOccupied) > 0) {

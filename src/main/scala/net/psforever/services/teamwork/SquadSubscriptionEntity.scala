@@ -10,7 +10,7 @@ import net.psforever.services.GenericEventBus
 import net.psforever.types.{PlanetSideEmpire, PlanetSideGUID}
 
 class SquadSubscriptionEntity {
-  private[this] val log = org.log4s.getLogger(name="SquadService")
+  private[this] val log = org.log4s.getLogger(name = "SquadService")
 
   /**
     * This is a formal `ActorEventBus` object that is reserved for faction-wide messages and squad-specific messages.
@@ -47,7 +47,8 @@ class SquadSubscriptionEntity {
     * though they may not be a member of the squad.<br>
     * key - unique character identifier number; value - a squad identifier number
     */
-  val MonitorSquadDetails: mutable.LongMap[SquadSubscriptionEntity.MonitorEntry] = mutable.LongMap[SquadSubscriptionEntity.MonitorEntry]()
+  val MonitorSquadDetails: mutable.LongMap[SquadSubscriptionEntity.MonitorEntry] =
+    mutable.LongMap[SquadSubscriptionEntity.MonitorEntry]()
 
   def postStop(): Unit = {
     MonitorSquadDetails.clear()
@@ -271,11 +272,11 @@ class SquadSubscriptionEntity {
     * @param details the squad details to be included in the message
     */
   def UpdateSquadDetail(
-                         guid: PlanetSideGUID,
-                         toChannel: String,
-                         excluding: Iterable[Long],
-                         details: SquadDetail
-                       ): Unit = {
+      guid: PlanetSideGUID,
+      toChannel: String,
+      excluding: Iterable[Long],
+      details: SquadDetail
+  ): Unit = {
     val output = SquadResponse.Detail(guid, details)
     Publish(toChannel, output, excluding)
     PublishToMonitorTargets(guid, excluding).foreach { charId => Publish(charId, output, Nil) }
@@ -289,23 +290,20 @@ class SquadSubscriptionEntity {
     * @param excluding the explicit unique character identifier numbers of individuals who should not receive the message
     */
   def PublishToMonitorTargets(
-                               guid: PlanetSideGUID,
-                               excluding: Iterable[Long]
-                             ): Iterable[Long] = {
+      guid: PlanetSideGUID,
+      excluding: Iterable[Long]
+  ): Iterable[Long] = {
     val curr = System.currentTimeMillis()
-    MonitorSquadDetails
-      .toSeq
-      .collect {
-        case out @ (charId: Long, entry: SquadSubscriptionEntity.MonitorEntry)
+    MonitorSquadDetails.toSeq.collect {
+      case out @ (charId: Long, entry: SquadSubscriptionEntity.MonitorEntry)
           if entry.squadGuid == guid && !excluding.exists(_ == charId) =>
-          if (curr - entry.time < 300000L) {
-            Some(out._1)
-          } else {
-            MonitorSquadDetails.subtractOne(charId)
-            None
-          }
-      }
-      .flatten
+        if (curr - entry.time < 300000L) {
+          Some(out._1)
+        } else {
+          MonitorSquadDetails.subtractOne(charId)
+          None
+        }
+    }.flatten
   }
 }
 

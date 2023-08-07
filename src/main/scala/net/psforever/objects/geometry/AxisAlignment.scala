@@ -11,6 +11,7 @@ import net.psforever.types.Vector3
   * @param direction the coordinate vector of "relative up"
   */
 sealed abstract class AxisAlignment(direction: Vector3) extends EnumEntry {
+
   /**
     * Project one vector as a vector that can be represented in this coordinate axis.
     * @param v the original vector
@@ -24,6 +25,7 @@ sealed abstract class AxisAlignment(direction: Vector3) extends EnumEntry {
   * @param direction the coordinate vector of "relative up"
   */
 sealed abstract class AxisAlignment2D(direction: Vector3) extends AxisAlignment(direction) {
+
   /**
     * Project two values as a vector that can be represented in this coordinate axis.
     * @param a the first value
@@ -38,6 +40,7 @@ sealed abstract class AxisAlignment2D(direction: Vector3) extends AxisAlignment(
   * More ceremonial, than anything else.
   */
 sealed abstract class AxisAlignment3D extends AxisAlignment(Vector3.Zero) {
+
   /**
     * Project three values as a vector that can be represented in this coordinate axis.
     * @param a the first value
@@ -55,29 +58,32 @@ object AxisAlignment extends Enum[AxisAlignment] {
     * Geometric entities in the XY-axis.
     * Coordinates are x- and y-; up is the z-axis.
     */
-  case object XY extends AxisAlignment2D(Vector3(0,0,1)) {
+  case object XY extends AxisAlignment2D(Vector3(0, 0, 1)) {
     def asVector3(v: Vector3): Vector3 = v.xy
 
-    def asVector3(a: Float, b: Float): Vector3 = Vector3(a,b,0)
+    def asVector3(a: Float, b: Float): Vector3 = Vector3(a, b, 0)
   }
+
   /**
     * Geometric entities in the YZ-axis.
     * Coordinates are y- and z-; up is the x-axis.
     */
-  case object YZ extends AxisAlignment2D(Vector3(1,0,0)) {
-    def asVector3(v: Vector3): Vector3 = Vector3(0,v.y,v.z)
+  case object YZ extends AxisAlignment2D(Vector3(1, 0, 0)) {
+    def asVector3(v: Vector3): Vector3 = Vector3(0, v.y, v.z)
 
-    def asVector3(a: Float, b: Float): Vector3 = Vector3(0,a,b)
+    def asVector3(a: Float, b: Float): Vector3 = Vector3(0, a, b)
   }
+
   /**
     * Geometric entities in the XZ-axis.
     * Coordinates are x- and z-; up is the y-axis.
     */
-  case object XZ extends AxisAlignment2D(Vector3(0,1,0)) {
-    def asVector3(v: Vector3): Vector3 = Vector3(v.x,0,v.z)
+  case object XZ extends AxisAlignment2D(Vector3(0, 1, 0)) {
+    def asVector3(v: Vector3): Vector3 = Vector3(v.x, 0, v.z)
 
-    def asVector3(a: Float, b: Float): Vector3 = Vector3(a,0,b)
+    def asVector3(a: Float, b: Float): Vector3 = Vector3(a, 0, b)
   }
+
   /**
     * For geometric entities that exist in a three-dimensional context.
     * More ceremonial, than anything else.
@@ -85,6 +91,6 @@ object AxisAlignment extends Enum[AxisAlignment] {
   case object Free extends AxisAlignment3D() {
     def asVector3(v: Vector3): Vector3 = v
 
-    def asVector3(a: Float, b: Float, c: Float): Vector3 = Vector3(a,b,c)
+    def asVector3(a: Float, b: Float, c: Float): Vector3 = Vector3(a, b, c)
   }
 }

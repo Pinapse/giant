@@ -43,23 +43,27 @@ object RepairableAmenity {
   }
 
   /**
-   * The vitality change history will be forgotten as this entity, once destroyed, has been rebuilt.
-   * For the purpose of inheritance of experience due to interaction,
-   * the users who made an effort to repair the entity in its resurgence.
-   * @param target na
-   */
+    * The vitality change history will be forgotten as this entity, once destroyed, has been rebuilt.
+    * For the purpose of inheritance of experience due to interaction,
+    * the users who made an effort to repair the entity in its resurgence.
+    * @param target na
+    */
   def RestorationOfHistory(target: Repairable.Target): Unit = {
     val list = target.ClearHistory()
-    val effort = list.slice(
-      list.lastIndexWhere {
-        case dam: DamagingActivity => dam.data.targetAfter.asInstanceOf[SourceWithHealthEntry].health == 0
-        case _                     => false
-      },
-      list.size
-    ).collect {
-      case entry: RepairFromEquipment => Some(entry.user)
-      case _                          => None
-    }.flatten.distinctBy(_.Name)
+    val effort = list
+      .slice(
+        list.lastIndexWhere {
+          case dam: DamagingActivity => dam.data.targetAfter.asInstanceOf[SourceWithHealthEntry].health == 0
+          case _                     => false
+        },
+        list.size
+      )
+      .collect {
+        case entry: RepairFromEquipment => Some(entry.user)
+        case _                          => None
+      }
+      .flatten
+      .distinctBy(_.Name)
     target.LogActivity(SpawningActivity(SourceEntry(target), target.Zone.Number, effort.headOption))
   }
 }

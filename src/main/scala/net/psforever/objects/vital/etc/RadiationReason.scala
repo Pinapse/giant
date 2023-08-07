@@ -19,10 +19,10 @@ import net.psforever.objects.vital.resolution.DamageAndResistance
   *                           best utilized for protection extended to vehicle passengers
   */
 final case class RadiationReason(
-                                   projectile: ActualProjectile,
-                                   damageModel: DamageAndResistance,
-                                   radiationShielding: Float
-                                 ) extends DamageReason {
+    projectile: ActualProjectile,
+    damageModel: DamageAndResistance,
+    radiationShielding: Float
+) extends DamageReason {
   def resolution: DamageResolution.Value = DamageResolution.Radiation
 
   def source: DamageProperties = projectile.profile
@@ -30,7 +30,7 @@ final case class RadiationReason(
   def same(test: DamageReason): Boolean = {
     test match {
       case o: RadiationReason => o.projectile.id == projectile.id //can only be another projectile with the same uid
-      case _ => false
+      case _                  => false
     }
   }
 
@@ -46,7 +46,7 @@ object RadiationDamageModifiers {
     def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
       cause match {
         case o: RadiationReason => calculate(damage, data, o)
-        case _ => damage
+        case _                  => damage
       }
     }
 

@@ -9,42 +9,42 @@ import net.psforever.objects.{GlobalDefinitions, PlanetSideGameObject, Player, V
 import net.psforever.types.{CharacterSex, ExoSuitType, PlanetSideEmpire, Vector3}
 
 final case class UniquePlayer(
-                               charId: Long,
-                               name: String,
-                               sex: CharacterSex,
-                               faction: PlanetSideEmpire.Value
-                             ) extends SourceUniqueness
+    charId: Long,
+    name: String,
+    sex: CharacterSex,
+    faction: PlanetSideEmpire.Value
+) extends SourceUniqueness
 
 final case class PlayerSource(
-                               Definition: AvatarDefinition,
-                               ExoSuit: ExoSuitType.Value,
-                               seatedIn: Option[(SourceEntry, Int)],
-                               health: Int,
-                               armor: Int,
-                               Position: Vector3,
-                               Orientation: Vector3,
-                               Velocity: Option[Vector3],
-                               crouching: Boolean,
-                               jumping: Boolean,
-                               Modifiers: ResistanceProfile,
-                               bep: Long,
-                               kills: Seq[Any],
-                               unique: UniquePlayer
-                             ) extends SourceWithHealthEntry {
-  override def Name: String = unique.name
+    Definition: AvatarDefinition,
+    ExoSuit: ExoSuitType.Value,
+    seatedIn: Option[(SourceEntry, Int)],
+    health: Int,
+    armor: Int,
+    Position: Vector3,
+    Orientation: Vector3,
+    Velocity: Option[Vector3],
+    crouching: Boolean,
+    jumping: Boolean,
+    Modifiers: ResistanceProfile,
+    bep: Long,
+    kills: Seq[Any],
+    unique: UniquePlayer
+) extends SourceWithHealthEntry {
+  override def Name: String                    = unique.name
   override def Faction: PlanetSideEmpire.Value = unique.faction
-  override def CharId: Long = unique.charId
+  override def CharId: Long                    = unique.charId
 
   def Seated: Boolean = seatedIn.nonEmpty
-  def Health: Int = health
-  def Armor: Int = armor
-  def total: Int = health + armor
+  def Health: Int     = health
+  def Armor: Int      = armor
+  def total: Int      = health + armor
 }
 
 object PlayerSource {
   def apply(p: Player): PlayerSource = {
-    val exosuit = p.ExoSuit
-    val faction = p.Faction
+    val exosuit      = p.ExoSuit
+    val faction      = p.Faction
     val seatedEntity = mountableAndSeat(p)
     PlayerSource(
       p.Definition,
@@ -86,15 +86,20 @@ object PlayerSource {
   def mountableAndSeat(player: Player): Option[(SourceEntry, Int)] = {
     player.Zone.GUID(player.VehicleSeated) match {
       case Some(vehicle: Vehicle) =>
-        Some((
-          SourceEntry(vehicle),
-          vehicle.PassengerInSeat(player).orElse {
-            vehicle.PublishGatingManifest().orElse(vehicle.PreviousGatingManifest()).flatMap { manifest =>
-              val playerName = player.Name
-              manifest.passengers.find { _.name == playerName }.collect { _.mount }
-            }
-          }.getOrElse(0)
-        ))
+        Some(
+          (
+            SourceEntry(vehicle),
+            vehicle
+              .PassengerInSeat(player)
+              .orElse {
+                vehicle.PublishGatingManifest().orElse(vehicle.PreviousGatingManifest()).flatMap { manifest =>
+                  val playerName = player.Name
+                  manifest.passengers.find { _.name == playerName }.collect { _.mount }
+                }
+              }
+              .getOrElse(0)
+          )
+        )
       case Some(thing: PlanetSideGameObject with Mountable with FactionAffinity) =>
         Some((SourceEntry(thing), thing.PassengerInSeat(player).getOrElse(0)))
       case _ =>
@@ -103,16 +108,16 @@ object PlayerSource {
   }
 
   /**
-   * Produce a mostly normal player source entity
-   * but the `seatedIn` field is just a shallow copy of the mountable information.
-   * Said "shallow copy" will not reflect that the player is an occupant of the mountable entity
-   * even if this function is entirely for the purpose of establishing that the player is an occupant of the mountable entity.<br>
-   * Don't think too much about it.
-   * @param player player
-   * @param source a `SourceEntry` for the aforementioned mountable entity
-   * @param seatNumber the attributed seating index in which the player is mounted in `source`
-   * @return a `PlayerSource` entity
-   */
+    * Produce a mostly normal player source entity
+    * but the `seatedIn` field is just a shallow copy of the mountable information.
+    * Said "shallow copy" will not reflect that the player is an occupant of the mountable entity
+    * even if this function is entirely for the purpose of establishing that the player is an occupant of the mountable entity.<br>
+    * Don't think too much about it.
+    * @param player player
+    * @param source a `SourceEntry` for the aforementioned mountable entity
+    * @param seatNumber the attributed seating index in which the player is mounted in `source`
+    * @return a `PlayerSource` entity
+    */
   def inSeat(player: Player, source: SourceEntry, seatNumber: Int): PlayerSource = {
     val exosuit = player.ExoSuit
     val faction = player.Faction
@@ -135,11 +140,11 @@ object PlayerSource {
   }
 
   /**
-   * "Nobody is my name: Nobody they call me –
-   * my mother and my father and all my other companions”
-   * Thus I spoke but he immediately replied to me with a ruthless spirit:
-   * “I shall kill Nobody last of all, after his companions,
-   * the others first: this will be my guest-gift to you.”
-   */
+    * "Nobody is my name: Nobody they call me –
+    * my mother and my father and all my other companions”
+    * Thus I spoke but he immediately replied to me with a ruthless spirit:
+    * “I shall kill Nobody last of all, after his companions,
+    * the others first: this will be my guest-gift to you.”
+    */
   final val Nobody = PlayerSource("Nobody", PlanetSideEmpire.NEUTRAL, Vector3.Zero)
 }

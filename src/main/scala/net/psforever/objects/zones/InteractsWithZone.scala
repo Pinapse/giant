@@ -4,10 +4,11 @@ package net.psforever.objects.zones
 import net.psforever.objects.serverobject.PlanetSideServerObject
 import net.psforever.objects.zones.blockmap.SectorPopulation
 
-trait InteractsWithZone
-  extends PlanetSideServerObject {
+trait InteractsWithZone extends PlanetSideServerObject {
+
   /** interactions for this particular entity is allowed */
   private var _allowInteraction: Boolean = true
+
   /** maximum interaction range used to generate the commonly tested sector */
   private var interactionRange: Float = 0.1f
 
@@ -29,7 +30,7 @@ trait InteractsWithZone
       if (permit) {
         doInteractions()
       } else {
-        interactions.foreach ( _.resetInteraction(target = this) )
+        interactions.foreach(_.resetInteraction(target = this))
       }
     }
     _allowInteraction
@@ -76,6 +77,7 @@ trait ZoneInteractionType
   * @see `Zone`
   */
 trait ZoneInteraction {
+
   /**
     * A categorical descriptor for this interaction.
     */

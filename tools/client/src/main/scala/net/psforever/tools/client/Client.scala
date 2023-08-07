@@ -328,7 +328,7 @@ class Client(username: String, password: String) {
   private def _process(packet: PlanetSidePacket): Unit = {
     packet match {
       case _: KeepAliveMessage => ()
-      case _: LoadMapMessage   =>
+      case _: LoadMapMessage =>
         send(BeginZoningMessage()).require
         _state = state.update(packet)
       case packet: PlanetSideGamePacket =>

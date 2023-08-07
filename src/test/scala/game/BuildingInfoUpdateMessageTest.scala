@@ -47,7 +47,11 @@ class BuildingInfoUpdateMessageTest extends Specification {
         generator_state mustEqual PlanetSideGeneratorState.Normal
         spawn_tubes_normal mustEqual true
         force_dome_active mustEqual false
-        lattice_benefit mustEqual Set(LatticeBenefit.TechnologyPlant, LatticeBenefit.InterlinkFacility, LatticeBenefit.BioLaboratory)
+        lattice_benefit mustEqual Set(
+          LatticeBenefit.TechnologyPlant,
+          LatticeBenefit.InterlinkFacility,
+          LatticeBenefit.BioLaboratory
+        )
         cavern_benefit mustEqual Set(CavernBenefit.None)
         unk4.size mustEqual 0
         unk4.isEmpty mustEqual true

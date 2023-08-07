@@ -29,6 +29,7 @@ sealed trait SameAsQuality extends ProjectileQuality {
 }
 
 object ProjectileQuality {
+
   /** Standard projectile quality.  More of a flag than a modifier. */
   case object Normal extends SameAsQuality
 
@@ -48,19 +49,19 @@ object ProjectileQuality {
     * @return a copy of the projectile
     */
   def modifiers(
-                 projectile: Projectile,
-                 resolution: DamageResolution.Value,
-                 target: PlanetSideGameObject with FactionAffinity with Vitality,
-                 pos: Vector3,
-                 user: Option[Player]
-               ): Projectile = {
+      projectile: Projectile,
+      resolution: DamageResolution.Value,
+      target: PlanetSideGameObject with FactionAffinity with Vitality,
+      pos: Vector3,
+      user: Option[Player]
+  ): Projectile = {
     projectile.Resolve() //if not yet resolved once
     if (projectile.profile.ProjectileDamageTypes.contains(DamageType.Aggravated)) {
       //aggravated
       val quality = projectile.profile.Aggravated match {
         case Some(aggravation)
-          if aggravation.targets.exists(validation => validation.test(target)) &&
-             aggravation.info.exists(_.damage_type == AggravatedDamage.basicDamageType(resolution)) =>
+            if aggravation.targets.exists(validation => validation.test(target)) &&
+              aggravation.info.exists(_.damage_type == AggravatedDamage.basicDamageType(resolution)) =>
           ProjectileQuality.AggravatesTarget
         case _ =>
           ProjectileQuality.Normal
@@ -70,7 +71,9 @@ object ProjectileQuality {
       //melee
       user match {
         case Some(player) =>
-          val quality = player.avatar.implants.flatten.find { entry => entry.definition.implantType == ImplantType.MeleeBooster } match {
+          val quality = player.avatar.implants.flatten.find { entry =>
+            entry.definition.implantType == ImplantType.MeleeBooster
+          } match {
             case Some(booster) if booster.active && player.avatar.stamina > 9 =>
               ProjectileQuality.Modified(25f)
             case _ =>

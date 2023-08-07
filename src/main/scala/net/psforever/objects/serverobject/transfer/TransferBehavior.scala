@@ -4,28 +4,30 @@ package net.psforever.objects.serverobject.transfer
 import akka.actor.Actor
 
 trait TransferBehavior {
-  _ : Actor =>
-  var transferEvent : TransferBehavior.Event.Value = TransferBehavior.Event.None
-  var transferTarget : Option[TransferContainer] = None
-  var findChargeTargetFunc : (TransferContainer, Option[TransferContainer])=> Option[TransferContainer] = TransferBehavior.FindNoTargets
-  var findDischargeTargetFunc : (TransferContainer, Option[TransferContainer])=> Option[TransferContainer] = TransferBehavior.FindNoTargets
+  _: Actor =>
+  var transferEvent: TransferBehavior.Event.Value = TransferBehavior.Event.None
+  var transferTarget: Option[TransferContainer]   = None
+  var findChargeTargetFunc: (TransferContainer, Option[TransferContainer]) => Option[TransferContainer] =
+    TransferBehavior.FindNoTargets
+  var findDischargeTargetFunc: (TransferContainer, Option[TransferContainer]) => Option[TransferContainer] =
+    TransferBehavior.FindNoTargets
 
-  def TransferMaterial : TransferContainer.TransferMaterial
-  def ChargeTransferObject : TransferContainer
+  def TransferMaterial: TransferContainer.TransferMaterial
+  def ChargeTransferObject: TransferContainer
 
-  val transferBehavior : Receive = {
+  val transferBehavior: Receive = {
     case TransferBehavior.Charging(mat) if mat != TransferMaterial =>
       TryStopChargingEvent(ChargeTransferObject)
 
     case TransferBehavior.Charging(_)
-      if transferEvent == TransferBehavior.Event.None || transferEvent == TransferBehavior.Event.Charging =>
+        if transferEvent == TransferBehavior.Event.None || transferEvent == TransferBehavior.Event.Charging =>
       TryChargingActivity()
 
     case TransferBehavior.Discharging(mat) if mat != TransferMaterial =>
       TryStopChargingEvent(ChargeTransferObject)
 
     case TransferBehavior.Discharging(_)
-      if transferEvent == TransferBehavior.Event.None || transferEvent == TransferBehavior.Event.Discharging =>
+        if transferEvent == TransferBehavior.Event.None || transferEvent == TransferBehavior.Event.Discharging =>
       TryDischargingActivity()
 
     case TransferBehavior.Stopping() =>
@@ -33,8 +35,8 @@ trait TransferBehavior {
   }
 
   /* Charging */
-  def TryChargingActivity() : Unit = {
-    if(transferEvent != TransferBehavior.Event.Discharging) {
+  def TryChargingActivity(): Unit = {
+    if (transferEvent != TransferBehavior.Event.Discharging) {
       val chargeable = ChargeTransferObject
       findChargeTargetFunc(chargeable, transferTarget) match {
         case Some(obj) =>
@@ -46,11 +48,11 @@ trait TransferBehavior {
     }
   }
 
-  def HandleChargingEvent(target : TransferContainer) : Boolean
+  def HandleChargingEvent(target: TransferContainer): Boolean
 
   /* Discharging */
-  def TryDischargingActivity() : Unit = {
-    if(transferEvent != TransferBehavior.Event.Charging) {
+  def TryDischargingActivity(): Unit = {
+    if (transferEvent != TransferBehavior.Event.Charging) {
       val chargeable = ChargeTransferObject
       //determine how close we are to something that we can discharge into
       findDischargeTargetFunc(chargeable, transferTarget) match {
@@ -63,10 +65,10 @@ trait TransferBehavior {
     }
   }
 
-  def HandleDischargingEvent(target : TransferContainer) : Boolean
+  def HandleDischargingEvent(target: TransferContainer): Boolean
 
   /* Stopping */
-  def TryStopChargingEvent(container : TransferContainer) : Unit = {
+  def TryStopChargingEvent(container: TransferContainer): Unit = {
     transferEvent = TransferBehavior.Event.None
     transferTarget match {
       case Some(_: net.psforever.objects.serverobject.structures.WarpGate) => ;
@@ -80,11 +82,7 @@ trait TransferBehavior {
 
 object TransferBehavior {
   object Event extends Enumeration {
-    val
-    None,
-    Charging,
-    Discharging
-    = Value
+    val None, Charging, Discharging = Value
   }
 
   sealed trait Command
@@ -92,11 +90,13 @@ object TransferBehavior {
   /**
     * Message to cue a process of transferring into oneself.
     */
-  final case class Charging(transferMaterial : Any) extends Command
+  final case class Charging(transferMaterial: Any) extends Command
+
   /**
     * Message to cue a process of transferring from oneself.
     */
-  final case class Discharging(transferMaterial : Any) extends Command
+  final case class Discharging(transferMaterial: Any) extends Command
+
   /**
     * Message to cue a stopping the transfer process.
     */
@@ -108,5 +108,5 @@ object TransferBehavior {
     * @param optionalTarget an optional entity that can be one of the discovered targets
     * @return always returns `None`
     */
-  def FindNoTargets(obj : TransferContainer, optionalTarget : Option[TransferContainer]) : Option[TransferContainer] = None
+  def FindNoTargets(obj: TransferContainer, optionalTarget: Option[TransferContainer]): Option[TransferContainer] = None
 }

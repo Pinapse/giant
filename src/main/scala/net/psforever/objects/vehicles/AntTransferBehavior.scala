@@ -19,8 +19,8 @@ import scala.concurrent.duration._
 
 trait AntTransferBehavior extends TransferBehavior with NtuStorageBehavior {
   var panelAnimationFunc: () => Unit = NoCharge
-  var ntuChargingTick     = Default.Cancellable
-  findChargeTargetFunc    = Vehicles.FindANTChargingSource
+  var ntuChargingTick                = Default.Cancellable
+  findChargeTargetFunc = Vehicles.FindANTChargingSource
   findDischargeTargetFunc = Vehicles.FindANTDischargingTarget
 
   def TransferMaterial = Ntu.Nanites
@@ -30,7 +30,7 @@ trait AntTransferBehavior extends TransferBehavior with NtuStorageBehavior {
   def antBehavior: Receive = storageBehavior.orElse(transferBehavior)
 
   def ActivatePanelsForChargingEvent(vehicle: NtuContainer): Unit = {
-    val obj = ChargeTransferObject
+    val obj  = ChargeTransferObject
     val zone = obj.Zone
     zone.VehicleEvents ! VehicleServiceMessage(
       zone.id,
@@ -40,7 +40,7 @@ trait AntTransferBehavior extends TransferBehavior with NtuStorageBehavior {
 
   /** Charging */
   def StartNtuChargingEvent(vehicle: NtuContainer): Unit = {
-    val obj = ChargeTransferObject
+    val obj  = ChargeTransferObject
     val zone = obj.Zone
     zone.VehicleEvents ! VehicleServiceMessage(
       zone.id,
@@ -205,9 +205,11 @@ trait AntTransferBehavior extends TransferBehavior with NtuStorageBehavior {
 
   def HandleNtuGrant(sender: ActorRef, src: NtuContainer, amount: Float): Unit = {
     val obj = ChargeTransferObject
-    if (obj.DeploymentState == DriveState.Deployed &&
-        transferEvent == TransferBehavior.Event.Charging &&
-        ReceiveAndDepositUntilFull(obj, amount)) {
+    if (
+      obj.DeploymentState == DriveState.Deployed &&
+      transferEvent == TransferBehavior.Event.Charging &&
+      ReceiveAndDepositUntilFull(obj, amount)
+    ) {
       panelAnimationFunc()
     } else {
       TryStopChargingEvent(obj)

@@ -11,13 +11,16 @@ import java.util.concurrent.TimeUnit
 import scala.util.{Success, Try}
 
 class CaptureFlagConverter extends ObjectCreateConverter[CaptureFlag]() {
-  override def ConstructorData(obj : CaptureFlag) : Try[CaptureFlagData] = {
+  override def ConstructorData(obj: CaptureFlag): Try[CaptureFlagData] = {
     val hackInfo = obj.Owner.asInstanceOf[Building].CaptureTerminal.get.HackedBy match {
       case Some(hackInfo) => hackInfo
-      case _ => Hackable.HackInfo(PlayerSource("", PlanetSideEmpire.NEUTRAL, Vector3.Zero), PlanetSideGUID(0), 0L, 0L)
+      case _              => Hackable.HackInfo(PlayerSource("", PlanetSideEmpire.NEUTRAL, Vector3.Zero), PlanetSideGUID(0), 0L, 0L)
     }
 
-    val millisecondsRemaining = TimeUnit.MILLISECONDS.convert(math.max(0, hackInfo.hackStartTime + hackInfo.hackDuration - System.nanoTime), TimeUnit.NANOSECONDS)
+    val millisecondsRemaining = TimeUnit.MILLISECONDS.convert(
+      math.max(0, hackInfo.hackStartTime + hackInfo.hackDuration - System.nanoTime),
+      TimeUnit.NANOSECONDS
+    )
 
     Success(
       CaptureFlagData(

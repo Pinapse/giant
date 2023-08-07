@@ -19,8 +19,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @param zone the zone being represented by this particular HART service
   */
 class HartTimer(zone: Zone) extends Actor {
+
   /** since the system is zone-locked, caching this value is fine */
   val zoneId = zone.id
+
   /** all of the paired HART facility amenities and the shuttle housed in that facility (in that order) */
   var padAndShuttlePairs: List[(PlanetSideGUID, PlanetSideGUID)] = List()
 
@@ -29,23 +31,29 @@ class HartTimer(zone: Zone) extends Actor {
    * to produce the effect of the orbital shuttle being used
    */
   var sequence = Seq.empty[HartEvent]
+
   /** index keeping track of the current event in the sequence */
   var sequenceIndex: Int = 0
+
   /** how many events are a part of this sequence */
   var sequenceLength = 0
+
   /** when the timing of the events in the system changes,
     * do not push the changes until completion of the current routine
     */
   var delayedScheduleChange: Option[Seq[HartEvent]] = None
+
   /** the time at the start of the previous event */
   var lastStartTime: Long = 0
+
   /** scheduler for each event in the sequence */
   var timer: Cancellable = Default.Cancellable
 
   /** a message bus to which all associated orbital shuttle pads are subscribed */
   val padEvents = new GenericEventBus[HartTimer.Command]
+
   /** cache common messages */
-  val shuttleDockedInThisZone = HartTimer.ShuttleDocked(zoneId)
+  val shuttleDockedInThisZone       = HartTimer.ShuttleDocked(zoneId)
   val shuttleFreeFromDockInThisZone = HartTimer.ShuttleFreeFromDock(zoneId)
 
   /** the behaviors common to both the inert and active operations of the hart */
@@ -65,72 +73,81 @@ class HartTimer(zone: Zone) extends Actor {
   }
 
   /** behaviors that are valid while no sequence of events is defined; the hart is inert */
-  def grounded: Receive = commonBehavior
-    .orElse {
-      case HartTimer.PairWith(_, pad, shuttle, from) =>
-        pairWith(pad, shuttle, from)
+  def grounded: Receive =
+    commonBehavior
+      .orElse {
+        case HartTimer.PairWith(_, pad, shuttle, from) =>
+          pairWith(pad, shuttle, from)
 
-      case _ => ;
-    }
+        case _ => ;
+      }
 
   /** behaviors that are valid after a sequence of events is defined; the hart is active */
-  def flightsScheduled: Receive = commonBehavior
-    .orElse {
-      case HartTimer.PairWith(_, pad, shuttle, from) =>
-        pairWith(pad, shuttle, from)
-        val event = sequence(sequenceIndex)
-        if (event.lockedDoors) {
-          from ! HartTimer.LockDoors
-        }
-        if (event.docked.contains(true)) {
-          from ! HartTimer.ShuttleDocked(zoneId)
-        }
+  def flightsScheduled: Receive =
+    commonBehavior
+      .orElse {
+        case HartTimer.PairWith(_, pad, shuttle, from) =>
+          pairWith(pad, shuttle, from)
+          val event = sequence(sequenceIndex)
+          if (event.lockedDoors) {
+            from ! HartTimer.LockDoors
+          }
+          if (event.docked.contains(true)) {
+            from ! HartTimer.ShuttleDocked(zoneId)
+          }
 
-      case HartTimer.NextEvent(next) if next == 0 =>
-        sequence = delayedScheduleChange.getOrElse(sequence)
-        sequenceLength = sequence.length
-        delayedScheduleChange = None
-        nextEvent(next)
+        case HartTimer.NextEvent(next) if next == 0 =>
+          sequence = delayedScheduleChange.getOrElse(sequence)
+          sequenceLength = sequence.length
+          delayedScheduleChange = None
+          nextEvent(next)
 
-      case HartTimer.NextEvent(next) =>
-        nextEvent(next)
+        case HartTimer.NextEvent(next) =>
+          nextEvent(next)
 
-      case HartTimer.Update(_, forChannel) =>
-        val seq = sequence
-        val event = seq(sequenceIndex)
-        val time = Some(System.currentTimeMillis() - lastStartTime)
-        if (event.docked.contains(true)) {
-          padEvents.publish( HartTimer.ShuttleDocked(forChannel) )
-        }
-        event.prerequisiteUpdate match {
-          case Some(fields) =>
-            val times = event.timeFields(time)
-            zone.LocalEvents ! LocalServiceMessage(
-              forChannel,
-              LocalAction.ShuttleEvent(HartTimer.OrbitalShuttleEvent(
-                fields.u1, fields.u2, times.t1, times.t2, times.t3, padAndShuttlePairs zip Seq(20, 20, 20)
-              ))
+        case HartTimer.Update(_, forChannel) =>
+          val seq   = sequence
+          val event = seq(sequenceIndex)
+          val time  = Some(System.currentTimeMillis() - lastStartTime)
+          if (event.docked.contains(true)) {
+            padEvents.publish(HartTimer.ShuttleDocked(forChannel))
+          }
+          event.prerequisiteUpdate match {
+            case Some(fields) =>
+              val times = event.timeFields(time)
+              zone.LocalEvents ! LocalServiceMessage(
+                forChannel,
+                LocalAction.ShuttleEvent(
+                  HartTimer.OrbitalShuttleEvent(
+                    fields.u1,
+                    fields.u2,
+                    times.t1,
+                    times.t2,
+                    times.t3,
+                    padAndShuttlePairs zip Seq(20, 20, 20)
+                  )
+                )
+              )
+            case None => ;
+          }
+          zone.LocalEvents ! LocalServiceMessage(
+            forChannel,
+            LocalAction.ShuttleEvent(
+              HartTimer.analyzeEvent(event, padAndShuttlePairs, time)
             )
-          case None => ;
-        }
-        zone.LocalEvents ! LocalServiceMessage(
-          forChannel,
-          LocalAction.ShuttleEvent(
-            HartTimer.analyzeEvent(event, padAndShuttlePairs, time)
           )
-        )
-        event.shuttleState match {
-          case Some(state) =>
-            padEvents.publish( HartTimer.ShuttleStateUpdate(forChannel, state.id) )
-          case None =>
-            //find previous valid shuttle state
-            var i = sequenceIndex - 1
-            while(seq(i).shuttleState.isEmpty) { i = if (i - 1 < 0) sequenceLength - 1 else i - 1 }
-            padEvents.publish( HartTimer.ShuttleStateUpdate(forChannel, seq(i).shuttleState.get.id) )
-        }
+          event.shuttleState match {
+            case Some(state) =>
+              padEvents.publish(HartTimer.ShuttleStateUpdate(forChannel, state.id))
+            case None =>
+              //find previous valid shuttle state
+              var i = sequenceIndex - 1
+              while (seq(i).shuttleState.isEmpty) { i = if (i - 1 < 0) sequenceLength - 1 else i - 1 }
+              padEvents.publish(HartTimer.ShuttleStateUpdate(forChannel, seq(i).shuttleState.get.id))
+          }
 
-      case _ => ;
-    }
+        case _ => ;
+      }
 
   def receive: Receive = grounded
 
@@ -141,7 +158,7 @@ class HartTimer(zone: Zone) extends Actor {
 
   def nextEvent(next: Int): Unit = {
     val currEvent = sequence(sequenceIndex)
-    val event = sequence(next)
+    val event     = sequence(next)
     sequenceIndex = next
     lastStartTime = System.currentTimeMillis()
     timer = context.system.scheduler.scheduleOnce(
@@ -154,9 +171,9 @@ class HartTimer(zone: Zone) extends Actor {
     event.docked match {
       case Some(true) if currEvent.docked.isEmpty =>
         zone.LocalEvents ! LocalServiceMessage(zoneId, LocalAction.ShuttleEvent(evt))
-        padEvents.publish( shuttleDockedInThisZone )
+        padEvents.publish(shuttleDockedInThisZone)
       case Some(false) if currEvent.docked.contains(true) =>
-        padEvents.publish( shuttleFreeFromDockInThisZone )
+        padEvents.publish(shuttleFreeFromDockInThisZone)
         context.system.scheduler.scheduleOnce(
           delay = 10 milliseconds,
           zone.LocalEvents,
@@ -166,17 +183,18 @@ class HartTimer(zone: Zone) extends Actor {
         zone.LocalEvents ! LocalServiceMessage(zoneId, LocalAction.ShuttleEvent(evt))
     }
     if (currEvent.lockedDoors != event.lockedDoors) {
-      padEvents.publish( if(event.lockedDoors) HartTimer.LockDoors else HartTimer.UnlockDoors )
+      padEvents.publish(if (event.lockedDoors) HartTimer.LockDoors else HartTimer.UnlockDoors)
     }
     event.shuttleState match {
       case Some(state) =>
-        padEvents.publish( HartTimer.ShuttleStateUpdate(zoneId, state.id) )
+        padEvents.publish(HartTimer.ShuttleStateUpdate(zoneId, state.id))
       case None => ;
     }
   }
 }
 
 object HartTimer {
+
   /**
     * Transform `HartEvent` data into `OrbitalShuttleEvent` data.
     * The former is treated as something internal.
@@ -188,28 +206,31 @@ object HartTimer {
     * @return the `OrbitalShuttleEvent` data
     */
   def analyzeEvent(
-                    event: HartEvent,
-                    padAndShuttlePairs: List[(PlanetSideGUID, PlanetSideGUID)],
-                    time: Option[Long] = None
-                  ): OrbitalShuttleEvent = {
+      event: HartEvent,
+      padAndShuttlePairs: List[(PlanetSideGUID, PlanetSideGUID)],
+      time: Option[Long] = None
+  ): OrbitalShuttleEvent = {
     import net.psforever.services.hart.HartEvent._
     val stateFields = event.stateFields(time)
-    val timeFields = event.timeFields(time)
+    val timeFields  = event.timeFields(time)
     //these control codes are taken from packets samples for VS sanctuary during a specific few sequences
     //while the number varies - from 5 to 37 and an actual maximum of 63 - their purpose seems indeterminate
     val pairs = event match {
       case _: Boarding          => Seq(20, 20, 20)
       case _: ShuttleTakeoffOps => Seq(20, 20, 20)
-      case _: Takeoff           => Seq( 6, 25,  5)
+      case _: Takeoff           => Seq(6, 25, 5)
       case _: InTransit         => Seq(20, 20, 20)
-      case Arrival              => Seq( 5,  5, 27)
+      case Arrival              => Seq(5, 5, 27)
       case ShuttleDockingOps    => Seq(20, 20, 20)
       case Blanking             => Seq(20, 20, 20)
       case _                    => Seq(20, 20, 20)
     }
     OrbitalShuttleEvent(
-      stateFields.u1, stateFields.u2,
-      timeFields.t1, timeFields.t2, timeFields.t3,
+      stateFields.u1,
+      stateFields.u2,
+      timeFields.t1,
+      timeFields.t2,
+      timeFields.t3,
       padAndShuttlePairs zip pairs
     )
   }
@@ -232,6 +253,7 @@ object HartTimer {
   final case class Update(inZone: String, forChannel: String) extends MessageToHartInZone
 
   final case class SetEventDurations(inZone: String, away: Long, boarding: Long) extends MessageToHartInZone
+
   /**
     * Append information about a building amenity and shuttle combination in this zone.
     * @param zone the relevant zone
@@ -240,19 +262,20 @@ object HartTimer {
     * @param from the control agency of the pad
     */
   final case class PairWith(zone: Zone, pad: PlanetSideGUID, shuttle: PlanetSideGUID, from: ActorRef)
+
   /**
     * Data structure for passing information about the event to client-local space.
     * The fields match the `OrbitalShuttleTimeMsg` packet that is created using this data.
     * @see `OrbitalShuttleTimeMsg`
     */
   final case class OrbitalShuttleEvent(
-                                        u1: HartSequence,
-                                        u2: Int,
-                                        t1: Long,
-                                        t2: Long,
-                                        t3: Long,
-                                        pairs: List[((PlanetSideGUID, PlanetSideGUID), Int)]
-                                      )
+      u1: HartSequence,
+      u2: Int,
+      t1: Long,
+      t2: Long,
+      t3: Long,
+      pairs: List[((PlanetSideGUID, PlanetSideGUID), Int)]
+  )
 
   /**
     * Design for the envelop for the message bus
@@ -260,27 +283,42 @@ object HartTimer {
     * The channel is blank because it does not need special designation.
     */
   trait Command extends GenericEventBusMsg { def channel: String = "" }
+
   /**
     * Forbid entry through the boartding gantry doors.
     */
-  case object LockDoors extends Command
+  case object LockDoors extends Command {
+    def inner = this
+  }
+
   /**
     * Permit entry through the boartding gantry doors.
     */
-  case object UnlockDoors extends Command
+  case object UnlockDoors extends Command {
+    def inner = this
+  }
+
   /**
     * The state exists to be turned into, ultimately, a `VehicleStateMessage` packet for the shuttle.
     * This state is to be loaded into the `flying` field.
     * @see `VehicleStateMessage`
     * @param state shuttle state, probably more symbolic of a gvien state than anything else
     */
-  final case class ShuttleStateUpdate(forChannel: String, state: Int) extends Command
+  final case class ShuttleStateUpdate(forChannel: String, state: Int) extends Command {
+    def inner = this
+  }
+
   /**
     * The shuttle has landed on the pad and will (soon) accept passengers.
     */
-  final case class ShuttleDocked(forChannel: String) extends Command
+  final case class ShuttleDocked(forChannel: String) extends Command {
+    def inner = this
+  }
+
   /**
     * The shuttle has disengaged from the pad, will no longer accept passengers, and may take off soon.
     */
-  final case class ShuttleFreeFromDock(forChannel: String) extends Command
+  final case class ShuttleFreeFromDock(forChannel: String) extends Command {
+    def inner = this
+  }
 }

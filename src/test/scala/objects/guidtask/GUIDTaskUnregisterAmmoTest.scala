@@ -14,10 +14,12 @@ class GUIDTaskUnregisterAmmoTest extends ActorTest {
     guid.register(obj, name = "ammo")
 
     assert(obj.HasGUID)
-    TaskWorkflow.execute(TaskBundle(
-      new GUIDTaskTest.RegisterTestTask(probe.ref),
-      GUIDTask.unregisterEquipment(uns, obj)
-    ))
+    TaskWorkflow.execute(
+      TaskBundle(
+        new GUIDTaskTest.RegisterTestTask(probe.ref),
+        GUIDTask.unregisterEquipment(uns, obj)
+      )
+    )
     probe.expectMsg(5.second, scala.util.Success(true))
     assert(!obj.HasGUID)
   }

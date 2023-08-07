@@ -17,12 +17,16 @@ import net.psforever.services.InterstellarClusterService
   * @see `InterstellarClusterService`
   */
 trait BuildingWrapper {
+
   /** building entity */
   def building: Building
+
   /** message-passing reference */
   def context: ActorContext[BuildingActor.Command]
+
   /** event system for state updates to the whole server */
   def galaxyService: classic.ActorRef
+
   /** event system for behavior updates from the whole server */
   def interstellarCluster: ActorRef[InterstellarClusterService.Command]
 }

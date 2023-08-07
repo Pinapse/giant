@@ -9,10 +9,7 @@ import net.psforever.objects.serverobject.affinity.FactionAffinity
 import net.psforever.objects.serverobject.mount.{SeatDefinition, Seat => Chair}
 import net.psforever.objects.vehicles.MountableWeapons
 
-trait WeaponTurret
-  extends FactionAffinity
-  with MountableWeapons
-  with Container {
+trait WeaponTurret extends FactionAffinity with MountableWeapons with Container {
   _: PlanetSideGameObject =>
 
   /** manned turrets have just one mount; this is just standard interface */

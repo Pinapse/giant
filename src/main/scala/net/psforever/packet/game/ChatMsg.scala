@@ -41,7 +41,7 @@ final case class ChatMsg(
 
 object ChatMsg extends Marshallable[ChatMsg] {
   def apply(messageType: ChatMessageType, contents: String): ChatMsg =
-    ChatMsg(messageType, wideContents=false, recipient="", contents, note=None)
+    ChatMsg(messageType, wideContents = false, recipient = "", contents, note = None)
 
   implicit val codec: Codec[ChatMsg] = (("messagetype" | ChatMessageType.codec) >>:~ { messagetype_value =>
     (("has_wide_contents" | bool) >>:~ { isWide =>

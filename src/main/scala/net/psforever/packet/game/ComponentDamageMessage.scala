@@ -37,16 +37,17 @@ object ComponentDamageField {
   *               `None`, when damage issues are cleared
   */
 final case class ComponentDamageMessage(
-                                         guid: PlanetSideGUID,
-                                         component: SubsystemComponent,
-                                         status: Option[ComponentDamageField]
-                                       ) extends PlanetSideGamePacket {
+    guid: PlanetSideGUID,
+    component: SubsystemComponent,
+    status: Option[ComponentDamageField]
+) extends PlanetSideGamePacket {
   type Packet = ComponentDamageMessage
   def opcode = GamePacketOpcode.ComponentDamageMessage
   def encode = ComponentDamageMessage.encode(this)
 }
 
 object ComponentDamageMessage extends Marshallable[ComponentDamageMessage] {
+
   /**
     * Overloaded constructor where the component's current state is be cleared.
     * @param guid the entity that owns this component, usually a vehicle
@@ -70,13 +71,13 @@ object ComponentDamageMessage extends Marshallable[ComponentDamageMessage] {
 
   private val componentDamageFieldCodec: Codec[ComponentDamageField] = (
     ("unk1" | uint32L) ::
-    ("unk2" | uint32L) ::
-    ("unk3" | bool)
+      ("unk2" | uint32L) ::
+      ("unk3" | bool)
   ).as[ComponentDamageField]
 
   implicit val codec: Codec[ComponentDamageMessage] = (
     ("guid" | PlanetSideGUID.codec) ::
-    ("component" | subsystemComponentCodec) ::
-    ("status" | optional(bool, componentDamageFieldCodec))
-    ).as[ComponentDamageMessage]
+      ("component" | subsystemComponentCodec) ::
+      ("status" | optional(bool, componentDamageFieldCodec))
+  ).as[ComponentDamageMessage]
 }

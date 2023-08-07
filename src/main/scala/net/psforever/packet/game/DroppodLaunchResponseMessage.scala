@@ -21,50 +21,60 @@ sealed abstract class DroppodError(val value: Int, val message: String) extends 
 object DroppodError extends IntEnum[DroppodError] {
   val values = findValues
 
-  case object ContinentNotAvailable extends DroppodError(
-    value = 1,
-    message = "That continent is not available - please choose another one."
-  )
+  case object ContinentNotAvailable
+      extends DroppodError(
+        value = 1,
+        message = "That continent is not available - please choose another one."
+      )
 
-  case object BlockedBySOI extends DroppodError(
-    value = 2,
-    message = "That location is within a 's Sphere of Influence (SOI). Please try another location." //typo intentional
-  )
+  case object BlockedBySOI
+      extends DroppodError(
+        value = 2,
+        message =
+          "That location is within a 's Sphere of Influence (SOI). Please try another location." //typo intentional
+      )
 
-  case object InvalidLocation extends DroppodError(
-    value = 3,
-    message = "That is an invalid drop location - please try another location."
-  )
+  case object InvalidLocation
+      extends DroppodError(
+        value = 3,
+        message = "That is an invalid drop location - please try another location."
+      )
 
-  case object ZoneNotAvailable extends DroppodError(
-    value = 4,
-    message = "This zone is not available - try another zone."
-  )
+  case object ZoneNotAvailable
+      extends DroppodError(
+        value = 4,
+        message = "This zone is not available - try another zone."
+      )
 
-  case object ZoneFull extends DroppodError(
-    value = 5,
-    message = "That zone is already full of battle hungry people - try another one."
-  )
+  case object ZoneFull
+      extends DroppodError(
+        value = 5,
+        message = "That zone is already full of battle hungry people - try another one."
+      )
 
-  case object EnemyBase extends DroppodError(
-    value = 6,
-    message = "You can not drop onto an enemy home base - please choose a valid continent."
-  )
+  case object EnemyBase
+      extends DroppodError(
+        value = 6,
+        message = "You can not drop onto an enemy home base - please choose a valid continent."
+      )
 
-  case object NotOnHart extends DroppodError(
-    value = 7,
-    message = "You are attempting to drop but are not on the HART - be warned you are being watched."
-  )
+  case object NotOnHart
+      extends DroppodError(
+        value = 7,
+        message = "You are attempting to drop but are not on the HART - be warned you are being watched."
+      )
 
-  case object OwnFactionLocked extends DroppodError(
-    value = 8,
-    message = "You cannot drop onto a continent that is locked to your empire - please choose a valid continent."
-  )
+  case object OwnFactionLocked
+      extends DroppodError(
+        value = 8,
+        message = "You cannot drop onto a continent that is locked to your empire - please choose a valid continent."
+      )
 
-  case object ZoneFullWarpQueue extends DroppodError(
-    value = 9,
-    message = "The zone you are trying to warp to is currently full.  You have been placed in the warp queue."
-  )
+  case object ZoneFullWarpQueue
+      extends DroppodError(
+        value = 9,
+        message = "The zone you are trying to warp to is currently full.  You have been placed in the warp queue."
+      )
 }
 
 /**
@@ -86,10 +96,10 @@ final case class WarpQueuePrompt(queue_size: Long, place: Long)
   * @throws AssertionError if the error code requires additional fields
   */
 final case class DroppodLaunchResponseMessage(
-                                               error_code: DroppodError,
-                                               launch_info: DroppodLaunchInfo,
-                                               queue_info: Option[WarpQueuePrompt]
-                                             ) extends PlanetSideGamePacket {
+    error_code: DroppodError,
+    launch_info: DroppodLaunchInfo,
+    queue_info: Option[WarpQueuePrompt]
+) extends PlanetSideGamePacket {
   assert(
     error_code != DroppodError.ZoneFullWarpQueue || queue_info.isDefined,
     "ZoneFullWarpQueue requires queue information"
@@ -100,6 +110,7 @@ final case class DroppodLaunchResponseMessage(
 }
 
 object DroppodLaunchResponseMessage extends Marshallable[DroppodLaunchResponseMessage] {
+
   /**
     * Overloaded constructor for most errors.
     * @param error the error reporting why the zoning through droppod use failed
@@ -118,7 +129,12 @@ object DroppodLaunchResponseMessage extends Marshallable[DroppodLaunchResponseMe
     * @param xypos where in the zone (relative to the ground) the player will be placed
     * @return a `DroppodLaunchResponseMessage` packet
     */
-  def apply(error: DroppodError, guid: PlanetSideGUID, zoneNumber: Int, xypos: Vector3): DroppodLaunchResponseMessage = {
+  def apply(
+      error: DroppodError,
+      guid: PlanetSideGUID,
+      zoneNumber: Int,
+      xypos: Vector3
+  ): DroppodLaunchResponseMessage = {
     DroppodLaunchResponseMessage(error, DroppodLaunchInfo(guid, zoneNumber, xypos))
   }
 
@@ -143,7 +159,8 @@ object DroppodLaunchResponseMessage extends Marshallable[DroppodLaunchResponseMe
   def apply(guid: PlanetSideGUID, zoneNumber: Int, queueSize: Int, placeInQueue: Int): DroppodLaunchResponseMessage = {
     DroppodLaunchResponseMessage(
       DroppodLaunchInfo(guid, zoneNumber, Vector3.Zero),
-      queueSize, placeInQueue
+      queueSize,
+      placeInQueue
     )
   }
 
@@ -166,13 +183,13 @@ object DroppodLaunchResponseMessage extends Marshallable[DroppodLaunchResponseMe
 
   private val extra_codec: Codec[WarpQueuePrompt] = (
     ("place" | uint32L) ::
-    ("queue_size" | uint32L)
-    ).as[WarpQueuePrompt]
+      ("queue_size" | uint32L)
+  ).as[WarpQueuePrompt]
 
   implicit val codec: Codec[DroppodLaunchResponseMessage] = (
     ("error_code" | droppodErrorCodec) >>:~ { ecode =>
       ("launch_info" | DroppodLaunchInfo.codec) ::
-      ("queue_info" | conditional(ecode == DroppodError.ZoneFullWarpQueue, extra_codec))
+        ("queue_info" | conditional(ecode == DroppodError.ZoneFullWarpQueue, extra_codec))
     }
-    ).as[DroppodLaunchResponseMessage]
+  ).as[DroppodLaunchResponseMessage]
 }

@@ -16,9 +16,7 @@ import scala.concurrent.duration._
   * or supplied to a nanite resource silo belonging to a mjaor facility.
   * @param vehicle the ANT
   */
-class AntControl(vehicle: Vehicle)
-  extends DeployingVehicleControl(vehicle)
-    with AntTransferBehavior {
+class AntControl(vehicle: Vehicle) extends DeployingVehicleControl(vehicle) with AntTransferBehavior {
   def ChargeTransferObject: Vehicle = vehicle
 
   override def commonEnabledBehavior: Receive = super.commonEnabledBehavior.orElse(antBehavior)

@@ -23,10 +23,11 @@ class LocalLockerItem extends PlanetSideServerObject {
 
 object LocalLockerItem {
   import net.psforever.objects.definition.ObjectDefinition
-  def local = new ObjectDefinition(0) {
-    Name = "locker-equipment"
-    registerAs = "locker-contents"
-  }
+  def local =
+    new ObjectDefinition(0) {
+      Name = "locker-equipment"
+      registerAs = "locker-contents"
+    }
 
   /**
     * Instantiate and configure a `LocalProjectile` object.

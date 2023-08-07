@@ -7,18 +7,18 @@ import net.psforever.objects.serverobject.aura.{Aura => AuraEffect}
   * These animations confer information about the nature of some status that is affecting the target entity.
   */
 trait AuraContainer {
-  private var aura : Set[AuraEffect] = Set.empty[AuraEffect]
+  private var aura: Set[AuraEffect] = Set.empty[AuraEffect]
 
-  def Aura : Set[AuraEffect] = aura
+  def Aura: Set[AuraEffect] = aura
 
-  def AddEffectToAura(effect : AuraEffect) : Set[AuraEffect] = {
-    if(effect != AuraEffect.None) {
+  def AddEffectToAura(effect: AuraEffect): Set[AuraEffect] = {
+    if (effect != AuraEffect.None) {
       aura = aura + effect
     }
     Aura
   }
 
-  def RemoveEffectFromAura(effect : AuraEffect) : Set[AuraEffect] = {
+  def RemoveEffectFromAura(effect: AuraEffect): Set[AuraEffect] = {
     aura = aura - effect
     Aura
   }

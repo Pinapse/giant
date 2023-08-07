@@ -45,26 +45,28 @@ class OrbitalShuttleTest extends Specification {
     }
 
     "will only discover unoccupied seats" in {
-      val fury1 = new OrbitalShuttle(GlobalDefinitions.fury)
+      val fury1   = new OrbitalShuttle(GlobalDefinitions.fury)
       val player1 = Player(testAvatar1)
       fury1.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => fury1.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player1).contains(player1) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          fury1.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player1).contains(player1) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       fury1.GetSeatFromMountPoint(mountPoint = 1).isEmpty mustEqual true //seat is occupied
 
       //comparison with normal Vehicle
-      val fury2 = new Vehicle(GlobalDefinitions.fury)
+      val fury2   = new Vehicle(GlobalDefinitions.fury)
       val player2 = Player(testAvatar2)
       fury2.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => fury2.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player2).contains(player2) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          fury2.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player2).contains(player2) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       fury2.GetSeatFromMountPoint(mountPoint = 1).contains(0) mustEqual true //even though seat is occupied
     }
@@ -75,11 +77,12 @@ class OrbitalShuttleTest extends Specification {
       fury1.MountPoints.size mustEqual 2
       val player1 = Player(testAvatar1)
       fury1.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => fury1.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player1).contains(player1) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          fury1.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player1).contains(player1) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       fury1.Seats.size mustEqual 1
       fury1.MountPoints.size mustEqual 2
@@ -94,20 +97,22 @@ class OrbitalShuttleTest extends Specification {
       fury2.MountPoints.size mustEqual 2
       val player3 = Player(testAvatar3)
       fury2.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => fury2.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player3).contains(player3) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          fury2.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player3).contains(player3) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       fury2.Seats.size mustEqual 1
       fury2.MountPoints.size mustEqual 2
       fury2.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => fury2.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player2).contains(player2) mustEqual false
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          fury2.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player2).contains(player2) mustEqual false
+            case _          => ko
+          }
+        case _ => ko
       }
       fury2.Seats.size mustEqual 1
       fury2.MountPoints.size mustEqual 2
@@ -115,30 +120,34 @@ class OrbitalShuttleTest extends Specification {
 
     "create seats as needed (with appropriate definition)" in {
       GlobalDefinitions.fury
-        .Seats(0).occupancy == 1 mustEqual true
+        .Seats(0)
+        .occupancy == 1 mustEqual true
       GlobalDefinitions.orbital_shuttle
-        .Seats(0).occupancy > 1 mustEqual true
+        .Seats(0)
+        .occupancy > 1 mustEqual true
 
       val shuttle1 = new OrbitalShuttle(GlobalDefinitions.orbital_shuttle)
       shuttle1.Seats.size mustEqual 1
       shuttle1.MountPoints.size mustEqual 8
       val player1 = Player(testAvatar1)
       shuttle1.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => shuttle1.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player1).contains(player1) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          shuttle1.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player1).contains(player1) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       shuttle1.Seats.size mustEqual 1
       shuttle1.MountPoints.size mustEqual 8
       val player2 = Player(testAvatar2)
       shuttle1.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => shuttle1.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player2).contains(player2) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          shuttle1.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player2).contains(player2) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       shuttle1.Seats.size mustEqual 2
       shuttle1.MountPoints.size mustEqual 8
@@ -149,20 +158,22 @@ class OrbitalShuttleTest extends Specification {
       shuttle2.MountPoints.size mustEqual 8
       val player3 = Player(testAvatar3)
       shuttle2.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => shuttle2.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player3).contains(player3) mustEqual true
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          shuttle2.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player3).contains(player3) mustEqual true
+            case _          => ko
+          }
+        case _ => ko
       }
       shuttle2.Seats.size mustEqual 1
       shuttle2.MountPoints.size mustEqual 8
       shuttle2.GetSeatFromMountPoint(mountPoint = 1) match {
-        case Some(seatNumber) => shuttle2.Seat(seatNumber) match {
-          case Some(seat)     => seat.mount(player2).contains(player2) mustEqual false
-          case _              => ko
-        }
-        case _                => ko
+        case Some(seatNumber) =>
+          shuttle2.Seat(seatNumber) match {
+            case Some(seat) => seat.mount(player2).contains(player2) mustEqual false
+            case _          => ko
+          }
+        case _ => ko
       }
       shuttle2.Seats.size mustEqual 1
       shuttle2.MountPoints.size mustEqual 8

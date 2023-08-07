@@ -9,10 +9,12 @@ import scala.util.{Failure, Success, Try}
 
 class BattleFrameToolConverter extends ObjectCreateConverter[Tool]() {
   override def ConstructorData(obj: Tool): Try[WeaponData] = {
-    val slots: List[InternalSlot] = (0 until obj.MaxAmmoSlot).map(index => {
-      val box = obj.AmmoSlots(index).Box
-      InternalSlot(box.Definition.ObjectId, box.GUID, index, box.Definition.Packet.ConstructorData(box).get)
-    }).toList
+    val slots: List[InternalSlot] = (0 until obj.MaxAmmoSlot)
+      .map(index => {
+        val box = obj.AmmoSlots(index).Box
+        InternalSlot(box.Definition.ObjectId, box.GUID, index, box.Definition.Packet.ConstructorData(box).get)
+      })
+      .toList
     Success(
       WeaponData(
         CommonFieldData(
@@ -33,5 +35,9 @@ class BattleFrameToolConverter extends ObjectCreateConverter[Tool]() {
   }
 
   override def DetailedConstructorData(obj: Tool): Try[DetailedWeaponData] =
-    Failure(new Exception("BattleFrameToolConverter should not be used to generate detailed BattleFrameRToolData (nothing should)"))
+    Failure(
+      new Exception(
+        "BattleFrameToolConverter should not be used to generate detailed BattleFrameRToolData (nothing should)"
+      )
+    )
 }

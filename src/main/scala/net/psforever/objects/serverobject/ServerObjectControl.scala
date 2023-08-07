@@ -4,8 +4,7 @@ package net.psforever.objects.serverobject
 import akka.actor.Actor
 import net.psforever.types.PlanetSideGUID
 
-abstract class ServerObjectControl
-  extends Actor {
+abstract class ServerObjectControl extends Actor {
   protected val log = org.log4s.getLogger(toString())
 
   val attributeBehavior: Receive = {

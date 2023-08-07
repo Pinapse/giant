@@ -10,20 +10,21 @@ import net.psforever.objects.vital.resolution.DamageResistanceModel
 import net.psforever.types.Vector3
 
 final case class ArmorSiphonReason(
-                                    hostVehicle: Vehicle,
-                                    siphon: Tool,
-                                    damageModel: DamageResistanceModel
-                                  ) extends DamageReason {
+    hostVehicle: Vehicle,
+    siphon: Tool,
+    damageModel: DamageResistanceModel
+) extends DamageReason {
   assert(GlobalDefinitions.isBattleFrameArmorSiphon(siphon.Definition), "acting entity is not an armor siphon")
 
   def source: DamageWithPosition = siphon.Projectile
 
   def resolution: DamageResolution.Value = DamageResolution.Resolved
 
-  def same(test: DamageReason): Boolean = test match {
-    case asr: ArmorSiphonReason => (asr.hostVehicle eq hostVehicle) && (asr.siphon eq siphon)
-    case _                      => false
-  }
+  def same(test: DamageReason): Boolean =
+    test match {
+      case asr: ArmorSiphonReason => (asr.hostVehicle eq hostVehicle) && (asr.siphon eq siphon)
+      case _                      => false
+    }
 
   def adversary: Option[SourceEntry] = None
 
@@ -35,7 +36,7 @@ object ArmorSiphonModifiers {
     def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
       cause match {
         case o: ArmorSiphonReason => calculate(damage, data, o)
-        case _ => 0
+        case _                    => 0
       }
     }
 
@@ -45,10 +46,14 @@ object ArmorSiphonModifiers {
 
 case object ArmorSiphonMaxDistanceCutoff extends ArmorSiphonModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: ArmorSiphonReason): Int = {
-    if (Vector3.DistanceSquared(data.target.Position, cause.hostVehicle.Position) < cause.source.DamageRadius * cause.source.DamageRadius) {
+    if (
+      Vector3.DistanceSquared(
+        data.target.Position,
+        cause.hostVehicle.Position
+      ) < cause.source.DamageRadius * cause.source.DamageRadius
+    ) {
       damage
-    }
-    else {
+    } else {
       0
     }
   }

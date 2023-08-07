@@ -1,7 +1,12 @@
 package net.psforever.zones
 
 import java.io.FileNotFoundException
-import net.psforever.objects.serverobject.terminals.{ProximityTerminal, ProximityTerminalDefinition, Terminal, TerminalDefinition}
+import net.psforever.objects.serverobject.terminals.{
+  ProximityTerminal,
+  ProximityTerminalDefinition,
+  Terminal,
+  TerminalDefinition
+}
 import net.psforever.objects.serverobject.mblocker.Locker
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -19,7 +24,13 @@ import net.psforever.objects.serverobject.pad.{VehicleSpawnPad, VehicleSpawnPadD
 import net.psforever.objects.serverobject.painbox.{Painbox, PainboxDefinition}
 import net.psforever.objects.serverobject.resourcesilo.ResourceSilo
 import net.psforever.objects.serverobject.shuttle.OrbitalShuttlePad
-import net.psforever.objects.serverobject.structures.{Building, BuildingDefinition, FoundationBuilder, StructureType, WarpGate}
+import net.psforever.objects.serverobject.structures.{
+  Building,
+  BuildingDefinition,
+  FoundationBuilder,
+  StructureType,
+  WarpGate
+}
 import net.psforever.objects.serverobject.terminals.capture.{CaptureTerminal, CaptureTerminalDefinition}
 import net.psforever.objects.serverobject.terminals.implant.ImplantTerminalMech
 import net.psforever.objects.serverobject.tube.SpawnTube
@@ -56,11 +67,11 @@ object Zones {
   }
 
   private case class GuidNumberPool(
-                                     name: String,
-                                     start: Int,
-                                     max: Int,
-                                     selector: String
-                                   ) {
+      name: String,
+      start: Int,
+      max: Int,
+      selector: String
+  ) {
     def getSelector(): NumberSelector = {
       if (selector.equals("random")) new RandomSelector
       else new SpecificSelector
@@ -88,7 +99,7 @@ object Zones {
     "IsChildObject"
   )(ZoneMapEntity.apply)
 
-  private implicit val decodeVector3 : Decoder[Vector3] = Decoder.forProduct3(
+  private implicit val decodeVector3: Decoder[Vector3] = Decoder.forProduct3(
     "X",
     "Y",
     "Z"
@@ -227,7 +238,7 @@ object Zones {
       }
       .map {
         case (info, data, zplData) =>
-          val mapid = info.value
+          val mapid   = info.value
           val zoneMap = new ZoneMap(mapid)
 
           zoneMap.checksum = info.checksum
@@ -256,7 +267,9 @@ object Zones {
             val structureType =
               if (towerTypes.contains(structure.objectType) || structure.objectType == "redoubt")
                 StructureType.Tower
-              else if (facilityTypes.contains(structure.objectType) || cavernBuildingTypes.contains(structure.objectType))
+              else if (
+                facilityTypes.contains(structure.objectType) || cavernBuildingTypes.contains(structure.objectType)
+              )
                 StructureType.Facility
               else if (bunkerTypes.contains(structure.objectType))
                 StructureType.Bunker
@@ -309,8 +322,7 @@ object Zones {
                 }
             }
             val filteredZoneEntities =
-              data.filter { _.owner.contains(structure.id) } ++
-              {
+              data.filter { _.owner.contains(structure.id) } ++ {
                 if (structure.objectType.startsWith("orbital_building_")) {
                   val structurePosition = structure.position
                   data.filter { entity =>
@@ -459,8 +471,7 @@ object Zones {
               spawnPads.minBy(point => Vector3.DistanceSquared(point.position, obj.position))
 
             val adjustedYaw = structure match {
-              case Some(building)
-                if objectType.equals("bfr_terminal") =>
+              case Some(building) if objectType.equals("bfr_terminal") =>
                 //bfr_terminal entities are paired with bfr_door entities
                 //rotations are not correctly set in the zone list, but assumptions can be made based on facility type
                 if (building.objectType.startsWith("orbital_building")) {
@@ -469,14 +480,18 @@ object Zones {
                 } else {
                   //predictable angles based on the facility type
                   Angular.flipClockwise(building.yaw) + (if (building.objectType.startsWith("comm_station")) { //includes comm_station_dsp
-                    -45f
-                  } else if (building.objectType.equals("cryo_facility") || building.objectType.equals("tech_plant")) {
-                    135f
-                  } else if (building.objectType.equals("amp_station")) {
-                    225f
-                  } else {
-                    0f
-                  })
+                                                           -45f
+                                                         } else if (
+                                                           building.objectType.equals(
+                                                             "cryo_facility"
+                                                           ) || building.objectType.equals("tech_plant")
+                                                         ) {
+                                                           135f
+                                                         } else if (building.objectType.equals("amp_station")) {
+                                                           225f
+                                                         } else {
+                                                           0f
+                                                         })
                 }
               case _ =>
                 //spawn pads have a default rotation that it +90 degrees from where it should be
@@ -676,7 +691,7 @@ object Zones {
       val zone = new Zone(info.id, zoneMaps.find(_.name.equals(info.map.value)).get, info.value) {
         private val addPoolsFunc: () => Unit = addPools(guids, zone = this)
 
-        override def SetupNumberPools() : Unit = addPoolsFunc()
+        override def SetupNumberPools(): Unit = addPoolsFunc()
 
         override def init(implicit context: ActorContext): Unit = {
           guids.find { pool => pool.name.equals("projectiles") } match {
@@ -692,7 +707,8 @@ object Zones {
           super.init(context)
 
           if (!info.id.startsWith("tz")) {
-            this.HotSpotCoordinateFunction = Zones.HotSpots.standardRemapping(info.map.scale, info.map.hotSpotSpan, info.map.hotSpotSpan)
+            this.HotSpotCoordinateFunction =
+              Zones.HotSpots.standardRemapping(info.map.scale, info.map.hotSpotSpan, info.map.hotSpotSpan)
             this.HotSpotTimeFunction = Zones.HotSpots.standardTimeRules
             Zones.initZoneAmenities(zone = this)
           }
@@ -759,11 +775,11 @@ object Zones {
           }
         }
       }
-      val map = zone.map
-      val zoneid = zone.id
+      val map: ZoneMap = zone.map
+      val zoneid       = zone.id
       intercontinentalLattice.foreach { obj =>
         obj.asArray.get.foreach { entry =>
-          val arr = entry.asArray.get
+          val arr     = entry.asArray.get
           val arrHead = arr.head.asString.get
           if (arrHead.startsWith(s"$zoneid/")) {
             map.addLatticeLink(arrHead, arr(1).asString.get)
@@ -781,17 +797,20 @@ object Zones {
     val jsonObj = parse(json).toOption.get.asObject
     val keys = jsonObj match {
       case Some(jsonToObject) => jsonToObject.keys.filter { _.startsWith("caverns-") }
-      case _ => Nil
+      case _                  => Nil
     }
     val pairs = keys.map { key =>
       (
         key,
-        jsonObj.get(key).map { obj =>
-          obj.asArray.get.map { entry =>
-            val array = entry.asArray.get
-            List(array.head.asString.get, array.last.asString.get)
+        jsonObj
+          .get(key)
+          .map { obj =>
+            obj.asArray.get.map { entry =>
+              val array = entry.asArray.get
+              List(array.head.asString.get, array.last.asString.get)
+            }
           }
-        }.get
+          .get
       )
     }
     pairs.toMap[String, Iterable[Iterable[String]]]
@@ -804,10 +823,10 @@ object Zones {
   }
 
   private def setWarpGateToFactionOwnedAndBroadcast(
-                                                      buildings: Iterable[Building],
-                                                      name: String,
-                                                      faction: PlanetSideEmpire.Value
-                                                    ) : Unit = {
+      buildings: Iterable[Building],
+      name: String,
+      faction: PlanetSideEmpire.Value
+  ): Unit = {
     buildings.find(_.Name.equals(name)).map {
       case gate: WarpGate =>
         gate.Faction = faction
@@ -816,14 +835,15 @@ object Zones {
   }
 
   private def customizePools(base: Seq[GuidNumberPool], custom: Seq[GuidNumberPool]): Seq[GuidNumberPool] = {
-    val exclude = custom.map { _.name }
+    val exclude   = custom.map { _.name }
     val remainder = base.filterNot { entry => exclude.contains { entry.name } }
     custom ++ remainder
   }
 
   private def addPools(guids: Seq[GuidNumberPool], zone: Zone)(): Unit = {
     guids.foreach { entry =>
-      zone.AddPool(name = entry.name, (entry.start to entry.max).toList)
+      zone
+        .AddPool(name = entry.name, (entry.start to entry.max).toList)
         .foreach { _.Selector = entry.getSelector() }
     }
   }

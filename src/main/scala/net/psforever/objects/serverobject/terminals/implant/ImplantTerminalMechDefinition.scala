@@ -9,9 +9,7 @@ import net.psforever.objects.serverobject.structures.AmenityDefinition
   * Implant terminals are composed of two components.
   * This `Definition` constructs the visible mechanical tube component that can be mounted.
   */
-class ImplantTerminalMechDefinition
-  extends AmenityDefinition(410)
-  with MountableDefinition {
+class ImplantTerminalMechDefinition extends AmenityDefinition(410) with MountableDefinition {
   Name = "implant_terminal_mech"
 
   /* key - mount index, value - mount object */

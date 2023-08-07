@@ -4,8 +4,7 @@ package net.psforever.objects.serverobject.doors
 import akka.actor.ActorRef
 import net.psforever.objects.vital.Vitality
 
-class SpawnTubeDoorControl(door: Door)
-  extends DoorControl(door) {
+class SpawnTubeDoorControl(door: Door) extends DoorControl(door) {
   lazy val spawnTube: ActorRef = {
     import net.psforever.objects.serverobject.tube.SpawnTube
     import net.psforever.types.Vector3
@@ -18,9 +17,10 @@ class SpawnTubeDoorControl(door: Door)
   }
 
   //doors do not implement the Damageable mxin, so it should be fine just catching the message
-  override def commonBehavior: Receive = super.commonBehavior
-    .orElse {
-      case msg: Vitality.Damage =>
-        spawnTube.forward(msg)
-    }
+  override def commonBehavior: Receive =
+    super.commonBehavior
+      .orElse {
+        case msg: Vitality.Damage =>
+          spawnTube.forward(msg)
+      }
 }

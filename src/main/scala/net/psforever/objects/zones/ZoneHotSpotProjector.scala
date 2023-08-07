@@ -74,10 +74,10 @@ class ZoneHotSpotProjector(zone: Zone, hotspots: ListBuffer[HotSpotInfo], blanki
   private[this] val log = org.log4s.getLogger(s"${zone.id.capitalize}HotSpotProjector")
 
   /**
-   * Whether or not the debug command should actually add messages to the log at a debug level.
-   * @see `org.log4s.Debug`
-   * @param msg message to be appended
-   */
+    * Whether or not the debug command should actually add messages to the log at a debug level.
+    * @see `org.log4s.Debug`
+    * @param msg message to be appended
+    */
   private def trace(msg: String): Unit = {
     //log.trace(msg)
   }
@@ -332,20 +332,20 @@ class ZoneHotSpotHistory(zone: Zone, hotspots: ListBuffer[HotSpotInfo], blanking
   /* this component does not actually the visible hotspots
    * a duplicate of the projector device otherwise */
   override def UpdateHotSpots(
-                               affectedFactions: Iterable[PlanetSideEmpire.Value],
-                               hotSpotInfos: Iterable[HotSpotInfo]
-                             ): Unit = { }
+      affectedFactions: Iterable[PlanetSideEmpire.Value],
+      hotSpotInfos: Iterable[HotSpotInfo]
+  ): Unit = {}
   override def Established: Receive = {
     case ZoneHotSpotProjector.ExposeHeatForRegion(center, radius) =>
       MapInfo.values.find(_.value == zone.map.name) match {
         case Some(mapInfo) if mapInfo.hotSpotSpan > 0 =>
           //turn the radius into the number of hotspots, then sample all hotspots outwards from the center region
-          val span = mapInfo.hotSpotSpan
-          val spanIntervalsHalf = (radius / span).toInt + 1
-          val cornerOffset = span * spanIntervalsHalf.toFloat
-          val lowerLeftCorner = zone.HotSpotCoordinateFunction(center) + Vector3(-cornerOffset, -cornerOffset, 0f)
+          val span                   = mapInfo.hotSpotSpan
+          val spanIntervalsHalf      = (radius / span).toInt + 1
+          val cornerOffset           = span * spanIntervalsHalf.toFloat
+          val lowerLeftCorner        = zone.HotSpotCoordinateFunction(center) + Vector3(-cornerOffset, -cornerOffset, 0f)
           val progressionOfIntervals = 0 to spanIntervalsHalf * 2
-          val squareRadius = radius * radius
+          val squareRadius           = radius * radius
           val out = progressionOfIntervals
             .flatMap { y =>
               val yFloat = span * y.toFloat

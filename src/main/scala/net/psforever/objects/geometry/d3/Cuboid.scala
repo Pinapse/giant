@@ -15,27 +15,32 @@ import net.psforever.types.Vector3
   * @param height na
   */
 final case class Cuboid(
-                         p: Point,
-                         relativeForward: Vector3,
-                         relativeUp: Vector3,
-                         length: Float,
-                         width: Float,
-                         height: Float,
-                       ) extends VolumetricGeometry {
+    p: Point,
+    relativeForward: Vector3,
+    relativeUp: Vector3,
+    length: Float,
+    width: Float,
+    height: Float
+) extends VolumetricGeometry {
   def center: Point = Point(p.asVector3 + relativeUp * height * 0.5f)
 
-  def moveCenter(point: geometry.Point): VolumetricGeometry = Cuboid(Point(point), relativeForward, relativeUp, length, width, height)
+  def moveCenter(point: geometry.Point): VolumetricGeometry =
+    Cuboid(Point(point), relativeForward, relativeUp, length, width, height)
 
   override def pointOnOutside(v: Vector3): Point = {
     import net.psforever.types.Vector3.{CrossProduct, DotProduct, neg}
-    val height2 = height * 0.5f
+    val height2      = height * 0.5f
     val relativeSide = CrossProduct(relativeForward, relativeUp)
     //val forwardVector = relativeForward * length
     //val sideVector = relativeSide * width
     //val upVector = relativeUp * height2
     val closestVector: Vector3 = Seq(
-      relativeForward, relativeSide, relativeUp,
-      neg(relativeForward), neg(relativeSide), neg(relativeUp)
+      relativeForward,
+      relativeSide,
+      relativeUp,
+      neg(relativeForward),
+      neg(relativeSide),
+      neg(relativeUp)
     ).maxBy { dir => DotProduct(dir, v) }
     def dz(): Float = {
       if (Geometry.closeToInsignificance(v.z) != 0) {

@@ -40,7 +40,7 @@ class ZoneMap(val name: String) {
   private var linkTerminalInterface: Map[Int, Int]                  = Map()
   private var linkDoorLock: Map[Int, Int]                           = Map()
   private var linkObjectBase: Map[Int, Int]                         = Map()
-  private var containsShuttle: List[Int]                           = List()
+  private var containsShuttle: List[Int]                            = List()
   private var buildings: Map[(String, Int, Int), FoundationBuilder] = Map()
   private var lattice: Set[(String, String)]                        = Set()
 

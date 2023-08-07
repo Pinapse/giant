@@ -45,9 +45,9 @@ final case class DroppodFreefallingMessage(
 object DroppodFreefallingMessage extends Marshallable[DroppodFreefallingMessage] {
   private val rotation: Codec[Vector3] = (
     Angular.codec_roll ::
-    Angular.codec_pitch ::
-    Angular.codec_yaw()
-    ).narrow[Vector3](
+      Angular.codec_pitch ::
+      Angular.codec_yaw()
+  ).narrow[Vector3](
     {
       case u :: v :: w :: HNil => Successful(Vector3(u, v, w))
     },
@@ -56,10 +56,10 @@ object DroppodFreefallingMessage extends Marshallable[DroppodFreefallingMessage]
 
   implicit val codec: Codec[DroppodFreefallingMessage] = (
     ("guid" | PlanetSideGUID.codec) ::
-    ("pos" | Vector3.codec_float) ::
-    ("vel" | Vector3.codec_float) ::
-    ("pos2" | Vector3.codec_float) ::
-    ("orientation1" | rotation) ::
-    ("orientation2" | rotation)
+      ("pos" | Vector3.codec_float) ::
+      ("vel" | Vector3.codec_float) ::
+      ("pos2" | Vector3.codec_float) ::
+      ("orientation1" | rotation) ::
+      ("orientation2" | rotation)
   ).as[DroppodFreefallingMessage]
 }

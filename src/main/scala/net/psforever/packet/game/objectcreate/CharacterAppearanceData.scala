@@ -173,7 +173,7 @@ object CharacterAppearanceData extends Marshallable[CharacterAppearanceData] {
         altModel,
         v1 = false,
         None,
-        jammered=false,
+        jammered = false,
         None,
         if (jammered) {
           Some(0)
@@ -392,11 +392,11 @@ object CharacterAppearanceData extends Marshallable[CharacterAppearanceData] {
       ("outfit_id" | uint32L) :: //for outfit_name (below) to be visible in-game, this value should be non-zero
         ("outfit_name" | PacketHelpers.encodedWideStringAligned(outfitNamePadding)) ::
         ("outfit_logo" | uint8L) ::
-        ("unk1" | bool) ::                           //unknown
+        ("unk1" | bool) ::                             //unknown
         ("backpack" | conditional(alt_model, bool)) :: //alt_model flag adds this bit; see ps.c:line#1069587
-        ("unk2" | bool) ::                           //requires alt_model flag (does NOT require health == 0)
-        ("unk3" | bool) ::                           //stream misalignment when set
-        ("unk4" | bool) ::                           //unknown
+        ("unk2" | bool) ::                             //requires alt_model flag (does NOT require health == 0)
+        ("unk3" | bool) ::                             //stream misalignment when set
+        ("unk4" | bool) ::                             //unknown
         ("facingPitch" | Angular.codec_zero_centered) ::
         ("facingYawUpper" | Angular.codec_zero_centered) ::
         ("lfs" | uint2) ::
@@ -437,7 +437,7 @@ object CharacterAppearanceData extends Marshallable[CharacterAppearanceData] {
       },
       {
         case CharacterAppearanceB(
-        outfit_id,
+              outfit_id,
               outfit,
               logo,
               u1,

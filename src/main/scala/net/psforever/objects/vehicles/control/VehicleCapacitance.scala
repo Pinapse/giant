@@ -46,9 +46,9 @@ trait VehicleCapacitance {
   }
 
   protected def capacitorOnlyCharge(amount: Int): Boolean = {
-    val obj = CapacitanceObject
+    val obj             = CapacitanceObject
     val capacitorBefore = obj.Capacitor
-    val capacitorAfter = obj.Capacitor += amount
+    val capacitorAfter  = obj.Capacitor += amount
     if (capacitorBefore != capacitorAfter) {
       showCapacitorCharge()
       true
@@ -79,6 +79,7 @@ trait VehicleCapacitance {
 }
 
 object VehicleCapacitance {
+
   /**
     * Charge the vehicle's internal capacitor by the given amount during the scheduled charge event.
     * @param amount how much energy in the charge

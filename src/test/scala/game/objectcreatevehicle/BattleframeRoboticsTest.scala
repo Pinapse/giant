@@ -9,8 +9,10 @@ import org.specs2.mutable._
 import scodec.bits._
 
 class BattleframeRoboticsTest extends Specification {
-  val string_aphelion_gunner = hex"17 80 02 00 00 AA 0B F0 15 EB 1C FE C3 30 90 40 00 00 E4 40 00 0F FF F0 00 00 F2 08 18 CC 13 C0 60 B2 00 00 00 10 11 94 2A 00 C0 64 00 00 1A 04 D8 0C 1E 40 00 00 02 02 32 85 60 18 0C 80 00 03 10 99 01 84 C8 00 00 00 40 46 10 CE 03 01 90 00 00"
-  val string_aphelion_flight = hex"17 f6010000 a98 8901 5eb1c fec33 0904 00 00 0e4 40000ffff0000002040866102030390000000808ca1cc0603200000d0140060b20000001011943c00c06400000"
+  val string_aphelion_gunner =
+    hex"17 80 02 00 00 AA 0B F0 15 EB 1C FE C3 30 90 40 00 00 E4 40 00 0F FF F0 00 00 F2 08 18 CC 13 C0 60 B2 00 00 00 10 11 94 2A 00 C0 64 00 00 1A 04 D8 0C 1E 40 00 00 02 02 32 85 60 18 0C 80 00 03 10 99 01 84 C8 00 00 00 40 46 10 CE 03 01 90 00 00"
+  val string_aphelion_flight =
+    hex"17 f6010000 a98 8901 5eb1c fec33 0904 00 00 0e4 40000ffff0000002040866102030390000000808ca1cc0603200000d0140060b20000001011943c00c06400000"
 
   "Battle Frame Robotics" should {
     "decode (aphelion)" in {
@@ -21,7 +23,21 @@ class BattleframeRoboticsTest extends Specification {
           guid mustEqual PlanetSideGUID(447)
           parent.isDefined mustEqual false
           data match {
-            case BattleFrameRoboticsData(pos, vdata, health, shields, unk1, unk2, no_mount_points, drive_state, proper_anim, unk3, show_shield, unk4, Some(inv)) =>
+            case BattleFrameRoboticsData(
+                  pos,
+                  vdata,
+                  health,
+                  shields,
+                  unk1,
+                  unk2,
+                  no_mount_points,
+                  drive_state,
+                  proper_anim,
+                  unk3,
+                  show_shield,
+                  unk4,
+                  Some(inv)
+                ) =>
               pos.coord mustEqual Vector3(6498.7344f, 1927.9844f, 16.140625f)
               pos.orient mustEqual Vector3.z(50.625f)
               pos.vel.isEmpty mustEqual true
@@ -156,7 +172,21 @@ class BattleframeRoboticsTest extends Specification {
           guid mustEqual PlanetSideGUID(393)
           parent.isDefined mustEqual false
           data match {
-            case BattleFrameRoboticsData(pos, vdata, health, shields, unk1, unk2, no_mount_points, drive_state, proper_anim, unk3, show_shield, unk4, Some(inv)) =>
+            case BattleFrameRoboticsData(
+                  pos,
+                  vdata,
+                  health,
+                  shields,
+                  unk1,
+                  unk2,
+                  no_mount_points,
+                  drive_state,
+                  proper_anim,
+                  unk3,
+                  show_shield,
+                  unk4,
+                  Some(inv)
+                ) =>
               pos.coord mustEqual Vector3(6498.7344f, 1927.9844f, 16.140625f)
               pos.orient mustEqual Vector3.z(50.625f)
               pos.vel.isEmpty mustEqual true
@@ -269,35 +299,93 @@ class BattleframeRoboticsTest extends Specification {
         0,
         false,
         None,
-        Some(InventoryData(List(
-          InventoryItemData(ObjectClass.aphelion_ppa_left, PlanetSideGUID(335), 2,
-            WeaponData(
-              CommonFieldData(PlanetSideEmpire.NEUTRAL, false, false, true, None, false, Some(false), None, PlanetSideGUID(0)),
-              0,
-              List(
-                InternalSlot(ObjectClass.aphelion_ppa_ammo, PlanetSideGUID(340), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false))
-              )
-            )
-          ),
-          InventoryItemData(ObjectClass.aphelion_ppa_right, PlanetSideGUID(411), 3,
-            WeaponData(
-              CommonFieldData(PlanetSideEmpire.NEUTRAL, false, false, true, None, false, Some(false), None, PlanetSideGUID(0)),
-              0,
-              List(
-                InternalSlot(ObjectClass.aphelion_ppa_ammo, PlanetSideGUID(342), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false))
-              )
-            )
-          ),
-          InventoryItemData(ObjectClass.aphelion_plasma_rocket_pod, PlanetSideGUID(409), 4,
-            WeaponData(
-              CommonFieldData(PlanetSideEmpire.NEUTRAL, false, false, true, None, false, Some(false), None, PlanetSideGUID(0)),
-              0,
-              List(
-                InternalSlot(ObjectClass.aphelion_plasma_rocket_ammo, PlanetSideGUID(359), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false))
+        Some(
+          InventoryData(
+            List(
+              InventoryItemData(
+                ObjectClass.aphelion_ppa_left,
+                PlanetSideGUID(335),
+                2,
+                WeaponData(
+                  CommonFieldData(
+                    PlanetSideEmpire.NEUTRAL,
+                    false,
+                    false,
+                    true,
+                    None,
+                    false,
+                    Some(false),
+                    None,
+                    PlanetSideGUID(0)
+                  ),
+                  0,
+                  List(
+                    InternalSlot(
+                      ObjectClass.aphelion_ppa_ammo,
+                      PlanetSideGUID(340),
+                      0,
+                      CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false)
+                    )
+                  )
+                )
+              ),
+              InventoryItemData(
+                ObjectClass.aphelion_ppa_right,
+                PlanetSideGUID(411),
+                3,
+                WeaponData(
+                  CommonFieldData(
+                    PlanetSideEmpire.NEUTRAL,
+                    false,
+                    false,
+                    true,
+                    None,
+                    false,
+                    Some(false),
+                    None,
+                    PlanetSideGUID(0)
+                  ),
+                  0,
+                  List(
+                    InternalSlot(
+                      ObjectClass.aphelion_ppa_ammo,
+                      PlanetSideGUID(342),
+                      0,
+                      CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false)
+                    )
+                  )
+                )
+              ),
+              InventoryItemData(
+                ObjectClass.aphelion_plasma_rocket_pod,
+                PlanetSideGUID(409),
+                4,
+                WeaponData(
+                  CommonFieldData(
+                    PlanetSideEmpire.NEUTRAL,
+                    false,
+                    false,
+                    true,
+                    None,
+                    false,
+                    Some(false),
+                    None,
+                    PlanetSideGUID(0)
+                  ),
+                  0,
+                  List(
+                    InternalSlot(
+                      ObjectClass.aphelion_plasma_rocket_ammo,
+                      PlanetSideGUID(359),
+                      0,
+                      CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false)
+                    )
+                  )
+                )
               )
             )
           )
-        )))
+        )
       )
       val msg = ObjectCreateMessage(ObjectClass.aphelion_gunner, PlanetSideGUID(447), obj)
       val pkt = PacketCoding.encodePacket(msg).require.toByteVector
@@ -319,26 +407,66 @@ class BattleframeRoboticsTest extends Specification {
         0,
         false,
         Some(false),
-        Some(InventoryData(List(
-          InventoryItemData(ObjectClass.aphelion_ppa_left, PlanetSideGUID(385), 1,
-            WeaponData(
-              CommonFieldData(PlanetSideEmpire.NEUTRAL, false, false, true, None, false, Some(false), None, PlanetSideGUID(0)),
-              0,
-              List(
-                InternalSlot(ObjectClass.aphelion_ppa_ammo, PlanetSideGUID(371), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false))
-              )
-            )
-          ),
-          InventoryItemData(ObjectClass.aphelion_ppa_right, PlanetSideGUID(336), 2,
-            WeaponData(
-              CommonFieldData(PlanetSideEmpire.NEUTRAL, false, false, true, None, false, Some(false), None, PlanetSideGUID(0)),
-              0,
-              List(
-                InternalSlot(ObjectClass.aphelion_ppa_ammo, PlanetSideGUID(376), 0, CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false))
+        Some(
+          InventoryData(
+            List(
+              InventoryItemData(
+                ObjectClass.aphelion_ppa_left,
+                PlanetSideGUID(385),
+                1,
+                WeaponData(
+                  CommonFieldData(
+                    PlanetSideEmpire.NEUTRAL,
+                    false,
+                    false,
+                    true,
+                    None,
+                    false,
+                    Some(false),
+                    None,
+                    PlanetSideGUID(0)
+                  ),
+                  0,
+                  List(
+                    InternalSlot(
+                      ObjectClass.aphelion_ppa_ammo,
+                      PlanetSideGUID(371),
+                      0,
+                      CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false)
+                    )
+                  )
+                )
+              ),
+              InventoryItemData(
+                ObjectClass.aphelion_ppa_right,
+                PlanetSideGUID(336),
+                2,
+                WeaponData(
+                  CommonFieldData(
+                    PlanetSideEmpire.NEUTRAL,
+                    false,
+                    false,
+                    true,
+                    None,
+                    false,
+                    Some(false),
+                    None,
+                    PlanetSideGUID(0)
+                  ),
+                  0,
+                  List(
+                    InternalSlot(
+                      ObjectClass.aphelion_ppa_ammo,
+                      PlanetSideGUID(376),
+                      0,
+                      CommonFieldData(PlanetSideEmpire.NEUTRAL, 2)(false)
+                    )
+                  )
+                )
               )
             )
           )
-        )))
+        )
       )
       val msg = ObjectCreateMessage(ObjectClass.aphelion_flight, PlanetSideGUID(393), obj)
       val pkt = PacketCoding.encodePacket(msg).require.toByteVector

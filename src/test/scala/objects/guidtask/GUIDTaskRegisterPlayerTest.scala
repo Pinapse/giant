@@ -30,10 +30,12 @@ class GUIDTaskRegisterPlayerTest extends ActorTest {
     assert(!obj_inv_ammo.HasGUID)
     assert(!obj_locker.HasGUID)
     assert(obj_locker_ammo.HasGUID)
-    TaskWorkflow.execute(TaskBundle(
-      new GUIDTaskTest.RegisterTestTask(probe.ref),
-      GUIDTask.registerPlayer(uns, obj)
-    ))
+    TaskWorkflow.execute(
+      TaskBundle(
+        new GUIDTaskTest.RegisterTestTask(probe.ref),
+        GUIDTask.registerPlayer(uns, obj)
+      )
+    )
     probe.expectMsg(5.second, scala.util.Success(true))
     assert(obj.HasGUID)
     assert(obj_wep.HasGUID)

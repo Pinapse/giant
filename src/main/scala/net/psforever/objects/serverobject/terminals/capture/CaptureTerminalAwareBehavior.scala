@@ -10,24 +10,28 @@ import net.psforever.services.vehicle.{VehicleAction, VehicleServiceMessage}
   * @see CaptureTerminalAware
   */
 trait CaptureTerminalAwareBehavior {
-  def CaptureTerminalAwareObject : Amenity with CaptureTerminalAware
+  def CaptureTerminalAwareObject: Amenity with CaptureTerminalAware
 
   val captureTerminalAwareBehaviour: Receive = {
     case CaptureTerminalAwareBehavior.TerminalStatusChanged(terminal, isResecured) =>
       isResecured match {
-        case true => ; // CC is resecured
-        case false => // CC is hacked
+        case true  => ; // CC is resecured
+        case false =>   // CC is hacked
           // Remove seated occupants for mountables
           if (CaptureTerminalAwareObject.isInstanceOf[Mountable]) {
-            CaptureTerminalAwareObject.asInstanceOf[Mountable].Seats.filter(x => x._2.isOccupied).foreach(x => {
-              val (seat_num, seat) = x
-              val user = seat.occupant.get
-              CaptureTerminalAwareObject.Zone.VehicleEvents ! VehicleServiceMessage(
-                CaptureTerminalAwareObject.Zone.id,
-                VehicleAction.KickPassenger(user.GUID, seat_num, true, CaptureTerminalAwareObject.GUID)
-              )
-              seat.unmount(user)
-            })
+            CaptureTerminalAwareObject
+              .asInstanceOf[Mountable]
+              .Seats
+              .filter(x => x._2.isOccupied)
+              .foreach(x => {
+                val (seat_num, seat) = x
+                val user             = seat.occupant.get
+                CaptureTerminalAwareObject.Zone.VehicleEvents ! VehicleServiceMessage(
+                  CaptureTerminalAwareObject.Zone.id,
+                  VehicleAction.KickPassenger(user.GUID, seat_num, true, CaptureTerminalAwareObject.GUID)
+                )
+                seat.unmount(user)
+              })
           }
       }
   }

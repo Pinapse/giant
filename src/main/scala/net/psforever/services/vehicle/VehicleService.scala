@@ -1,20 +1,23 @@
 // Copyright (c) 2017 PSForever
 package net.psforever.services.vehicle
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.Props
 import net.psforever.objects.serverobject.pad.VehicleSpawnPad
 import net.psforever.objects.zones.Zone
 import net.psforever.packet.game.ObjectCreateMessage
 import net.psforever.packet.game.objectcreate.ObjectCreateMessageParent
+import net.psforever.services.GenericGuidEventBus
+import net.psforever.services.Service
 import net.psforever.services.vehicle.support.TurretUpgrader
 import net.psforever.types.DriveState
-import net.psforever.services.{GenericEventBus, Service}
 
 class VehicleService(zone: Zone) extends Actor {
   private val turretUpgrade: ActorRef = context.actorOf(Props[TurretUpgrader](), s"${zone.id}-turret-upgrade-agent")
   private[this] val log               = org.log4s.getLogger
 
-  val VehicleEvents = new GenericEventBus[VehicleServiceResponse]
+  val VehicleEvents = new GenericGuidEventBus[VehicleServiceResponse](20)
 
   def receive: Receive = {
     case Service.Join(channel) =>
@@ -33,7 +36,15 @@ class VehicleService(zone: Zone) extends Actor {
 
     case VehicleServiceMessage(forChannel, action) =>
       action match {
-        case VehicleAction.ChangeAmmo(player_guid, weapon_guid, weapon_slot, old_ammo_guid, ammo_id, ammo_guid, ammo_data) =>
+        case VehicleAction.ChangeAmmo(
+              player_guid,
+              weapon_guid,
+              weapon_slot,
+              old_ammo_guid,
+              ammo_id,
+              ammo_guid,
+              ammo_data
+            ) =>
           VehicleEvents.publish(
             VehicleServiceResponse(
               s"/$forChannel/Vehicle",
@@ -51,7 +62,11 @@ class VehicleService(zone: Zone) extends Actor {
           )
         case VehicleAction.ChangeFireState_Stop(player_guid, weapon_guid) =>
           VehicleEvents.publish(
-            VehicleServiceResponse(s"/$forChannel/Vehicle", player_guid, VehicleResponse.ChangeFireState_Stop(weapon_guid))
+            VehicleServiceResponse(
+              s"/$forChannel/Vehicle",
+              player_guid,
+              VehicleResponse.ChangeFireState_Stop(weapon_guid)
+            )
           )
         case VehicleAction.ChildObjectState(player_guid, object_guid, pitch, yaw) =>
           VehicleEvents.publish(
@@ -90,22 +105,22 @@ class VehicleService(zone: Zone) extends Actor {
             VehicleServiceResponse(s"/$forChannel/Vehicle", player_guid, VehicleResponse.EquipmentInSlot(pkt))
           )
         case VehicleAction.FrameVehicleState(
-          player_guid,
-          vehicle_guid,
-          unk1,
-          pos,
-          orient,
-          vel,
-          unk2,
-          unk3,
-          unk4,
-          is_crouched,
-          unk6,
-          unk7,
-          unk8,
-          unk9,
-          unkA
-        ) =>
+              player_guid,
+              vehicle_guid,
+              unk1,
+              pos,
+              orient,
+              vel,
+              unk2,
+              unk3,
+              unk4,
+              is_crouched,
+              unk6,
+              unk7,
+              unk8,
+              unk9,
+              unkA
+            ) =>
           VehicleEvents.publish(
             VehicleServiceResponse(
               s"/$forChannel/Vehicle",

@@ -8,15 +8,16 @@ import net.psforever.objects.serverobject.affinity.FactionAffinity
 import net.psforever.objects.zones.ZoneAware
 
 trait TransferContainer
-  extends PlanetSideGameObject
-  with Identifiable
-  with ZoneAware
-  with WorldEntity
-  with FactionAffinity {
-  def Actor : ActorRef
+    extends PlanetSideGameObject
+    with Identifiable
+    with ZoneAware
+    with WorldEntity
+    with FactionAffinity {
+  def Actor: ActorRef
 }
 
 object TransferContainer {
+
   /**
     * The kind of resource that gets transferred.
     */

@@ -10,32 +10,41 @@ import net.psforever.objects.vehicles.{AccessPermissionGroup, CargoBehavior}
 import net.psforever.objects.zones.Zone
 import net.psforever.objects._
 import net.psforever.objects.serverobject.PlanetSideServerObject
-import net.psforever.packet.game.{ChildObjectStateMessage, DeployRequestMessage, DismountVehicleCargoMsg, DismountVehicleMsg, MountVehicleCargoMsg, MountVehicleMsg, VehicleSubStateMessage, _}
+import net.psforever.packet.game.{
+  ChildObjectStateMessage,
+  DeployRequestMessage,
+  DismountVehicleCargoMsg,
+  DismountVehicleMsg,
+  MountVehicleCargoMsg,
+  MountVehicleMsg,
+  VehicleSubStateMessage,
+  _
+}
 import net.psforever.services.vehicle.{VehicleAction, VehicleServiceMessage}
 import net.psforever.types.{BailType, DriveState, Vector3}
 
 class VehicleOperations(
-                         val sessionData: SessionData,
-                         avatarActor: typed.ActorRef[AvatarActor.Command],
-                         implicit val context: ActorContext
-                       ) extends CommonSessionInterfacingFunctionality {
+    val sessionData: SessionData,
+    avatarActor: typed.ActorRef[AvatarActor.Command],
+    implicit val context: ActorContext
+) extends CommonSessionInterfacingFunctionality {
   private[support] var serverVehicleControlVelocity: Option[Int] = None
 
   /* packets */
 
   def handleVehicleState(pkt: VehicleStateMessage): Unit = {
     val VehicleStateMessage(
-    vehicle_guid,
-    unk1,
-    pos,
-    ang,
-    vel,
-    is_flying,
-    unk6,
-    unk7,
-    wheels,
-    is_decelerating,
-    is_cloaked
+      vehicle_guid,
+      unk1,
+      pos,
+      ang,
+      vel,
+      is_flying,
+      unk6,
+      unk7,
+      wheels,
+      is_decelerating,
+      is_cloaked
     ) = pkt
     GetVehicleAndSeat() match {
       case (Some(obj), Some(0)) =>
@@ -105,20 +114,20 @@ class VehicleOperations(
 
   def handleFrameVehicleState(pkt: FrameVehicleStateMessage): Unit = {
     val FrameVehicleStateMessage(
-    vehicle_guid,
-    unk1,
-    pos,
-    ang,
-    vel,
-    unk2,
-    unk3,
-    unk4,
-    is_crouched,
-    is_airborne,
-    ascending_flight,
-    flight_time,
-    unk9,
-    unkA
+      vehicle_guid,
+      unk1,
+      pos,
+      ang,
+      vel,
+      unk2,
+      unk3,
+      unk4,
+      is_crouched,
+      is_airborne,
+      ascending_flight,
+      flight_time,
+      unk9,
+      unkA
     ) = pkt
     GetVehicleAndSeat() match {
       case (Some(obj), Some(0)) =>
@@ -203,7 +212,7 @@ class VehicleOperations(
 
   def handleChildObjectState(pkt: ChildObjectStateMessage): Unit = {
     val ChildObjectStateMessage(object_guid, pitch, yaw) = pkt
-    val (o, tools) = sessionData.shooting.FindContainedWeapon
+    val (o, tools)                                       = sessionData.shooting.FindContainedWeapon
     //is COSM our primary upstream packet?
     (o match {
       case Some(mount: Mountable) => (o, mount.PassengerInSeat(player))
@@ -278,7 +287,7 @@ class VehicleOperations(
 
   def handleDismountVehicle(pkt: DismountVehicleMsg): Unit = {
     val DismountVehicleMsg(player_guid, bailType, wasKickedByDriver) = pkt
-    val dError: (String, Player)=> Unit = dismountError(bailType, wasKickedByDriver)
+    val dError: (String, Player) => Unit                             = dismountError(bailType, wasKickedByDriver)
     //TODO optimize this later
     //common warning for this section
     if (player.GUID == player_guid) {
@@ -307,42 +316,47 @@ class VehicleOperations(
               //todo: kick cargo passengers out. To be added after PR #216 is merged
               obj match {
                 case v: Vehicle
-                  if bailType == BailType.Bailed &&
-                    v.SeatPermissionGroup(seat_num).contains(AccessPermissionGroup.Driver) &&
-                    v.isFlying =>
+                    if bailType == BailType.Bailed &&
+                      v.SeatPermissionGroup(seat_num).contains(AccessPermissionGroup.Driver) &&
+                      v.isFlying =>
                   v.Actor ! Vehicle.Deconstruct(None) //immediate deconstruction
                 case _ => ;
               }
 
             case None =>
-              dError(s"DismountVehicleMsg: can not find where player ${player.Name}_guid is seated in mountable ${player.VehicleSeated}", player)
+              dError(
+                s"DismountVehicleMsg: can not find where player ${player.Name}_guid is seated in mountable ${player.VehicleSeated}",
+                player
+              )
           }
         case _ =>
           dError(s"DismountVehicleMsg: can not find mountable entity ${player.VehicleSeated}", player)
       }
     } else {
       //kicking someone else out of a mount; need to own that mount/mountable
-      val dWarn: (String, Player)=> Unit = dismountWarning(bailType, wasKickedByDriver)
+      val dWarn: (String, Player) => Unit = dismountWarning(bailType, wasKickedByDriver)
       player.avatar.vehicle match {
         case Some(obj_guid) =>
-          (
-            (
-              sessionData.validObject(obj_guid, decorator = "DismountVehicle/Vehicle"),
-              sessionData.validObject(player_guid, decorator = "DismountVehicle/Player")
-            ) match {
-              case (vehicle @ Some(obj: Vehicle), tplayer) =>
-                if (obj.MountedIn.isEmpty) (vehicle, tplayer) else (None, None)
-              case (mount @ Some(_: Mountable), tplayer) =>
-                (mount, tplayer)
-              case _ =>
-                (None, None)
-            }) match {
+          ((
+            sessionData.validObject(obj_guid, decorator = "DismountVehicle/Vehicle"),
+            sessionData.validObject(player_guid, decorator = "DismountVehicle/Player")
+          ) match {
+            case (vehicle @ Some(obj: Vehicle), tplayer) =>
+              if (obj.MountedIn.isEmpty) (vehicle, tplayer) else (None, None)
+            case (mount @ Some(_: Mountable), tplayer) =>
+              (mount, tplayer)
+            case _ =>
+              (None, None)
+          }) match {
             case (Some(obj: Mountable), Some(tplayer: Player)) =>
               obj.PassengerInSeat(tplayer) match {
                 case Some(seat_num) =>
                   obj.Actor ! Mountable.TryDismount(tplayer, seat_num, bailType)
                 case None =>
-                  dError(s"DismountVehicleMsg: can not find where other player ${tplayer.Name} is seated in mountable $obj_guid", tplayer)
+                  dError(
+                    s"DismountVehicleMsg: can not find where other player ${tplayer.Name} is seated in mountable $obj_guid",
+                    tplayer
+                  )
               }
             case (None, _) =>
               dWarn(s"DismountVehicleMsg: ${player.Name} can not find his vehicle", player)
@@ -358,26 +372,24 @@ class VehicleOperations(
   }
 
   private def dismountWarning(
-                               bailAs: BailType.Value,
-                               kickedByDriver: Boolean
-                             )
-                             (
-                               note: String,
-                               player: Player
-                             ): Unit = {
+      bailAs: BailType.Value,
+      kickedByDriver: Boolean
+  )(
+      note: String,
+      player: Player
+  ): Unit = {
     log.warn(note)
     player.VehicleSeated = None
     sendResponse(DismountVehicleMsg(player.GUID, bailAs, kickedByDriver))
   }
 
   private def dismountError(
-                             bailAs: BailType.Value,
-                             kickedByDriver: Boolean
-                           )
-                           (
-                             note: String,
-                             player: Player
-                           ): Unit = {
+      bailAs: BailType.Value,
+      kickedByDriver: Boolean
+  )(
+      note: String,
+      player: Player
+  ): Unit = {
     log.error(s"$note; some vehicle might not know that ${player.Name} is no longer sitting in it")
     player.VehicleSeated = None
     sendResponse(DismountVehicleMsg(player.GUID, bailAs, kickedByDriver))
@@ -414,7 +426,7 @@ class VehicleOperations(
 
   def handleDeployRequest(pkt: DeployRequestMessage): Unit = {
     val DeployRequestMessage(_, vehicle_guid, deploy_state, _, _, _) = pkt
-    val vehicle = player.avatar.vehicle
+    val vehicle                                                      = player.avatar.vehicle
     if (vehicle.contains(vehicle_guid)) {
       if (vehicle == player.VehicleSeated) {
         continent.GUID(vehicle_guid) match {
@@ -467,20 +479,20 @@ class VehicleOperations(
   /* support functions */
 
   /**
-   * If the player is mounted in some entity, find that entity and get the mount index number at which the player is sat.
-   * The priority of object confirmation is `direct` then `occupant.VehicleSeated`.
-   * Once an object is found, the remainder are ignored.
-   * @param direct a game object in which the player may be sat
-   * @param occupant the player who is sat and may have specified the game object in which mounted
-   * @return a tuple consisting of a vehicle reference and a mount index
-   *         if and only if the vehicle is known to this client and the `WorldSessioNActor`-global `player` occupies it;
-   *         `(None, None)`, otherwise (even if the vehicle can be determined)
-   */
+    * If the player is mounted in some entity, find that entity and get the mount index number at which the player is sat.
+    * The priority of object confirmation is `direct` then `occupant.VehicleSeated`.
+    * Once an object is found, the remainder are ignored.
+    * @param direct a game object in which the player may be sat
+    * @param occupant the player who is sat and may have specified the game object in which mounted
+    * @return a tuple consisting of a vehicle reference and a mount index
+    *         if and only if the vehicle is known to this client and the `WorldSessioNActor`-global `player` occupies it;
+    *         `(None, None)`, otherwise (even if the vehicle can be determined)
+    */
   def GetMountableAndSeat(
-                           direct: Option[PlanetSideGameObject with Mountable],
-                           occupant: Player,
-                           zone: Zone
-                         ): (Option[PlanetSideGameObject with Mountable], Option[Int]) =
+      direct: Option[PlanetSideGameObject with Mountable],
+      occupant: Player,
+      zone: Zone
+  ): (Option[PlanetSideGameObject with Mountable], Option[Int]) =
     direct.orElse(zone.GUID(occupant.VehicleSeated)) match {
       case Some(obj: PlanetSideGameObject with Mountable) =>
         obj.PassengerInSeat(occupant) match {
@@ -494,19 +506,19 @@ class VehicleOperations(
     }
 
   /**
-   * If the player is seated in a vehicle, find that vehicle and get the mount index number at which the player is sat.<br>
-   * <br>
-   * For special purposes involved in zone transfers,
-   * where the vehicle may or may not exist in either of the zones (yet),
-   * the value of `interstellarFerry` is also polled.
-   * Making certain this field is blanked after the transfer is completed is important
-   * to avoid inspecting the wrong vehicle and failing simple vehicle checks where this function may be employed.
-   * @see `GetMountableAndSeat`
-   * @see `interstellarFerry`
-   * @return a tuple consisting of a vehicle reference and a mount index
-   *         if and only if the vehicle is known to this client and the `WorldSessioNActor`-global `player` occupies it;
-   *         `(None, None)`, otherwise (even if the vehicle can be determined)
-   */
+    * If the player is seated in a vehicle, find that vehicle and get the mount index number at which the player is sat.<br>
+    * <br>
+    * For special purposes involved in zone transfers,
+    * where the vehicle may or may not exist in either of the zones (yet),
+    * the value of `interstellarFerry` is also polled.
+    * Making certain this field is blanked after the transfer is completed is important
+    * to avoid inspecting the wrong vehicle and failing simple vehicle checks where this function may be employed.
+    * @see `GetMountableAndSeat`
+    * @see `interstellarFerry`
+    * @return a tuple consisting of a vehicle reference and a mount index
+    *         if and only if the vehicle is known to this client and the `WorldSessioNActor`-global `player` occupies it;
+    *         `(None, None)`, otherwise (even if the vehicle can be determined)
+    */
   def GetKnownVehicleAndSeat(): (Option[Vehicle], Option[Int]) =
     GetMountableAndSeat(sessionData.zoning.interstellarFerry, player, continent) match {
       case (Some(v: Vehicle), Some(seat)) => (Some(v), Some(seat))
@@ -514,12 +526,12 @@ class VehicleOperations(
     }
 
   /**
-   * If the player is seated in a vehicle, find that vehicle and get the mount index number at which the player is sat.
-   * @see `GetMountableAndSeat`
-   * @return a tuple consisting of a vehicle reference and a mount index
-   *         if and only if the vehicle is known to this client and the `WorldSessioNActor`-global `player` occupies it;
-   *         `(None, None)`, otherwise (even if the vehicle can be determined)
-   */
+    * If the player is seated in a vehicle, find that vehicle and get the mount index number at which the player is sat.
+    * @see `GetMountableAndSeat`
+    * @return a tuple consisting of a vehicle reference and a mount index
+    *         if and only if the vehicle is known to this client and the `WorldSessioNActor`-global `player` occupies it;
+    *         `(None, None)`, otherwise (even if the vehicle can be determined)
+    */
   def GetVehicleAndSeat(): (Option[Vehicle], Option[Int]) =
     GetMountableAndSeat(None, player, continent) match {
       case (Some(v: Vehicle), Some(seat)) => (Some(v), Some(seat))
@@ -527,35 +539,35 @@ class VehicleOperations(
     }
 
   /**
-   * Place the current vehicle under the control of the driver's commands,
-   * but leave it in a cancellable auto-drive.
-   * @param vehicle the vehicle
-   */
+    * Place the current vehicle under the control of the driver's commands,
+    * but leave it in a cancellable auto-drive.
+    * @param vehicle the vehicle
+    */
   def ServerVehicleOverrideStop(vehicle: Vehicle): Unit = {
     val vehicleGuid = vehicle.GUID
     session = session.copy(avatar = avatar.copy(vehicle = Some(vehicleGuid)))
     TotalDriverVehicleControlWithPacket(
       vehicle,
       ServerVehicleOverrideMsg(
-        lock_accelerator=false,
-        lock_wheel=false,
-        reverse=false,
-        unk4=true,
-        lock_vthrust=0,
-        lock_strafe=0,
-        movement_speed=vehicle.Definition.AutoPilotSpeed2,
-        unk8=None
+        lock_accelerator = false,
+        lock_wheel = false,
+        reverse = false,
+        unk4 = true,
+        lock_vthrust = 0,
+        lock_strafe = 0,
+        movement_speed = vehicle.Definition.AutoPilotSpeed2,
+        unk8 = None
       )
     )
-    sendResponse(PlanetsideAttributeMessage(vehicleGuid, attribute_type=22, attribute_value=0L)) //mount points on
+    sendResponse(PlanetsideAttributeMessage(vehicleGuid, attribute_type = 22, attribute_value = 0L)) //mount points on
   }
 
   /**
-   * Place the current vehicle under the control of the server's commands.
-   * @param vehicle vehicle to be controlled;
-   *                the client's player who is receiving this packet should be mounted as its driver, but this is not explicitly tested
-   * @param pkt packet to instigate server control
-   */
+    * Place the current vehicle under the control of the server's commands.
+    * @param vehicle vehicle to be controlled;
+    *                the client's player who is receiving this packet should be mounted as its driver, but this is not explicitly tested
+    * @param pkt packet to instigate server control
+    */
   def ServerVehicleOverrideWithPacket(vehicle: Vehicle, pkt: ServerVehicleOverrideMsg): Unit = {
     serverVehicleControlVelocity = Some(pkt.movement_speed)
     vehicle.DeploymentState = DriveState.AutoPilot
@@ -563,11 +575,11 @@ class VehicleOperations(
   }
 
   /**
-   * Place the current vehicle under the control of the driver's commands,
-   * but leave it in a cancellable auto-drive.
-   * Stop all movement entirely.
-   * @param vehicle the vehicle
-   */
+    * Place the current vehicle under the control of the driver's commands,
+    * but leave it in a cancellable auto-drive.
+    * Stop all movement entirely.
+    * @param vehicle the vehicle
+    */
   def ConditionalDriverVehicleControl(vehicle: Vehicle): Unit = {
     if (vehicle.DeploymentState == DriveState.AutoPilot) {
       TotalDriverVehicleControl(vehicle)
@@ -575,35 +587,35 @@ class VehicleOperations(
   }
 
   /**
-   * Place the current vehicle under the control of the driver's commands,
-   * but leave it in a cancellable auto-drive.
-   * Stop all movement entirely.
-   * @param vehicle the vehicle
-   */
+    * Place the current vehicle under the control of the driver's commands,
+    * but leave it in a cancellable auto-drive.
+    * Stop all movement entirely.
+    * @param vehicle the vehicle
+    */
   def TotalDriverVehicleControl(vehicle: Vehicle): Unit = {
     TotalDriverVehicleControlWithPacket(
       vehicle,
       ServerVehicleOverrideMsg(
-        lock_accelerator=false,
-        lock_wheel=false,
-        reverse=false,
-        unk4=false,
-        lock_vthrust=0,
-        lock_strafe=0,
-        movement_speed=0,
-        unk8=None
+        lock_accelerator = false,
+        lock_wheel = false,
+        reverse = false,
+        unk4 = false,
+        lock_vthrust = 0,
+        lock_strafe = 0,
+        movement_speed = 0,
+        unk8 = None
       )
     )
   }
 
   /**
-   * Place the current vehicle under the control of the driver's commands,
-   * but leave it in a cancellable auto-drive.
-   * Stop all movement entirely.
-   * @param vehicle the vehicle;
-   *                the client's player who is receiving this packet should be mounted as its driver, but this is not explicitly tested
-   * @param pkt packet to instigate cancellable control
-   */
+    * Place the current vehicle under the control of the driver's commands,
+    * but leave it in a cancellable auto-drive.
+    * Stop all movement entirely.
+    * @param vehicle the vehicle;
+    *                the client's player who is receiving this packet should be mounted as its driver, but this is not explicitly tested
+    * @param pkt packet to instigate cancellable control
+    */
   def TotalDriverVehicleControlWithPacket(vehicle: Vehicle, pkt: ServerVehicleOverrideMsg): Unit = {
     serverVehicleControlVelocity = None
     vehicle.DeploymentState = DriveState.Mobile
@@ -611,22 +623,22 @@ class VehicleOperations(
   }
 
   /**
-   * Common reporting behavior when a `Deployment` object fails to properly transition between states.
-   * @param obj the game object that could not
-   * @param state the `DriveState` that could not be promoted
-   * @param reason a string explaining why the state can not or will not change
-   */
+    * Common reporting behavior when a `Deployment` object fails to properly transition between states.
+    * @param obj the game object that could not
+    * @param state the `DriveState` that could not be promoted
+    * @param reason a string explaining why the state can not or will not change
+    */
   def CanNotChangeDeployment(
-                              obj: PlanetSideServerObject with Deployment,
-                              state: DriveState.Value,
-                              reason: String
-                            ): Unit = {
+      obj: PlanetSideServerObject with Deployment,
+      state: DriveState.Value,
+      reason: String
+  ): Unit = {
     val mobileShift: String = if (obj.DeploymentState != DriveState.Mobile) {
       obj.DeploymentState = DriveState.Mobile
-      sendResponse(DeployRequestMessage(player.GUID, obj.GUID, DriveState.Mobile, 0, unk3=false, Vector3.Zero))
+      sendResponse(DeployRequestMessage(player.GUID, obj.GUID, DriveState.Mobile, 0, unk3 = false, Vector3.Zero))
       continent.VehicleEvents ! VehicleServiceMessage(
         continent.id,
-        VehicleAction.DeployRequest(player.GUID, obj.GUID, DriveState.Mobile, 0, unk2=false, Vector3.Zero)
+        VehicleAction.DeployRequest(player.GUID, obj.GUID, DriveState.Mobile, 0, unk2 = false, Vector3.Zero)
       )
       "; enforcing Mobile deployment state"
     } else {

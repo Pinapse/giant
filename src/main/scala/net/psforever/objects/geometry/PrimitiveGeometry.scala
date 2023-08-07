@@ -7,6 +7,7 @@ import net.psforever.types.Vector3
   * Basic interface for all geometry.
   */
 trait PrimitiveGeometry {
+
   /**
     * The centroid of the geometry.
     * @return a point
@@ -26,6 +27,7 @@ trait PrimitiveGeometry {
   * Characteristics of a geometric figure with only three coordinates to define a position.
   */
 trait Point {
+
   /**
     * Transform the point into the common interchangeable format for coordinates.
     * They're very similar, anyway.
@@ -38,6 +40,7 @@ trait Point {
   * Characteristics of a geometric figure defining a direction or a progressive change in coordinates.
   */
 trait Slope {
+
   /**
     * The slope itself.
     * @return a `Vector3` entity
@@ -52,6 +55,7 @@ trait Slope {
 }
 
 object Slope {
+
   /**
     * On occasions, the defined slope should have a length of one unit.
     * It is a unit vector.
@@ -59,10 +63,13 @@ object Slope {
     * @throws `AssertionError` if the length is more or less than 1.
     */
   def assertUnitVector(v: Vector3): Unit = {
-    assert({
-      val mag = Vector3.Magnitude(v)
-      mag - 0.05f < 1f && mag + 0.05f > 1f
-    }, "not a unit vector")
+    assert(
+      {
+        val mag = Vector3.Magnitude(v)
+        mag - 0.05f < 1f && mag + 0.05f > 1f
+      },
+      "not a unit vector"
+    )
   }
 }
 
@@ -87,8 +94,10 @@ trait Line extends Slope {
   * Characteristics of a geometric figure that have two endpoints, defining a fixed-length slope.
   */
 trait Segment extends Slope {
+
   /** The first point, considered the "start". */
   def p1: Point
+
   /** The second point, considered the "end". */
   def p2: Point
 

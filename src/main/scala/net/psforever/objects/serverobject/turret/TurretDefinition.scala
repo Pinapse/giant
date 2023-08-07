@@ -11,10 +11,7 @@ import scala.collection.mutable
 /**
   * The definition for any `MannedTurret`.
   */
-trait TurretDefinition
-  extends MountableWeaponsDefinition
-  with ResistanceProfileMutators
-  with DamageResistanceModel {
+trait TurretDefinition extends MountableWeaponsDefinition with ResistanceProfileMutators with DamageResistanceModel {
   odef: ObjectDefinition =>
   Turrets(odef.ObjectId) //let throw NoSuchElementException
   /* key - upgrade, value - weapon definition */

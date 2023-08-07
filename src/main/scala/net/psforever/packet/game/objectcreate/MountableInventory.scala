@@ -14,15 +14,16 @@ import scala.collection.mutable.ListBuffer
 Originally located in `VehicleData` and duplicated in `BattleFrameRoboticsData`, extracted to here and shared.
  */
 object MountableInventory {
-/**
-  * A special method of handling mounted players within the same inventory space as normal `Equipment` can be encountered
-  * before restoring normal inventory operations.
-  * @see `custom_inventory_codec(Long)`
-  * @see `InitialStreamLengthToSeatEntries(Boolean, VehicleFormat)`
-  * @param hasVelocity the presence of a velocity field - `vel` - in the `PlacementData` object for this vehicle
-  * @param format the subtype for this vehicle
-  * @return a `Codec` that translates `InventoryData`
-  */
+
+  /**
+    * A special method of handling mounted players within the same inventory space as normal `Equipment` can be encountered
+    * before restoring normal inventory operations.
+    * @see `custom_inventory_codec(Long)`
+    * @see `InitialStreamLengthToSeatEntries(Boolean, VehicleFormat)`
+    * @param hasVelocity the presence of a velocity field - `vel` - in the `PlacementData` object for this vehicle
+    * @param format the subtype for this vehicle
+    * @return a `Codec` that translates `InventoryData`
+    */
   def custom_inventory_codec(hasVelocity: Boolean, format: VehicleFormat): Codec[InventoryData] =
     custom_inventory_codec(InitialStreamLengthToSeatEntries(hasVelocity, format))
 
@@ -50,14 +51,14 @@ object MountableInventory {
     (
       uint8 >>:~ { size =>
         uint2 ::
-        (inventory_seat_codec(
-          length,                                   //length of stream until current mount
-          CumulativeSeatedPlayerNamePadding(length) //calculated offset of name field in next mount
-        ) >>:~ { seats =>
+          (inventory_seat_codec(
+            length,                                   //length of stream until current mount
+            CumulativeSeatedPlayerNamePadding(length) //calculated offset of name field in next mount
+          ) >>:~ { seats =>
           PacketHelpers.listOfNSized(size - countSeats(seats), InternalSlot.codec).hlist
-         })
+        })
       }
-      ).xmap[InventoryData](
+    ).xmap[InventoryData](
       {
         case _ :: _ :: None :: inv :: HNil =>
           InventoryData(inv)
@@ -89,12 +90,12 @@ object MountableInventory {
     * @return a `PlayerData` object
     */
   def PlayerData(
-                  basic_appearance: Int => CharacterAppearanceData,
-                  character_data: (Boolean, Boolean) => CharacterData,
-                  inventory: InventoryData,
-                  drawn_slot: DrawnSlot.Type,
-                  accumulative: Long
-                ): Player_Data = {
+      basic_appearance: Int => CharacterAppearanceData,
+      character_data: (Boolean, Boolean) => CharacterData,
+      inventory: InventoryData,
+      drawn_slot: DrawnSlot.Type,
+      accumulative: Long
+  ): Player_Data = {
     val appearance = basic_appearance(CumulativeSeatedPlayerNamePadding(accumulative))
     Player_Data(None, appearance, character_data(false, true), Some(inventory), drawn_slot)(position_defined = false)
   }
@@ -112,11 +113,11 @@ object MountableInventory {
     * @return a `PlayerData` object
     */
   def PlayerData(
-                  basic_appearance: Int => CharacterAppearanceData,
-                  character_data: (Boolean, Boolean) => CharacterData,
-                  drawn_slot: DrawnSlot.Type,
-                  accumulative: Long
-                ): Player_Data = {
+      basic_appearance: Int => CharacterAppearanceData,
+      character_data: (Boolean, Boolean) => CharacterData,
+      drawn_slot: DrawnSlot.Type,
+      accumulative: Long
+  ): Player_Data = {
     val appearance = basic_appearance(CumulativeSeatedPlayerNamePadding(accumulative))
     Player_Data.apply(None, appearance, character_data(false, true), None, drawn_slot)(position_defined = false)
   }
@@ -204,7 +205,7 @@ object MountableInventory {
           ).hlist
         }
       }
-      ).exmap[Option[InventorySeat]](
+    ).exmap[Option[InventorySeat]](
       {
         case _ :: None :: None :: HNil =>
           Successful(None)
@@ -243,10 +244,10 @@ object MountableInventory {
     import shapeless.::
     (
       ("objectClass" | uintL(bits = 11)) ::
-      ("guid" | PlanetSideGUID.codec) ::
-      ("parentSlot" | PacketHelpers.encodedStringSize) ::
-      ("obj" | Player_Data.codec(pad))
-      ).xmap[InternalSlot](
+        ("guid" | PlanetSideGUID.codec) ::
+        ("parentSlot" | PacketHelpers.encodedStringSize) ::
+        ("obj" | Player_Data.codec(pad))
+    ).xmap[InternalSlot](
       {
         case objectClass :: guid :: parentSlot :: obj :: HNil =>
           InternalSlot(objectClass, guid, parentSlot, obj)
@@ -271,7 +272,7 @@ object MountableInventory {
         do {
           val link = curr.get
           count += (if (link.seat.nonEmpty) { 1 }
-          else { 0 })
+                    else { 0 })
           curr = link.next
         } while (curr.nonEmpty)
         count

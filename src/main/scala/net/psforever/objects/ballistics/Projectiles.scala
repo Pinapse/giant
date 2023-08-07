@@ -26,7 +26,7 @@ object Projectiles extends Enumeration {
     final val anniversary_projectileb                   = Value(59)
     final val aphelion_immolation_cannon_projectile     = Value(87)
     final val aphelion_laser_projectile                 = Value(91)
-    final val aphelion_plasma_cloud                     = Value(96) //radiation cloud
+    final val aphelion_plasma_cloud                     = Value(96)  //radiation cloud
     final val aphelion_plasma_rocket_projectile         = Value(99)
     final val aphelion_ppa_projectile                   = Value(103)
     final val aphelion_starfire_projectile              = Value(108)

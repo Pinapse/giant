@@ -19,10 +19,8 @@ import scala.concurrent.duration._
 /**
   * The mixin for damage-handling code for `Vehicle` entities.
   */
-trait DamageableVehicle
-  extends DamageableEntity
-  with AggravatedBehavior {
-  _ : Actor =>
+trait DamageableVehicle extends DamageableEntity with AggravatedBehavior {
+  _: Actor =>
 
   def damageableVehiclePostStop(): Unit = {
     EndAllAggravation()
@@ -30,11 +28,12 @@ trait DamageableVehicle
 
   /** whether or not the vehicle has been damaged directly, report that damage has occurred */
   protected var reportDamageToVehicle: Boolean = false
+
   /** when the vehicle is destroyed, its major explosion is delayed */
   protected var queuedDestruction: Option[Cancellable] = None
 
   def DamageableObject: Vehicle
-  def AggravatedObject : Vehicle = DamageableObject
+  def AggravatedObject: Vehicle = DamageableObject
 
   override val takesDamage: Receive = originalTakesDamage
     .orElse(aggravatedBehavior)
@@ -109,14 +108,14 @@ trait DamageableVehicle
     * @param amount how much damage was performed
     */
   override protected def DamageAwareness(target: Target, cause: DamageResult, amount: Any): Unit = {
-    val obj            = DamageableObject
-    val zone           = target.Zone
-    val events         = zone.VehicleEvents
-    val targetGUID     = target.GUID
+    val obj                            = DamageableObject
+    val zone                           = target.Zone
+    val events                         = zone.VehicleEvents
+    val targetGUID                     = target.GUID
     val (healthChannel, shieldChannel) = damageChannels(obj)
     val (damageToHealth, damageToShields, totalDamage) = amount match {
-      case (a: Int, b: Int) => (a, b, a+b)
-      case _ => (0, 0, 0)
+      case (a: Int, b: Int) => (a, b, a + b)
+      case _                => (0, 0, 0)
     }
     var announceConfrontation: Boolean = reportDamageToVehicle || totalDamage > 0
     val showAsAggravated = (TryAggravationEffectActivate(cause) match {
@@ -142,7 +141,12 @@ trait DamageableVehicle
       if (damageToShields > 0) {
         events ! VehicleServiceMessage(
           shieldChannel,
-          VehicleAction.PlanetsideAttribute(Service.defaultPlayerGUID, targetGUID, obj.Definition.shieldUiAttribute, obj.Shields)
+          VehicleAction.PlanetsideAttribute(
+            Service.defaultPlayerGUID,
+            targetGUID,
+            obj.Definition.shieldUiAttribute,
+            obj.Shields
+          )
         )
         announceConfrontation = true
       }
@@ -156,14 +160,14 @@ trait DamageableVehicle
     }
     if (announceConfrontation) {
       if (showAsAggravated) {
-        val msg = VehicleAction.SendResponse(Service.defaultPlayerGUID, DamageWithPositionMessage(totalDamage, Vector3.Zero))
+        val msg =
+          VehicleAction.SendResponse(Service.defaultPlayerGUID, DamageWithPositionMessage(totalDamage, Vector3.Zero))
         obj.Seats.values
           .collect { case seat if seat.occupant.nonEmpty => seat.occupant.get.Name }
           .foreach { channel =>
             events ! VehicleServiceMessage(channel, msg)
           }
-      }
-      else {
+      } else {
         //activity on map
         zone.Activity ! Zone.HotSpot.Activity(cause)
         //alert to damage source
@@ -194,7 +198,7 @@ trait DamageableVehicle
       case (None, Some(delay)) => //set a future explosion for later
         destructionDelayed(delay, cause)
       case (Some(_), _) | (None, None) => //explode now
-        val obj = DamageableObject
+        val obj  = DamageableObject
         val zone = target.Zone
         obj.PrepareGatingManifest()
         super.DestructionAwareness(target, cause)
@@ -210,7 +214,12 @@ trait DamageableVehicle
           obj.Shields = 0
           zone.VehicleEvents ! VehicleServiceMessage(
             zone.id,
-            VehicleAction.PlanetsideAttribute(Service.defaultPlayerGUID, target.GUID, obj.Definition.shieldUiAttribute, 0)
+            VehicleAction.PlanetsideAttribute(
+              Service.defaultPlayerGUID,
+              target.GUID,
+              obj.Definition.shieldUiAttribute,
+              0
+            )
           )
         }
         //clean up
@@ -227,9 +236,9 @@ trait DamageableVehicle
     //health to 1, shields to 0
     obj.Health = 1
     obj.Shields = 0
-    val guid = obj.GUID
-    val guid0 = Service.defaultPlayerGUID
-    val zone = obj.Zone
+    val guid   = obj.GUID
+    val guid0  = Service.defaultPlayerGUID
+    val zone   = obj.Zone
     val zoneid = zone.id
     val events = zone.VehicleEvents
     events ! VehicleServiceMessage(
@@ -243,11 +252,14 @@ trait DamageableVehicle
     //passengers die with us
     DamageableMountable.DestructionAwareness(DamageableObject, cause)
     //come back to this death later
-    queuedDestruction = Some(context.system.scheduler.scheduleOnce(delay milliseconds, self, DamageableVehicle.Destruction(cause)))
+    queuedDestruction = Some(
+      context.system.scheduler.scheduleOnce(delay milliseconds, self, DamageableVehicle.Destruction(cause))
+    )
   }
 }
 
 object DamageableVehicle {
+
   /**
     * Message for instructing the target's cargo vehicles about a damage source affecting their carrier.
     * @param cause historical information about damage

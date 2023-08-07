@@ -53,9 +53,9 @@ object Default {
     private val defaultTypedRef: Typed.ActorRef[Any] = defaultRef.toTyped[Any]
 
     /**
-     * A copy of the default actor
-     * but promoted into a typed actor that accepts any kind of message.
-     */
+      * A copy of the default actor
+      * but promoted into a typed actor that accepts any kind of message.
+      */
     final def Actor: Typed.ActorRef[Any] = defaultTypedRef
   }
 }

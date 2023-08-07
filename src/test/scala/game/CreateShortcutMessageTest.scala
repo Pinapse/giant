@@ -20,7 +20,7 @@ class CreateShortcutMessageTest extends Specification {
         slot mustEqual 1
         shortcut match {
           case Some(Shortcut.Medkit()) => ok
-          case _ => ko
+          case _                       => ko
         }
       case _ =>
         ko
@@ -34,7 +34,7 @@ class CreateShortcutMessageTest extends Specification {
         slot mustEqual 8
         shortcut match {
           case Some(Shortcut.Macro("NTU", "/platoon Incoming NTU spam!")) => ok
-          case _ => ko
+          case _                                                          => ko
         }
       case _ =>
         ko

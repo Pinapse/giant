@@ -160,7 +160,7 @@ class FacilityTurretControl3Test extends ActorTest {
 
 class FacilityTurretControl4Test extends ActorTest {
   val player = Player(Avatar(0, "", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
-  val obj = FacilityTurret(GlobalDefinitions.vanu_sentry_turret)
+  val obj    = FacilityTurret(GlobalDefinitions.vanu_sentry_turret)
   obj.GUID = PlanetSideGUID(1)
   obj.Zone = new Zone("test", new ZoneMap("test"), 0) {
     override def SetupNumberPools() = {}

@@ -32,7 +32,7 @@ case object HeadonImpact extends CollisionDamageModifiers.Mod {
     val vel = Vector3.Magnitude(cause.velocity.xy)
     if (vel > 0.05f) {
       val definition = data.target.Definition
-      val xy = definition.collision.xy
+      val xy         = definition.collision.xy
       damage + xy.hp(xy.throttle((vel + 0.5f) / definition.maxForwardSpeed))
     } else {
       damage
@@ -55,33 +55,34 @@ case object HeadonImpactWithEntity extends CollisionWithDamageModifiers.Mod {
       case (p: PlayerSource, v: VehicleSource) =>
         //player hit by vehicle; compromise between momentum-force-damage and velocity-damage
         //the math here isn't perfect; 3D vector-velocity is being used in 1D momentum equations
-        val definition = v.Definition
-        val suit = ExoSuitDefinition.Select(p.ExoSuit, p.Faction).collision
-        val pmass = suit.massFactor
-        val pForceFactor = suit.forceFactor
-        val vmass = definition.mass
-        val maxAvtrDam = definition.collision.avatarCollisionDamageMax
+        val definition      = v.Definition
+        val suit            = ExoSuitDefinition.Select(p.ExoSuit, p.Faction).collision
+        val pmass           = suit.massFactor
+        val pForceFactor    = suit.forceFactor
+        val vmass           = definition.mass
+        val maxAvtrDam      = definition.collision.avatarCollisionDamageMax
         val maxForwardSpeed = definition.maxForwardSpeed
-        val collisionTime = 1.5f //a drawn-out inelastic collision
-        val pvel = p.Velocity.getOrElse(Vector3.Zero)
-        val vvel = v.Velocity.getOrElse(Vector3.Zero)
-        val velCntrMass = (pvel * pmass + vvel * vmass) / (pmass + vmass) //velocity of the center of mass
-        val pvelFin = Vector3.neg(pvel - velCntrMass) + velCntrMass
-        val damp = math.min(pmass * Vector3.Magnitude(pvelFin - pvel) / (pForceFactor * collisionTime), maxAvtrDam.toFloat)
+        val collisionTime   = 1.5f                                            //a drawn-out inelastic collision
+        val pvel            = p.Velocity.getOrElse(Vector3.Zero)
+        val vvel            = v.Velocity.getOrElse(Vector3.Zero)
+        val velCntrMass     = (pvel * pmass + vvel * vmass) / (pmass + vmass) //velocity of the center of mass
+        val pvelFin         = Vector3.neg(pvel - velCntrMass) + velCntrMass
+        val damp =
+          math.min(pmass * Vector3.Magnitude(pvelFin - pvel) / (pForceFactor * collisionTime), maxAvtrDam.toFloat)
         val dama = maxAvtrDam * 0.35f * (vel + 0.5f) / maxForwardSpeed
         damage + (if (damp > dama) {
-          if (damp - dama > dama) {
-            damp - dama
-          } else {
-            dama
-          }
-        } else {
-          if (dama - damp > damp) {
-            dama - damp
-          } else {
-            damp
-          }
-        }).toInt
+                    if (damp - dama > dama) {
+                      damp - dama
+                    } else {
+                      dama
+                    }
+                  } else {
+                    if (dama - damp > damp) {
+                      dama - damp
+                    } else {
+                      damp
+                    }
+                  }).toInt
 
       case (a: DeployableSource, b) =>
         //deployable hit by vehicle; anything but an OHKO will cause visual desync, but still should calculate

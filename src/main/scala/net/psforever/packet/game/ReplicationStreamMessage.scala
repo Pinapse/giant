@@ -612,8 +612,8 @@ object SquadHeader {
     (bool >>:~ { unk1 =>
       uint8 >>:~ { unk2 =>
         conditional(!unk1 && unk2 == 1, removeCodec) ::
-        conditional(unk1 && unk2 == 6, providedCodec) ::
-        conditional(unk1 && unk2 != 6, listing_codec(unk2))
+          conditional(unk1 && unk2 == 6, providedCodec) ::
+          conditional(unk1 && unk2 != 6, listing_codec(unk2))
       }
     }).exmap[Option[SquadInfo]](
       {
@@ -692,7 +692,7 @@ object SquadListing {
     (("index" | uint8L) >>:~ { index =>
       conditional(index < 255, "listing" | entryFunc(index)) ::
         conditional(index == 255, bits)
-      //consume n < 8 bits after the tail entry, else vector will try to operate on invalid data
+    //consume n < 8 bits after the tail entry, else vector will try to operate on invalid data
     }).xmap[SquadListing](
       {
         case ndx :: Some(lstng) :: _ :: HNil =>
@@ -736,15 +736,14 @@ object ReplicationStreamMessage extends Marshallable[ReplicationStreamMessage] {
     )
   }
 
-  implicit val codec: Codec[ReplicationStreamMessage] = (
-    ("behavior" | uintL(bits = 3)) >>:~ { behavior =>
-      ("behavior2" | conditional(behavior == 5, uintL(bits = 3))) ::
+  implicit val codec: Codec[ReplicationStreamMessage] = (("behavior" | uintL(bits = 3)) >>:~ { behavior =>
+    ("behavior2" | conditional(behavior == 5, uintL(bits = 3))) ::
       conditional(behavior != 1, bool) ::
       ("entries" | newcodecs.binary_choice(
-        behavior != 5,
-        vector(SquadListing.codec),
-        vector(SquadListing.info_codec)
-      ))
+      behavior != 5,
+      vector(SquadListing.codec),
+      vector(SquadListing.info_codec)
+    ))
   }).xmap[ReplicationStreamMessage](
     {
       case bhvr :: bhvr2 :: _ :: lst :: HNil =>

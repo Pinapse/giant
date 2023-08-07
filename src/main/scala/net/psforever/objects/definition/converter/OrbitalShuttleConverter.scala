@@ -12,5 +12,9 @@ class OrbitalShuttleConverter extends ObjectCreateConverter[Vehicle]() {
   }
 
   override def DetailedConstructorData(obj: Vehicle): Try[OrbitalShuttleData] =
-    Failure(new Exception("OrbitalShuttleConverter should not be used to generate detailed OrbitalShuttleData (nothing should)"))
+    Failure(
+      new Exception(
+        "OrbitalShuttleConverter should not be used to generate detailed OrbitalShuttleData (nothing should)"
+      )
+    )
 }

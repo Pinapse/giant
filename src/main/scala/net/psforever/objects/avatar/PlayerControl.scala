@@ -3,7 +3,12 @@ package net.psforever.objects.avatar
 
 import akka.actor.{Actor, ActorRef, Props, typed}
 import net.psforever.actors.session.AvatarActor
-import net.psforever.login.WorldSession.{DropEquipmentFromInventory, HoldNewEquipmentUp, PutNewEquipmentInInventoryOrDrop, RemoveOldEquipmentFromInventory}
+import net.psforever.login.WorldSession.{
+  DropEquipmentFromInventory,
+  HoldNewEquipmentUp,
+  PutNewEquipmentInInventoryOrDrop,
+  RemoveOldEquipmentFromInventory
+}
 import net.psforever.objects._
 import net.psforever.objects.ce.Deployable
 import net.psforever.objects.definition.DeployAnimation
@@ -71,12 +76,15 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
   SetInteraction(EnvironmentAttribute.GantryDenialField, doInteractingWithGantryField)
   SetInteraction(EnvironmentAttribute.MovementFieldTrigger, doInteractingWithMovementTrigger)
   SetInteractionStop(EnvironmentAttribute.Water, stopInteractingWithWater)
-  private[this] val log = org.log4s.getLogger(player.Name)
+  private[this] val log       = org.log4s.getLogger(player.Name)
   private[this] val damageLog = org.log4s.getLogger(Damageable.LogChannel)
+
   /** suffocating, or regaining breath? */
   var submergedCondition: Option[OxygenState] = None
+
   /** assistance for deployable construction, retention of the construction item */
   var deployablePair: Option[(Deployable, ConstructionItem)] = None
+
   /** control agency for the player's locker container (dedicated inventory slot #5) */
   val lockerControlAgent: ActorRef = {
     val locker = player.avatar.locker
@@ -105,7 +113,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
         case Player.Die(Some(reason)) =>
           if (player.isAlive) {
             //primary death
-            val health = player.Health
+            val health  = player.Health
             val psource = PlayerSource(player)
             player.Health = 0
             HandleDamage(
@@ -123,23 +131,23 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
           suicide()
 
         case CommonMessages.Use(user, Some(item: Tool))
-          if item.Definition == GlobalDefinitions.medicalapplicator && player.isAlive =>
+            if item.Definition == GlobalDefinitions.medicalapplicator && player.isAlive =>
           //heal
           val originalHealth = player.Health
-          val definition = player.Definition
+          val definition     = player.Definition
           if (
             player.MaxHealth > 0 && originalHealth < player.MaxHealth &&
             user.Faction == player.Faction &&
             item.Magazine > 0 &&
             Vector3.Distance(user.Position, player.Position) < definition.RepairDistance
           ) {
-            val zone = player.Zone
+            val zone   = player.Zone
             val events = zone.AvatarEvents
-            val uname = user.Name
-            val guid = player.GUID
+            val uname  = user.Name
+            val guid   = player.GUID
             if (!(player.isMoving || user.isMoving)) { //only allow stationary heals
               val newHealth = player.Health = originalHealth + 10
-              val magazine = item.Discharge()
+              val magazine  = item.Discharge()
               events ! AvatarServiceMessage(
                 uname,
                 AvatarAction.SendResponse(
@@ -188,20 +196,22 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
 
         case CommonMessages.Use(user, Some(item: Tool)) if item.Definition == GlobalDefinitions.bank =>
           val originalArmor = player.Armor
-          val definition = player.Definition
+          val definition    = player.Definition
           if (
             player.MaxArmor > 0 && originalArmor < player.MaxArmor &&
             user.Faction == player.Faction &&
             item.AmmoType == Ammo.armor_canister && item.Magazine > 0 &&
             Vector3.Distance(user.Position, player.Position) < definition.RepairDistance
           ) {
-            val zone = player.Zone
+            val zone   = player.Zone
             val events = zone.AvatarEvents
-            val uname = user.Name
-            val guid = player.GUID
+            val uname  = user.Name
+            val guid   = player.GUID
             if (!(player.isMoving || user.isMoving)) { //only allow stationary repairs
               val newArmor = player.Armor =
-                originalArmor + Repairable.applyLevelModifier(user, item, RepairToolValue(item)).toInt + definition.RepairMod
+                originalArmor + Repairable
+                  .applyLevelModifier(user, item, RepairToolValue(item))
+                  .toInt + definition.RepairMod
               val magazine = item.Discharge()
               events ! AvatarServiceMessage(
                 uname,
@@ -238,61 +248,62 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
 
         case CommonMessages.Use(_, Some(kit: Kit)) if player.isAlive =>
           val kdef = kit.Definition
-          val (thisKitIsUsed, attribute, value, msg): (Option[Int], Int, Long, String) = player.avatar.useCooldown(kdef) match {
-            case Some(cooldown) =>
-              (None, 0, 0, s"@TimeUntilNextUse^${cooldown.getStandardSeconds}")
+          val (thisKitIsUsed, attribute, value, msg): (Option[Int], Int, Long, String) =
+            player.avatar.useCooldown(kdef) match {
+              case Some(cooldown) =>
+                (None, 0, 0, s"@TimeUntilNextUse^${cooldown.getStandardSeconds}")
 
-            case None =>
-              val indexOpt = player.Find(kit)
-              indexOpt match {
-                case Some(index) =>
-                  if (kdef == GlobalDefinitions.medkit) {
-                    if (player.Health == player.MaxHealth) {
-                      (None, 0, 0, "@HealComplete")
+              case None =>
+                val indexOpt = player.Find(kit)
+                indexOpt match {
+                  case Some(index) =>
+                    if (kdef == GlobalDefinitions.medkit) {
+                      if (player.Health == player.MaxHealth) {
+                        (None, 0, 0, "@HealComplete")
+                      } else {
+                        player.LogActivity(HealFromKit(kdef, 25))
+                        player.Health = player.Health + 25
+                        (Some(index), 0, player.Health, "")
+                      }
+                    } else if (kdef == GlobalDefinitions.super_medkit) {
+                      if (player.Health == player.MaxHealth) {
+                        (None, 0, 0, "@HealComplete")
+                      } else {
+                        player.LogActivity(HealFromKit(kdef, 100))
+                        player.Health = player.Health + 100
+                        (Some(index), 0, player.Health, "")
+                      }
+                    } else if (kdef == GlobalDefinitions.super_armorkit) {
+                      if (player.Armor == player.MaxArmor) {
+                        (None, 0, 0, "Armor at maximum - No repairing required.")
+                      } else {
+                        player.LogActivity(RepairFromKit(kdef, 200))
+                        player.Armor = player.Armor + 200
+                        (Some(index), 4, player.Armor, "")
+                      }
+                    } else if (kdef == GlobalDefinitions.super_staminakit) {
+                      if (player.avatar.staminaFull) {
+                        (None, 0, 0, "Stamina at maximum - No recharge required.")
+                      } else {
+                        avatarActor ! AvatarActor.RestoreStamina(100)
+                        //proper stamina update will occur due to above message; update something relatively harmless instead
+                        (Some(index), 3, player.avatar.maxStamina, "")
+                      }
                     } else {
-                      player.LogActivity(HealFromKit(kdef, 25))
-                      player.Health = player.Health + 25
-                      (Some(index), 0, player.Health, "")
+                      log.warn(s"UseItem: Your $kit behavior is not supported, ${player.Name}")
+                      (None, 0, 0, "")
                     }
-                  } else if (kdef == GlobalDefinitions.super_medkit) {
-                    if (player.Health == player.MaxHealth) {
-                      (None, 0, 0, "@HealComplete")
-                    } else {
-                      player.LogActivity(HealFromKit(kdef, 100))
-                      player.Health = player.Health + 100
-                      (Some(index), 0, player.Health, "")
-                    }
-                  } else if (kdef == GlobalDefinitions.super_armorkit) {
-                    if (player.Armor == player.MaxArmor) {
-                      (None, 0, 0, "Armor at maximum - No repairing required.")
-                    } else {
-                      player.LogActivity(RepairFromKit(kdef, 200))
-                      player.Armor = player.Armor + 200
-                      (Some(index), 4, player.Armor, "")
-                    }
-                  } else if (kdef == GlobalDefinitions.super_staminakit) {
-                    if (player.avatar.staminaFull) {
-                      (None, 0, 0, "Stamina at maximum - No recharge required.")
-                    } else {
-                      avatarActor ! AvatarActor.RestoreStamina(100)
-                      //proper stamina update will occur due to above message; update something relatively harmless instead
-                      (Some(index), 3, player.avatar.maxStamina, "")
-                    }
-                  } else {
-                    log.warn(s"UseItem: Your $kit behavior is not supported, ${player.Name}")
+
+                  case None =>
+                    log.error(s"UseItem: Anticipated a $kit for ${player.Name}, but can't find it")
                     (None, 0, 0, "")
-                  }
-
-                case None =>
-                  log.error(s"UseItem: Anticipated a $kit for ${player.Name}, but can't find it")
-                  (None, 0, 0, "")
-              }
-          }
+                }
+            }
           thisKitIsUsed match {
             case Some(slot) =>
               //kit was found belonging to player and is to be used
               val kguid = kit.GUID
-              val zone = player.Zone
+              val zone  = player.Zone
               avatarActor ! AvatarActor.UpdateUseTime(kdef)
               player.Slot(slot).Equipment = None //remove from slot immediately; must exist on client for now
               TaskWorkflow.execute(GUIDTask.unregisterEquipment(zone.GUID, kit))
@@ -315,8 +326,8 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
           setExoSuit(exosuit, subtype)
 
         case PlayerControl.ObjectHeld(slot, updateMyHolsterArm) =>
-          val before = player.DrawnSlot
-          val events = player.Zone.AvatarEvents
+          val before     = player.DrawnSlot
+          val events     = player.Zone.AvatarEvents
           val resistance = player.TestArmMotion(slot)
           if (resistance && !updateMyHolsterArm) {
             events ! AvatarServiceMessage(
@@ -330,7 +341,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
               AvatarAction.ObjectHeld(player.GUID, mySlot, player.LastDrawnSlot)
             )
             val isHolsters = player.VisibleSlots.contains(slot)
-            val equipment = player.Slot(slot).Equipment.orElse { player.Slot(before).Equipment }
+            val equipment  = player.Slot(slot).Equipment.orElse { player.Slot(before).Equipment }
             if (isHolsters) {
               equipment match {
                 case Some(unholsteredItem: Equipment) =>
@@ -347,7 +358,9 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
             } else {
               equipment match {
                 case Some(holsteredEquipment) =>
-                  log.info(s"${player.Name} has put ${player.Sex.possessive} ${holsteredEquipment.Definition.Name} down")
+                  log.info(
+                    s"${player.Name} has put ${player.Sex.possessive} ${holsteredEquipment.Definition.Name} down"
+                  )
                 case None =>
                   log.info(s"${player.Name} lowers ${player.Sex.possessive} hand")
               }
@@ -368,15 +381,15 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
 
             case Terminal.InfantryLoadout(exosuit, subtype, holsters, inventory) =>
               log.info(s"${player.Name} wants to change equipment loadout to their option #${msg.unk1 + 1}")
-              val originalSuit = player.ExoSuit
+              val originalSuit    = player.ExoSuit
               val originalSubtype = Loadout.DetermineSubtype(player)
               //sanitize exo-suit for change
-              val dropPred = ContainableBehavior.DropPredicate(player)
-              val oldHolsters = Players.clearHolsters(player.Holsters().iterator)
-              val dropHolsters = oldHolsters.filter(dropPred)
-              val oldInventory = player.Inventory.Clear()
+              val dropPred      = ContainableBehavior.DropPredicate(player)
+              val oldHolsters   = Players.clearHolsters(player.Holsters().iterator)
+              val dropHolsters  = oldHolsters.filter(dropPred)
+              val oldInventory  = player.Inventory.Clear()
               val dropInventory = oldInventory.filter(dropPred)
-              val toDeleteOrDrop : List[InventoryItem] = (player.FreeHand.Equipment match {
+              val toDeleteOrDrop: List[InventoryItem] = (player.FreeHand.Equipment match {
                 case Some(obj) =>
                   val out = InventoryItem(obj, -1)
                   player.FreeHand.Equipment = None
@@ -399,7 +412,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
                 }
                 if (Players.CertificationToUseExoSuit(player, exosuit, subtype)) {
                   if (exosuit == ExoSuitType.MAX) {
-                    val weapon = GlobalDefinitions.MAXArms(subtype, player.Faction)
+                    val weapon   = GlobalDefinitions.MAXArms(subtype, player.Faction)
                     val cooldown = player.avatar.purchaseCooldown(weapon)
                     if (originalSubtype == subtype) {
                       (exosuit, subtype) //same MAX subtype is free
@@ -505,9 +518,9 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
               )
               player.Zone.AvatarEvents ! AvatarServiceMessage(
                 player.Name,
-                AvatarAction.TerminalOrderResult(msg.terminal_guid, msg.transaction_type, result=true)
+                AvatarAction.TerminalOrderResult(msg.terminal_guid, msg.transaction_type, result = true)
               )
-            case _ => assert(assertion=false, msg.toString)
+            case _ => assert(assertion = false, msg.toString)
           }
 
         case Zone.Ground.ItemOnGround(item, _, _) =>
@@ -545,7 +558,10 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
               val trigger = new BoomerTrigger
               trigger.Companion = obj.GUID
               obj.Trigger = trigger
-              zone.AvatarEvents ! AvatarServiceMessage(zone.id, AvatarAction.ObjectDelete(Service.defaultPlayerGUID, tool.GUID))
+              zone.AvatarEvents ! AvatarServiceMessage(
+                zone.id,
+                AvatarAction.ObjectDelete(Service.defaultPlayerGUID, tool.GUID)
+              )
               TaskWorkflow.execute(GUIDTask.unregisterEquipment(zone.GUID, tool))
               player.Find(tool) match {
                 case Some(index) if player.VisibleSlots.contains(index) =>
@@ -569,8 +585,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
               RemoveOldEquipmentFromInventory(player)(tool)
               val zone = player.Zone
               zone.GUID(obj.Router) match {
-                case Some(v: Vehicle)
-                  if v.Definition == GlobalDefinitions.router => ;
+                case Some(v: Vehicle) if v.Definition == GlobalDefinitions.router => ;
                 case _ =>
                   player.Actor ! Player.LoseDeployable(obj)
                   TelepadControl.TelepadError(zone, player.Name, msg = "@Telepad_NoDeploy_RouterLost")
@@ -589,7 +604,9 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
                   Players.commonDestroyConstructionItem(player, tool, index)
                   Players.findReplacementConstructionItem(player, tool, index)
                 case None =>
-                  log.warn(s"${player.Name} should have destroyed a ${tool.Definition.Name} here, but could not find it")
+                  log.warn(
+                    s"${player.Name} should have destroyed a ${tool.Definition.Name} here, but could not find it"
+                  )
               }
             case _ => ;
           }
@@ -604,32 +621,32 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       }
 
   def setExoSuit(exosuit: ExoSuitType.Value, subtype: Int): Boolean = {
-    var toDelete : List[InventoryItem] = Nil
-    val originalSuit = player.ExoSuit
-    val originalSubtype = Loadout.DetermineSubtype(player)
-    val requestToChangeArmor = originalSuit != exosuit || originalSubtype != subtype
+    var toDelete: List[InventoryItem] = Nil
+    val originalSuit                  = player.ExoSuit
+    val originalSubtype               = Loadout.DetermineSubtype(player)
+    val requestToChangeArmor          = originalSuit != exosuit || originalSubtype != subtype
     val allowedToChangeArmor = Players.CertificationToUseExoSuit(player, exosuit, subtype) &&
       (if (exosuit == ExoSuitType.MAX) {
-        val weapon = GlobalDefinitions.MAXArms(subtype, player.Faction)
-        player.avatar.purchaseCooldown(weapon) match {
-          case Some(_) =>
-            false
-          case None =>
-            avatarActor ! AvatarActor.UpdatePurchaseTime(weapon)
-            true
-        }
-      } else {
-        true
-      })
+         val weapon = GlobalDefinitions.MAXArms(subtype, player.Faction)
+         player.avatar.purchaseCooldown(weapon) match {
+           case Some(_) =>
+             false
+           case None =>
+             avatarActor ! AvatarActor.UpdatePurchaseTime(weapon)
+             true
+         }
+       } else {
+         true
+       })
     if (requestToChangeArmor && allowedToChangeArmor) {
       log.info(s"${player.Name} wants to change to a different exo-suit - $exosuit")
-      val beforeHolsters = Players.clearHolsters(player.Holsters().iterator)
+      val beforeHolsters  = Players.clearHolsters(player.Holsters().iterator)
       val beforeInventory = player.Inventory.Clear()
       //change suit
       val originalArmor = player.Armor
       player.ExoSuit = exosuit //changes the value of MaxArmor to reflect the new exo-suit
       val toMaxArmor = player.MaxArmor
-      val toArmor = toMaxArmor
+      val toArmor    = toMaxArmor
       if (originalArmor != toMaxArmor) {
         player.LogActivity(RepairFromExoSuitChange(exosuit, toMaxArmor - originalArmor))
       }
@@ -642,8 +659,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
         val (maxWeapons, normalWeapons) = beforeHolsters.partition(elem => elem.obj.Size == EquipmentSize.Max)
         toDelete ++= maxWeapons
         normalWeapons
-      }
-      else {
+      } else {
         beforeHolsters
       }
       //populate holsters
@@ -652,11 +668,9 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
           normalHolsters,
           Players.fillEmptyHolsters(List(player.Slot(4)).iterator, normalHolsters) ++ beforeInventory
         )
-      }
-      else if (originalSuit == exosuit) { //note - this will rarely be the situation
+      } else if (originalSuit == exosuit) { //note - this will rarely be the situation
         (normalHolsters, Players.fillEmptyHolsters(player.Holsters().iterator, normalHolsters))
-      }
-      else {
+      } else {
         val (afterHolsters, toInventory) =
           normalHolsters.partition(elem => elem.obj.Size == player.Slot(elem.start).Size)
         afterHolsters.foreach({ elem => player.Slot(elem.start).Equipment = elem.obj })
@@ -669,8 +683,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       //put items back into inventory
       val (stow, drop) = if (originalSuit == exosuit) {
         (finalInventory, Nil)
-      }
-      else {
+      } else {
         val (a, b) = GridInventory.recoverInventory(finalInventory, player.Inventory)
         (
           a,
@@ -702,8 +715,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
         )
       )
       true
-    }
-    else {
+    } else {
       false
     }
   }
@@ -713,36 +725,38 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       obj.Actor ! Deployable.Ownership(None)
       player.Zone.LocalEvents ! LocalServiceMessage(player.Name, LocalAction.DeployableUIFor(obj.Definition.Item))
       true
-    }
-    else {
+    } else {
       false
     }
   }
 
   def setupDeployable(obj: Deployable, tool: ConstructionItem): Unit = {
     if (deployablePair.isEmpty) {
-      val zone = player.Zone
+      val zone        = player.Zone
       val deployables = player.avatar.deployables
-      if (deployables.Valid(obj) &&
-          !deployables.Contains(obj) &&
-          Players.deployableWithinBuildLimits(player, obj)) {
+      if (
+        deployables.Valid(obj) &&
+        !deployables.Contains(obj) &&
+        Players.deployableWithinBuildLimits(player, obj)
+      ) {
         tool.Definition match {
           case GlobalDefinitions.ace | /* animation handled in deployable lifecycle */
-               GlobalDefinitions.router_telepad => ; /* no special animation */
-          case GlobalDefinitions.advanced_ace
-            if obj.Definition.deployAnimation == DeployAnimation.Fdu =>
+              GlobalDefinitions.router_telepad =>
+            ; /* no special animation */
+          case GlobalDefinitions.advanced_ace if obj.Definition.deployAnimation == DeployAnimation.Fdu =>
             zone.AvatarEvents ! AvatarServiceMessage(zone.id, AvatarAction.PutDownFDU(player.GUID))
           case _ =>
-            org.log4s.getLogger(name = "Deployables").warn(
-              s"not sure what kind of construction item to animate - ${tool.Definition.Name}"
-            )
+            org.log4s
+              .getLogger(name = "Deployables")
+              .warn(
+                s"not sure what kind of construction item to animate - ${tool.Definition.Name}"
+              )
         }
         deployablePair = Some((obj, tool))
         obj.Faction = player.Faction
         obj.AssignOwnership(player)
         obj.Actor ! Zone.Deployable.Setup()
-      }
-      else {
+      } else {
         log.warn(s"cannot build a ${obj.Definition.Name}")
         DropEquipmentFromInventory(player)(tool, Some(obj.Position))
         Players.buildCooldownReset(zone, player.Name, obj)
@@ -761,8 +775,8 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
   }
 
   override protected def PerformDamage(
-    target: Target,
-    applyDamageTo: Output
+      target: Target,
+      applyDamageTo: Output
   ): Unit = {
     if (player.isAlive && !player.spectator) {
       val originalHealth    = player.Health
@@ -792,13 +806,13 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     * @param target na
     */
   def HandleDamage(
-                    target: Player,
-                    cause: DamageResult,
-                    damageToHealth: Int,
-                    damageToArmor: Int,
-                    damageToStamina: Int,
-                    damageToCapacitor: Int
-                  ): Unit = {
+      target: Player,
+      cause: DamageResult,
+      damageToHealth: Int,
+      damageToArmor: Int,
+      damageToStamina: Int,
+      damageToCapacitor: Int
+  ): Unit = {
     //always do armor update
     if (damageToArmor > 0) {
       val zone = target.Zone
@@ -810,11 +824,13 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     //choose
     if (target.Health > 0) {
       //alive
-      if (target.Health <= 25 &&
-          (player.avatar.implants.flatten.find { _.definition.implantType == ImplantType.SecondWind } match {
-            case Some(wind) => wind.initialized
-            case _          => false
-      })) {
+      if (
+        target.Health <= 25 &&
+        (player.avatar.implants.flatten.find { _.definition.implantType == ImplantType.SecondWind } match {
+          case Some(wind) => wind.initialized
+          case _          => false
+        })
+      ) {
         //activate second wind
         player.Health += 25
         player.LogActivity(HealFromImplant(ImplantType.SecondWind, 25))
@@ -830,13 +846,13 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
   }
 
   def DamageAwareness(
-                       target: Player,
-                       cause: DamageResult,
-                       damageToHealth: Int,
-                       damageToArmor: Int,
-                       damageToStamina: Int,
-                       damageToCapacitor: Int
-                     ): Unit = {
+      target: Player,
+      cause: DamageResult,
+      damageToHealth: Int,
+      damageToArmor: Int,
+      damageToStamina: Int,
+      damageToCapacitor: Int
+  ): Unit = {
     val targetGUID            = target.GUID
     val zone                  = target.Zone
     val zoneId                = zone.id
@@ -875,7 +891,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       announceConfrontation = true
     }
     val countableDamage = damageToHealth + damageToArmor
-    if(announceConfrontation) {
+    if (announceConfrontation) {
       if (aggravated) {
         events ! AvatarServiceMessage(
           zoneId,
@@ -924,7 +940,10 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
               case _: CollisionReason =>
                 events ! AvatarServiceMessage(
                   zoneId,
-                  AvatarAction.SendResponse(Service.defaultPlayerGUID, AggravatedDamageMessage(targetGUID, countableDamage))
+                  AvatarAction.SendResponse(
+                    Service.defaultPlayerGUID,
+                    AggravatedDamageMessage(targetGUID, countableDamage)
+                  )
                 )
               case _ =>
                 zone.AvatarEvents ! AvatarServiceMessage(
@@ -1028,19 +1047,17 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       nameChannel,
       AvatarAction.SendResponse(
         Service.defaultPlayerGUID,
-        AvatarDeadStateMessage(DeadState.Dead, respawnTimer, respawnTimer, pos, target.Faction, unk5=true)
+        AvatarDeadStateMessage(DeadState.Dead, respawnTimer, respawnTimer, pos, target.Faction, unk5 = true)
       )
     )
     //TODO other methods of death?
     val pentry = PlayerSource(target)
-    cause
-      .adversarial
+    cause.adversarial
       .collect { case out @ Adversarial(attacker, _, _) if attacker != PlayerSource.Nobody => out }
       .orElse {
         target.LastDamage.collect {
           case attack if System.currentTimeMillis() - attack.interaction.hitTime < (10 seconds).toMillis =>
-            attack
-              .adversarial
+            attack.adversarial
               .collect { case out @ Adversarial(attacker, _, _) if attacker != PlayerSource.Nobody => out }
         }.flatten
       } match {
@@ -1054,7 +1071,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     }
   }
 
-  def suicide() : Unit = {
+  def suicide(): Unit = {
     if (player.Health > 0 || player.isAlive) {
       PerformDamage(
         player,
@@ -1125,12 +1142,11 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
 
   def RepairToolValue(item: Tool): Float = {
     item.AmmoSlot.Box.Definition.repairAmount +
-    (if (player.ExoSuit != ExoSuitType.MAX) {
-      item.FireMode.Add.Damage0
-    }
-    else {
-      item.FireMode.Add.Damage3
-    })
+      (if (player.ExoSuit != ExoSuitType.MAX) {
+         item.FireMode.Add.Damage0
+       } else {
+         item.FireMode.Add.Damage3
+       })
   }
 
   def MessageDeferredCallback(msg: Any): Unit = {
@@ -1148,9 +1164,9 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
   }
 
   def RemoveItemFromSlotCallback(item: Equipment, slot: Int): Unit = {
-    val obj       = ContainerObject
-    val zone      = obj.Zone
-    val events    = zone.AvatarEvents
+    val obj    = ContainerObject
+    val zone   = obj.Zone
+    val events = zone.AvatarEvents
     val toChannel = if (player.isBackpack) {
       self.toString
     } else if (obj.VisibleSlots.contains(slot)) {
@@ -1166,13 +1182,14 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
   }
 
   def PutItemInSlotCallback(item: Equipment, slot: Int): Unit = {
-    val obj        = ContainerObject
-    val guid       = obj.GUID
-    val zone       = obj.Zone
-    val events     = zone.AvatarEvents
-    val name       = player.Name
-    val faction    = obj.Faction
-    val toChannel = if (player.isBackpack) { self.toString } else { name }
+    val obj     = ContainerObject
+    val guid    = obj.GUID
+    val zone    = obj.Zone
+    val events  = zone.AvatarEvents
+    val name    = player.Name
+    val faction = obj.Faction
+    val toChannel = if (player.isBackpack) { self.toString }
+    else { name }
     val willBeVisible = obj.VisibleSlots.contains(slot)
     item.Faction = faction
     //handle specific types of items
@@ -1188,8 +1205,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
           case _ => ;
         }
 
-      case citem: ConstructionItem
-        if willBeVisible =>
+      case citem: ConstructionItem if willBeVisible =>
         if (citem.AmmoTypeIndex > 0) {
           //can not preserve ammo type in construction tool packets
           citem.resetAmmoTypes()
@@ -1211,8 +1227,8 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
   }
 
   def SwapItemCallback(item: Equipment, fromSlot: Int): Unit = {
-    val obj       = ContainerObject
-    val zone      = obj.Zone
+    val obj  = ContainerObject
+    val zone = obj.Zone
     val toChannel = if (player.isBackpack) {
       self.toString
     } else if (obj.VisibleSlots.contains(fromSlot)) {
@@ -1226,9 +1242,9 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     )
   }
 
-  def UpdateAuraEffect(target: AuraEffectBehavior.Target) : Unit = {
+  def UpdateAuraEffect(target: AuraEffectBehavior.Target): Unit = {
     import net.psforever.services.avatar.{AvatarAction, AvatarServiceMessage}
-    val zone = target.Zone
+    val zone  = target.Zone
     val value = target.Aura.foldLeft(0)(_ + PlayerControl.auraEffectToAttributeValue(_))
     zone.AvatarEvents ! AvatarServiceMessage(zone.id, AvatarAction.PlanetsideAttributeToAll(target.GUID, 54, value))
   }
@@ -1241,7 +1257,11 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     * @param data additional interaction information, if applicable;
     *             for players, this will be data from any mounted vehicles
     */
-  def doInteractingWithWater(obj: PlanetSideServerObject, body: PieceOfEnvironment, data: Option[OxygenStateTarget]): Unit = {
+  def doInteractingWithWater(
+      obj: PlanetSideServerObject,
+      body: PieceOfEnvironment,
+      data: Option[OxygenStateTarget]
+  ): Unit = {
     val (effect: Boolean, time: Long, percentage: Float) =
       RespondsToZoneEnvironment.drowningInWateryConditions(obj, submergedCondition, interactionTime)
     if (effect) {
@@ -1269,7 +1289,11 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     * @param body the environment
     * @param data additional interaction information, if applicable
     */
-  def doInteractingWithLava(obj: PlanetSideServerObject, body: PieceOfEnvironment, data: Option[OxygenStateTarget]): Unit = {
+  def doInteractingWithLava(
+      obj: PlanetSideServerObject,
+      body: PieceOfEnvironment,
+      data: Option[OxygenStateTarget]
+  ): Unit = {
     if (player.isAlive) {
       PerformDamage(
         player,
@@ -1282,7 +1306,11 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       if (player.Health > 0) {
         StartAuraEffect(Aura.Fire, duration = 1250L) //burn
         import scala.concurrent.ExecutionContext.Implicits.global
-        interactionTimer = context.system.scheduler.scheduleOnce(delay = 250 milliseconds, self, InteractingWithEnvironment(player, body, None))
+        interactionTimer = context.system.scheduler.scheduleOnce(
+          delay = 250 milliseconds,
+          self,
+          InteractingWithEnvironment(player, body, None)
+        )
       }
     }
   }
@@ -1294,31 +1322,33 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     * @param body the environment
     * @param data additional interaction information, if applicable
     */
-  def doInteractingWithDeath(obj: PlanetSideServerObject, body: PieceOfEnvironment, data: Option[OxygenStateTarget]): Unit = {
+  def doInteractingWithDeath(
+      obj: PlanetSideServerObject,
+      body: PieceOfEnvironment,
+      data: Option[OxygenStateTarget]
+  ): Unit = {
     suicide()
   }
 
   //noinspection ScalaUnusedSymbol
   def doInteractingWithGantryField(
-                                    obj: PlanetSideServerObject,
-                                    body: PieceOfEnvironment,
-                                    data: Option[OxygenStateTarget]
-                                  ): Unit = {
+      obj: PlanetSideServerObject,
+      body: PieceOfEnvironment,
+      data: Option[OxygenStateTarget]
+  ): Unit = {
     import scala.concurrent.ExecutionContext.Implicits.global
     val field = body.asInstanceOf[GantryDenialField]
-    val zone = player.Zone
+    val zone  = player.Zone
     (zone.GUID(field.obbasemesh) match {
-      case Some(pad : OrbitalShuttlePad) => zone.GUID(pad.shuttle)
-      case _                             => None
+      case Some(pad: OrbitalShuttlePad) => zone.GUID(pad.shuttle)
+      case _                            => None
     }) match {
       case Some(shuttle: Vehicle)
-        if shuttle.Flying.contains(ShuttleState.State11.id) || shuttle.Faction != player.Faction =>
+          if shuttle.Flying.contains(ShuttleState.State11.id) || shuttle.Faction != player.Faction =>
         val (pos, zang) = Vehicles.dismountShuttle(shuttle, field.mountPoint)
         shuttle.Zone.AvatarEvents ! AvatarServiceMessage(
           player.Name,
-          AvatarAction.SendResponse(
-            Service.defaultPlayerGUID,
-            PlayerStateShiftMessage(ShiftState(0, pos, zang, None)))
+          AvatarAction.SendResponse(Service.defaultPlayerGUID, PlayerStateShiftMessage(ShiftState(0, pos, zang, None)))
         )
       case Some(_: Vehicle) =>
         interactionTimer = context.system.scheduler.scheduleOnce(
@@ -1327,7 +1357,7 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
           InteractingWithEnvironment(player, body, None)
         )
       case _ => ;
-        //something configured incorrectly; no need to keep checking
+      //something configured incorrectly; no need to keep checking
     }
   }
 
@@ -1338,10 +1368,10 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     * @param data additional interaction information, if applicable
     */
   def doInteractingWithMovementTrigger(
-                                        obj: PlanetSideServerObject,
-                                        body: PieceOfEnvironment,
-                                        data: Option[OxygenStateTarget]
-                                      ): Unit = {
+      obj: PlanetSideServerObject,
+      body: PieceOfEnvironment,
+      data: Option[OxygenStateTarget]
+  ): Unit = {
     body.asInstanceOf[GeneralMovementField].triggerAction(obj)
   }
 
@@ -1353,7 +1383,11 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
     * @param data additional interaction information, if applicable;
     *             for players, this will be data from any mounted vehicles
     */
-  def stopInteractingWithWater(obj: PlanetSideServerObject, body: PieceOfEnvironment, data: Option[OxygenStateTarget]): Unit = {
+  def stopInteractingWithWater(
+      obj: PlanetSideServerObject,
+      body: PieceOfEnvironment,
+      data: Option[OxygenStateTarget]
+  ): Unit = {
     val (effect: Boolean, time: Long, percentage: Float) =
       RespondsToZoneEnvironment.recoveringFromWateryConditions(obj, submergedCondition, interactionTime)
     if (percentage == 100f) {
@@ -1363,7 +1397,8 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
       import scala.concurrent.ExecutionContext.Implicits.global
       submergedCondition = Some(OxygenState.Recovery)
       interactionTime = System.currentTimeMillis() + time
-      interactionTimer = context.system.scheduler.scheduleOnce(delay = time milliseconds, self, RecoveredFromEnvironmentInteraction())
+      interactionTimer =
+        context.system.scheduler.scheduleOnce(delay = time milliseconds, self, RecoveredFromEnvironmentInteraction())
       //inform the player
       player.Zone.AvatarEvents ! AvatarServiceMessage(
         player.Name,
@@ -1385,13 +1420,14 @@ class PlayerControl(player: Player, avatarActor: typed.ActorRef[AvatarActor.Comm
 }
 
 object PlayerControl {
+
   /** na */
   final case class SetExoSuit(exosuit: ExoSuitType.Value, subtype: Int)
 
   /** na */
   final case class ObjectHeld(slot: Int, updateMyHolsterArm: Boolean)
   object ObjectHeld {
-    def apply(slot: Int): ObjectHeld = ObjectHeld(slot, updateMyHolsterArm=false)
+    def apply(slot: Int): ObjectHeld = ObjectHeld(slot, updateMyHolsterArm = false)
   }
 
   /**
@@ -1401,13 +1437,14 @@ object PlayerControl {
     * @param effect the aura effect
     * @return the attribute value for that effect
     */
-  private def auraEffectToAttributeValue(effect: Aura): Int = effect match {
-    case Aura.Plasma => 1
-    case Aura.Comet  => 2
-    case Aura.Napalm => 4
-    case Aura.Fire   => 8
-    case _           => 0
-  }
+  private def auraEffectToAttributeValue(effect: Aura): Int =
+    effect match {
+      case Aura.Plasma => 1
+      case Aura.Comet  => 2
+      case Aura.Napalm => 4
+      case Aura.Fire   => 8
+      case _           => 0
+    }
 
   def sendResponse(zone: Zone, channel: String, msg: PlanetSideGamePacket): Unit = {
     zone.AvatarEvents ! AvatarServiceMessage(channel, AvatarAction.SendResponse(Service.defaultPlayerGUID, msg))

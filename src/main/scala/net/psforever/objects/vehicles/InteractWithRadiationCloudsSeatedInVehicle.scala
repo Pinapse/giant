@@ -20,9 +20,10 @@ case object RadiationInVehicleInteraction extends ZoneInteractionType
   * Since the entity in question is a vehicle, the occupants of the vehicle get tested their interaction.
   */
 class InteractWithRadiationCloudsSeatedInVehicle(
-                                                  private val obj: Vehicle,
-                                                  val range: Float
-                                                ) extends ZoneInteraction {
+    private val obj: Vehicle,
+    val range: Float
+) extends ZoneInteraction {
+
   /**
     * radiation clouds that, though detected, are skipped from affecting the target;
     * in between interaction tests, a memory of the clouds that were tested last are retained and
@@ -41,31 +42,24 @@ class InteractWithRadiationCloudsSeatedInVehicle(
   override def interaction(sector: SectorPopulation, target: InteractsWithZone): Unit = {
     val position = target.Position
     //collect all projectiles in sector/range
-    val projectiles = sector
-      .projectileList
-      .filter { cloud =>
-        val definition = cloud.Definition
-        definition.radiation_cloud &&
-        definition.AllDamageTypes.contains(DamageType.Radiation) &&
-        {
-          val radius = definition.DamageRadius
-          Zone.distanceCheck(target, cloud, radius * radius)
-        }
+    val projectiles = sector.projectileList.filter { cloud =>
+      val definition = cloud.Definition
+      definition.radiation_cloud &&
+      definition.AllDamageTypes.contains(DamageType.Radiation) && {
+        val radius = definition.DamageRadius
+        Zone.distanceCheck(target, cloud, radius * radius)
       }
-      .distinct
+    }.distinct
     val notSkipped = projectiles.filterNot { t => skipTargets.contains(t.GUID) }
     skipTargets = notSkipped.map { _.GUID }
     if (notSkipped.nonEmpty) {
       (
         //isolate one of each type of projectile
         notSkipped
-          .foldLeft(Nil: List[Projectile]) {
-            (acc, next) => if (acc.exists { _.profile == next.profile }) acc else next :: acc
+          .foldLeft(Nil: List[Projectile]) { (acc, next) =>
+            if (acc.exists { _.profile == next.profile }) acc else next :: acc
           },
-        obj.Seats
-          .values
-          .collect { case seat => seat.occupant }
-          .flatten
+        obj.Seats.values.collect { case seat => seat.occupant }.flatten
       ) match {
         case (uniqueProjectiles, targets) if uniqueProjectiles.nonEmpty && targets.nonEmpty =>
           val shielding = obj.Definition.RadiationShielding
@@ -87,14 +81,13 @@ class InteractWithRadiationCloudsSeatedInVehicle(
         case _ => ;
       }
     }
-    obj.CargoHolds
-      .values
+    obj.CargoHolds.values
       .collect {
         case hold if hold.isOccupied =>
           val target = hold.occupant.get
           target.interaction().find { _.Type == RadiationInVehicleInteraction } match {
             case Some(func) => func.interaction(sector, target)
-            case _ => ;
+            case _          => ;
           }
       }
   }

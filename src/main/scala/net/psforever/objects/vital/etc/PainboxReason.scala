@@ -17,17 +17,19 @@ final case class PainboxReason(entity: Painbox) extends DamageReason {
 
   def resolution: DamageResolution.Value = DamageResolution.Resolved
 
-  def same(test: DamageReason): Boolean = test match {
-    case eer: PainboxReason         => eer.entity eq entity
-    case _                          => false
-  }
+  def same(test: DamageReason): Boolean =
+    test match {
+      case eer: PainboxReason => eer.entity eq entity
+      case _                  => false
+    }
 
   def adversary: Option[SourceEntry] = None
 
-  def damageModel : DamageAndResistance = PainboxReason.drm
+  def damageModel: DamageAndResistance = PainboxReason.drm
 }
 
 object PainboxReason {
+
   /** damage0, no resisting, quick and simple */
   val drm = new DamageResistanceModel {
     DamageUsing = DamageCalculations.AgainstExoSuit

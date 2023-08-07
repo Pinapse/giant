@@ -7,6 +7,7 @@ import net.psforever.types.Vector3
   * Calculation support for the geometric code.
   */
 object Geometry {
+
   /**
     * Are two `Float` numbers equal enough to be considered equal?
     * @param value1 the first value

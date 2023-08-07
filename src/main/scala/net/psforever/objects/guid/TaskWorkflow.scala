@@ -9,12 +9,16 @@ import scala.util.{Failure, Success}
   * Parts of the task resolution lifecycle.
   */
 sealed trait TaskBehaviors {
+
   /** What the task is supposed to accomplish. */
   def action(): Future[Any]
+
   /** A reversal of 'what the task is supposed to accomplish'. */
   def undo(): Unit
+
   /** Has the task been successfully completed? */
   def isSuccessful(): Boolean
+
   /** Describe this task's actions. */
   def description(): String = getClass.getSimpleName
 }
@@ -22,8 +26,8 @@ sealed trait TaskBehaviors {
 /**
   * A primary unit of work in a workflow.
   */
-trait Task
-  extends TaskBehaviors {
+trait Task extends TaskBehaviors {
+
   /** A careful determination if the task can be attempted.
     * @see `Task.action`
     */
@@ -34,6 +38,7 @@ trait Task
       Future(Failure(new TaskNotExecutedException(task = this)))
     }
   }
+
   /** A careful determination if the task needs to be undone.
     * @see `Task.undo`
     */
@@ -46,8 +51,7 @@ trait Task
   * A primary unit of work in a workflow that is set up to execute and never be taken back.
   * Good for top-level tasking that only reports on the success of work carried out by subtasks.
   */
-trait StraightforwardTask
-  extends Task {
+trait StraightforwardTask extends Task {
   def undo(): Unit = { /* blank */ }
 
   def isSuccessful(): Boolean = false /* always primed to be executed */
@@ -59,13 +63,13 @@ trait StraightforwardTask
   * @param mainTask the primary task
   * @param subTasks tasks that are necessary to complete before starting on the primary one
   */
-final case class TaskBundle(mainTask: Task, subTasks: Seq[TaskBundle])
-  extends TaskBehaviors {
+final case class TaskBundle(mainTask: Task, subTasks: Seq[TaskBundle]) extends TaskBehaviors {
+
   /** Attempt 'what the [primary] task is supposed to accomplish'. */
   def action(): Future[Any] = mainTask.performAction()
 
   /** Attempt a reversal of what the all the connected tasks are 'supposed to accomplish'. */
-  def undo() : Unit = {
+  def undo(): Unit = {
     mainTask.performUndo()
     subTasks.foreach { _.undo() }
   }
@@ -80,11 +84,13 @@ final case class TaskBundle(mainTask: Task, subTasks: Seq[TaskBundle])
 }
 
 object TaskBundle {
+
   /**
     * The packaging of a unit of work in a workflow.
     * @param task the task
     */
   def apply(task: Task): TaskBundle = TaskBundle(task, List())
+
   /**
     * The packaging of a unit of work in a workflow
     * and a single task required to be completed first.
@@ -92,6 +98,7 @@ object TaskBundle {
     * @param subTask the task that must be completed before the primary task
     */
   def apply(task: Task, subTask: Task): TaskBundle = TaskBundle(task, TaskBundle(subTask))
+
   /**
     * The packaging of a unit of work in a workflow
     * and the task(s) required to be completed first.
@@ -112,6 +119,7 @@ class TaskNotExecutedException(task: TaskBehaviors, msg: String) extends Excepti
 }
 
 object TaskWorkflow {
+
   /**
     * The entry into the task workflow resolution process.
     * @param taskTree the packaged tasks that need to be completed
@@ -122,7 +130,7 @@ object TaskWorkflow {
   }
 
   private def evaluateTaskAndSubs(task: TaskBundle): Future[Any] = {
-    val promise = Promise[Any]()
+    val promise              = Promise[Any]()
     val (result, subResults) = composeTaskAndSubs(task)
     result.onComplete { _ =>
       if (matchOnFutureFailure(result)) {
@@ -138,7 +146,7 @@ object TaskWorkflow {
   }
 
   private def composeTaskAndSubs(task: TaskBundle): (Future[Any], Seq[Future[Any]]) = {
-    val promise = Promise[Any]()
+    val promise      = Promise[Any]()
     val composedSubs = task.subTasks.map(evaluateTaskAndSubs)
     composedSubs match {
       case Nil =>
@@ -176,7 +184,7 @@ object TaskWorkflow {
     /*
     if 'matchOnFutureCompletion(FUTURE) == false' then 'matchOnFutureSuccess(FUTURE) == matchOnFutureFailure(FUTURE)'
     if 'matchOnFutureCompletion(FUTURE) == true'  then 'matchOnFutureSuccess(FUTURE) != matchOnFutureFailure(FUTURE)'
-    */
+     */
     f.value match {
       case Some(_) => true
       case None    => false

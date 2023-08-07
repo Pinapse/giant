@@ -593,7 +593,7 @@ class InventoryTest extends Specification {
     }
 
     "not insert (or register) complex item if no (more) GUID's are available" in {
-      val item = Tool(suppressor)
+      val item                            = Tool(suppressor)
       val obj: LocallyRegisteredInventory = new LocallyRegisteredInventory(List(15))
       obj.Resize(9, 6)
       obj.Size mustEqual 0

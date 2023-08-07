@@ -191,18 +191,19 @@ class GridInventory extends Container {
     } else {
       val collisions: mutable.Set[InventoryItem] = mutable.Set[InventoryItem]()
       items
-        .foreach { case (_, item: InventoryItem) =>
-          val actualItemStart: Int = item.start - offset
-          val itemx: Int           = actualItemStart % width
-          val itemy: Int           = actualItemStart / width
-          val tile                 = item.obj.Tile
-          val clipsOnX: Boolean = if (itemx < startx) { itemx + tile.Width > startx }
-          else { itemx <= startw }
-          val clipsOnY: Boolean = if (itemy < starty) { itemy + tile.Height > starty }
-          else { itemy <= starth }
-          if (clipsOnX && clipsOnY) {
-            collisions += item
-          }
+        .foreach {
+          case (_, item: InventoryItem) =>
+            val actualItemStart: Int = item.start - offset
+            val itemx: Int           = actualItemStart % width
+            val itemy: Int           = actualItemStart / width
+            val tile                 = item.obj.Tile
+            val clipsOnX: Boolean = if (itemx < startx) { itemx + tile.Width > startx }
+            else { itemx <= startw }
+            val clipsOnY: Boolean = if (itemy < starty) { itemy + tile.Height > starty }
+            else { itemy <= starth }
+            if (clipsOnX && clipsOnY) {
+              collisions += item
+            }
         }
       Success(collisions.toList)
     }

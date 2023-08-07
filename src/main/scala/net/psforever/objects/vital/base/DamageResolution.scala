@@ -17,8 +17,7 @@ package net.psforever.objects.vital.base
 object DamageResolution extends Enumeration {
   type Type = Value
 
-  val
-  Unresolved,           //original basic non-resolution
+  val Unresolved,       //original basic non-resolution
   Missed,               //did not interact with anything and was neutralized
   Resolved,             //a general "interacted with something" status, begging for a more specific resolution
   Hit,                  //direct hit, one target

@@ -73,16 +73,17 @@ class ChatService(context: ActorContext[ChatService.Command]) extends AbstractBe
         val subs = subscriptions.filter(_.channel == channel)
         message.messageType match {
           case mtype @ (CMT_TELL | CMT_GMTELL) =>
-            val playerName = session.player.Name
-            val playerNameLower = playerName.toLowerCase()
-            val recipientName = message.recipient
+            val playerName         = session.player.Name
+            val playerNameLower    = playerName.toLowerCase()
+            val recipientName      = message.recipient
             val recipientNameLower = recipientName.toLowerCase()
             (
               subs.find(_.session.player.Name.toLowerCase().equals(playerNameLower)),
               subs.find(_.session.player.Name.toLowerCase().equals(recipientNameLower))
             ) match {
               case (Some(JoinChannel(sender, _, _)), Some(JoinChannel(receiver, _, _))) =>
-                val replyType = if (mtype == CMT_TELL) { U_CMT_TELLFROM } else { U_CMT_GMTELLFROM }
+                val replyType = if (mtype == CMT_TELL) { U_CMT_TELLFROM }
+                else { U_CMT_GMTELLFROM }
                 sender ! MessageResponse(
                   session,
                   message.copy(messageType = replyType),
@@ -93,7 +94,8 @@ class ChatService(context: ActorContext[ChatService.Command]) extends AbstractBe
                 log.warn(s"ChatMsg->$mtype: can not find subscription object for: sender=$playerName")
                 receiver ! MessageResponse(session, message.copy(recipient = playerName), channel)
               case (Some(JoinChannel(sender, _, _)), None) =>
-                val replyType = if (mtype == CMT_TELL) { U_CMT_TELLFROM } else { U_CMT_GMTELLFROM }
+                val replyType = if (mtype == CMT_TELL) { U_CMT_TELLFROM }
+                else { U_CMT_GMTELLFROM }
                 sender ! MessageResponse(
                   session,
                   message.copy(messageType = replyType),

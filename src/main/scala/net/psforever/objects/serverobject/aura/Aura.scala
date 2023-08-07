@@ -13,6 +13,7 @@ sealed class Aura()
   * the lattice logic unit, or a facility module, or the rabbit ball.
   */
 object Aura {
+
   /** Since `None` is an actual effect, the "no effect" default is repurposed as "Nothing". */
   final case object Nothing extends Aura
 

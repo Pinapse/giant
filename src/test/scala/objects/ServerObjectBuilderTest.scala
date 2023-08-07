@@ -15,7 +15,7 @@ class BuildingBuilderTest extends FreedContextActorTest {
   "Building object" should {
     "build" in {
       val structure: (String, Int, Int, Zone, ActorContext) => Building = Building.Structure(StructureType.Building)
-      val building = FoundationBuilder(structure).Build("building", 10, 10, Zone.Nowhere)(context)
+      val building                                                      = FoundationBuilder(structure).Build("building", 10, 10, Zone.Nowhere)(context)
       assert(building ne null)
       assert(building.isInstanceOf[Building])
       assert(building.MapId == 10)
@@ -28,7 +28,7 @@ class WarpGateBuilderTest extends FreedContextActorTest {
   "WarpGate object" should {
     "build" in {
       val structure: (String, Int, Int, Zone, ActorContext) => Building = WarpGate.Structure
-      val building = FoundationBuilder(structure).Build("wgate", 10, 10, Zone.Nowhere)(context)
+      val building                                                      = FoundationBuilder(structure).Build("wgate", 10, 10, Zone.Nowhere)(context)
       assert(building ne null)
       assert(building.isInstanceOf[WarpGate])
       assert(building.MapId == 10)
@@ -71,11 +71,12 @@ class IFFLockObjectBuilderTest extends FreedContextActorTest {
   "IFFLock object" should {
     "build" in {
       val hub = ServerObjectBuilderTest.NumberPoolHub
-      val obj = ServerObjectBuilder(1, IFFLock.Constructor(Vector3(1f, 1f, 1f), Vector3(2f, 2f, 2f))).Build(context, hub)
+      val obj =
+        ServerObjectBuilder(1, IFFLock.Constructor(Vector3(1f, 1f, 1f), Vector3(2f, 2f, 2f))).Build(context, hub)
       assert(obj.isInstanceOf[IFFLock])
       assert(obj.HasGUID)
       assert(obj.GUID == PlanetSideGUID(1))
-      assert(obj.Position == Vector3(1,1,1))
+      assert(obj.Position == Vector3(1, 1, 1))
       assert(obj.Outwards == Vector3(0.034899496f, 0.99939084f, 0.0f))
       assert(obj == hub(1).get)
     }
@@ -104,7 +105,8 @@ class TerminalObjectBuilderTest extends FreedContextActorTest {
   "Terminal object" should {
     "build" in {
       val hub = ServerObjectBuilderTest.NumberPoolHub
-      val obj = ServerObjectBuilder(1, Terminal.Constructor(Vector3(1.1f, 2.2f, 3.3f), order_terminal)).Build(context, hub)
+      val obj =
+        ServerObjectBuilder(1, Terminal.Constructor(Vector3(1.1f, 2.2f, 3.3f), order_terminal)).Build(context, hub)
       assert(obj.isInstanceOf[Terminal])
       assert(obj.HasGUID)
       assert(obj.GUID == PlanetSideGUID(1))
@@ -134,9 +136,12 @@ class VehicleSpawnPadObjectBuilderTest extends FreedContextActorTest {
   "Vehicle spawn pad object" should {
     "build" in {
       val hub = ServerObjectBuilderTest.NumberPoolHub
-      val obj = ServerObjectBuilder(1,
+      val obj = ServerObjectBuilder(
+        1,
         VehicleSpawnPad.Constructor(
-          Vector3(1.1f, 2.2f, 3.3f), GlobalDefinitions.mb_pad_creation, Vector3(4.4f, 5.5f, 6.6f)
+          Vector3(1.1f, 2.2f, 3.3f),
+          GlobalDefinitions.mb_pad_creation,
+          Vector3(4.4f, 5.5f, 6.6f)
         )
       ).Build(context, hub)
       assert(obj.isInstanceOf[VehicleSpawnPad])
@@ -186,7 +191,7 @@ class ResourceSiloObjectBuilderTest extends FreedContextActorTest {
       assert(obj.isInstanceOf[ResourceSilo])
       assert(obj.HasGUID)
       assert(obj.GUID == PlanetSideGUID(1))
-      assert(obj.Position == Vector3(1,1,1))
+      assert(obj.Position == Vector3(1, 1, 1))
       assert(obj == hub(1).get)
     }
   }
@@ -232,7 +237,8 @@ class OrbitalShuttlePadObjectBuilderTest extends FreedContextActorTest {
   "OrbitalShuttlePadObjectBuilder" should {
     "build" in {
       val hub = ServerObjectBuilderTest.NumberPoolHub
-      val obj = ServerObjectBuilder(1, OrbitalShuttlePad.Constructor(Vector3.Zero, obbasemesh, Vector3.Zero)).Build(context, hub)
+      val obj = ServerObjectBuilder(1, OrbitalShuttlePad.Constructor(Vector3.Zero, obbasemesh, Vector3.Zero))
+        .Build(context, hub)
       assert(obj.isInstanceOf[OrbitalShuttlePad])
       assert(obj.HasGUID)
       assert(obj.GUID == PlanetSideGUID(1))

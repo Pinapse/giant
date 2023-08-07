@@ -17,7 +17,7 @@ class ResourceSilo extends Amenity with CommonNtuContainer {
   private var capacitorDisplay: Long = 0
   NtuCapacitor = Definition.MaxNtuCapacitor
 
-  def MaxNtuCapacitor : Float = Definition.MaxNtuCapacitor
+  def MaxNtuCapacitor: Float = Definition.MaxNtuCapacitor
 
   def LowNtuWarningOn: Boolean = lowNtuWarningOn
   def LowNtuWarningOn_=(enabled: Boolean): Boolean = {
@@ -25,10 +25,10 @@ class ResourceSilo extends Amenity with CommonNtuContainer {
     LowNtuWarningOn
   }
 
-  def CapacitorDisplay : Long = {
-    if(NtuCapacitor == 0) {
+  def CapacitorDisplay: Long = {
+    if (NtuCapacitor == 0) {
       0
-    } else if(NtuCapacitor <= 0.1f * MaxNtuCapacitor) {
+    } else if (NtuCapacitor <= 0.1f * MaxNtuCapacitor) {
       1
     } else {
       ((NtuCapacitor / MaxNtuCapacitor) * 10).toInt

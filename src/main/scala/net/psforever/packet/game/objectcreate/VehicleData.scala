@@ -90,6 +90,7 @@ final case class VehicleData(
 }
 
 object VehicleData extends Marshallable[VehicleData] {
+
   /**
     * Overloaded constructor for specifically handling `Normal` vehicle format.
     * @param basic a field that encompasses some data used by the vehicle, including `faction` and `owner`
@@ -219,16 +220,19 @@ object VehicleData extends Marshallable[VehicleData] {
     (
       ("pos" | PlacementData.codec) >>:~ { pos =>
         ("data" | CommonFieldData.codec2(false)) ::
-        ("unk3" | bool) ::
-        ("health" | uint8L) ::
-        ("unk4" | bool) :: //usually 0
-        ("no_mount_points" | bool) ::
-        ("driveState" | driveState8u) :: //used for deploy state
-        ("unk5" | bool) ::               //unknown but generally false; can cause stream misalignment if set when unexpectedly
-        ("unk6" | bool) ::
-        ("cloak" | bool) :: //cloak as wraith, phantasm
-        conditional(vehicle_type != VehicleFormat.Normal,"vehicle_format_data" | selectFormatReader(vehicle_type)) ::
-        optional(bool, target = "inventory" | MountableInventory.custom_inventory_codec(pos.vel.isDefined, vehicle_type))
+          ("unk3" | bool) ::
+          ("health" | uint8L) ::
+          ("unk4" | bool) :: //usually 0
+          ("no_mount_points" | bool) ::
+          ("driveState" | driveState8u) :: //used for deploy state
+          ("unk5" | bool) ::               //unknown but generally false; can cause stream misalignment if set when unexpectedly
+          ("unk6" | bool) ::
+          ("cloak" | bool) :: //cloak as wraith, phantasm
+          conditional(vehicle_type != VehicleFormat.Normal, "vehicle_format_data" | selectFormatReader(vehicle_type)) ::
+          optional(
+            bool,
+            target = "inventory" | MountableInventory.custom_inventory_codec(pos.vel.isDefined, vehicle_type)
+          )
       }
     ).exmap[VehicleData](
       {

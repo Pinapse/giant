@@ -6,13 +6,13 @@ import net.psforever.objects.vital.interaction.DamageInteraction
 
 object ProjectileDamageModifiers {
   trait Mod extends DamageModifiers.Mod {
-    def calculate(damage : Int, data : DamageInteraction, cause : DamageReason) : Int = {
+    def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
       cause match {
-        case o : ProjectileReason => calculate(damage, data, o)
-        case _ => damage
+        case o: ProjectileReason => calculate(damage, data, o)
+        case _                   => damage
       }
     }
 
-    def calculate(damage : Int, data : DamageInteraction, cause : ProjectileReason) : Int
+    def calculate(damage: Int, data: DamageInteraction, cause: ProjectileReason): Int
   }
 }

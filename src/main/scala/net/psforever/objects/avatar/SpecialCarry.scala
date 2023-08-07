@@ -13,10 +13,13 @@ object SpecialCarry extends StringEnum[SpecialCarry] {
 
   /** The lattice logic unit (LLU).  Not actually a flag. */
   case object CaptureFlag extends SpecialCarry(value = "CaptureFlag")
+
   /** Special enhancement modules generated in cavern facilities to be installed into above ground facilities. */
   case object VanuModule extends SpecialCarry(value = "VanuModule")
+
   /** Mysterious MacGuffins tied to the Bending. */
   case object MonolithUnit extends SpecialCarry(value = "MonolithUnit")
+
   /** Pyon~~ */
   case object RabbitBall extends SpecialCarry(value = "RabbitBall")
 }

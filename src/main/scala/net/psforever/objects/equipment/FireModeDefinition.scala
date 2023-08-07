@@ -24,7 +24,7 @@ class FireModeDefinition extends DamageModifiers {
   private var ammoSlotIndex: Int = 0
 
   /** how many rounds are replenished each reload cycle */
-  private var magazine: Int = 1
+  private var magazine: Int                = 1
   private var defaultMagazine: Option[Int] = None
 
   /** how many rounds are replenished each reload cycle, per type of ammunition loaded
@@ -119,8 +119,8 @@ class FireModeDefinition extends DamageModifiers {
   }
 }
 
-class PelletFireModeDefinition
-  extends FireModeDefinition {
+class PelletFireModeDefinition extends FireModeDefinition {
+
   /**
     * Shoot a weapon, remove an anticipated amount of ammunition.<br>
     * <br>
@@ -143,8 +143,7 @@ class PelletFireModeDefinition
   }
 }
 
-class InfiniteFireModeDefinition
-  extends FireModeDefinition {
+class InfiniteFireModeDefinition extends FireModeDefinition {
 
   /**
     * Shoot a weapon, remove an anticipated amount of ammunition.<br>
@@ -170,8 +169,11 @@ class InfiniteFireModeDefinition
   * @param time the duration until the charge is full (milliseconds)
   * @param drainInterval the curation between ticks of ammunition depletion after "full charge"
   */
-class ChargeFireModeDefinition(private val time: Long, private val drainInterval: Long, private val roundsPerInterval: Int = 1)
-  extends FireModeDefinition {
+class ChargeFireModeDefinition(
+    private val time: Long,
+    private val drainInterval: Long,
+    private val roundsPerInterval: Int = 1
+) extends FireModeDefinition {
   def Time: Long = time
 
   def DrainInterval: Long = drainInterval

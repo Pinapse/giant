@@ -35,7 +35,7 @@ trait SourceWithShieldsEntry extends SourceWithHealthEntry {
 }
 
 object SourceEntry {
-  final protected val nonUnique: SourceUniqueness = new SourceUniqueness() { }
+  final protected val nonUnique: SourceUniqueness = new SourceUniqueness() {}
 
   final val None = new SourceEntry() {
     def Name: String                                         = "none"

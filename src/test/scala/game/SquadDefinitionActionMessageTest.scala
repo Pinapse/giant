@@ -473,7 +473,8 @@ class SquadDefinitionActionMessageTest extends Specification {
   }
 
   "encode (33)" in {
-    val msg = SquadDefinitionActionMessage(PlanetSideGUID(3), 0, SquadAction.SquadListDecorator(SquadListDecoration.Available))
+    val msg =
+      SquadDefinitionActionMessage(PlanetSideGUID(3), 0, SquadAction.SquadListDecorator(SquadListDecoration.Available))
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string_33

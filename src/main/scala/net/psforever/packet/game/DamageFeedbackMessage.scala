@@ -66,11 +66,7 @@ final case class DamageFeedbackMessage(
 }
 
 object DamageFeedbackMessage extends Marshallable[DamageFeedbackMessage] {
-  def apply(unk1: Int,
-            unk2: PlanetSideGUID,
-            unk3: PlanetSideGUID,
-            unk4: Int,
-            unk5: Long): DamageFeedbackMessage =
+  def apply(unk1: Int, unk2: PlanetSideGUID, unk3: PlanetSideGUID, unk4: Int, unk5: Long): DamageFeedbackMessage =
     DamageFeedbackMessage(unk1, true, Some(unk2), None, None, true, Some(unk3), None, None, None, unk4, unk5, 0)
 
   implicit val codec: Codec[DamageFeedbackMessage] = (

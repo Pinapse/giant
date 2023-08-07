@@ -94,10 +94,10 @@ object SpawnPoint {
     ) * (3 * side).toFloat //x=sin, y=cos because compass-0 is East, not North
     (
       obj.Position + shift + (if (x >= 330) { //ams leaning to the left
-        Vector3.z(xsin)
-      } else { //ams leaning to the right
-        Vector3.z(-xsin)
-      }),
+                                Vector3.z(xsin)
+                              } else { //ams leaning to the right
+                                Vector3.z(-xsin)
+                              }),
       if (side == 1) {
         Vector3.z(zrot)
       } else {
@@ -150,7 +150,10 @@ object SpawnPoint {
     }
   }
 
-  def SmallGate(innerRadius: Float, flightlessZOffset: Float)(obj: SpawnPoint, target: PlanetSideGameObject): (Vector3, Vector3) = {
+  def SmallGate(
+      innerRadius: Float,
+      flightlessZOffset: Float
+  )(obj: SpawnPoint, target: PlanetSideGameObject): (Vector3, Vector3) = {
     val (a, b) = metaGate(obj, target, innerRadius)
     target match {
       case v: Vehicle if GlobalDefinitions.isFlightVehicle(v.Definition) =>

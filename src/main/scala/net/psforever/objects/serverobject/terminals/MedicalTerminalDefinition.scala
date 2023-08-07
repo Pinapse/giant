@@ -8,8 +8,7 @@ import net.psforever.objects.Player
   * This includes the functionality of the formal medical terminals and some of the cavern crystals.
   * Do not confuse the game's internal "medical_terminal" object category and the actual `medical_terminal` object (529).
   */
-class MedicalTerminalDefinition(objectId: Int)
-  extends ProximityTerminalDefinition(objectId) {
+class MedicalTerminalDefinition(objectId: Int) extends ProximityTerminalDefinition(objectId) {
   private var healAmount: Int  = 0
   private var armorAmount: Int = 0
 

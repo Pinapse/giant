@@ -9,10 +9,8 @@ import net.psforever.objects.serverobject.affinity.FactionAffinityBehavior
   * Actually does nothing lol
   * @param socket the socket entity being governed
   */
-class CaptureFlagSocketControl(socket: CaptureFlagSocket)
-  extends Actor
-  with FactionAffinityBehavior.Check {
-  def FactionObject      = socket
+class CaptureFlagSocketControl(socket: CaptureFlagSocket) extends Actor with FactionAffinityBehavior.Check {
+  def FactionObject = socket
 
   def receive: Receive = {
     case _ => ;

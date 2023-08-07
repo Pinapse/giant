@@ -7,11 +7,11 @@ import scodec.Codec
 import scodec.codecs._
 
 final case class DestroyMessage(
-                                 victim_guid: PlanetSideGUID,
-                                 killer_guid: PlanetSideGUID,
-                                 weapon_guid: PlanetSideGUID,
-                                 position: Vector3
-                               ) extends PlanetSideGamePacket {
+    victim_guid: PlanetSideGUID,
+    killer_guid: PlanetSideGUID,
+    weapon_guid: PlanetSideGUID,
+    position: Vector3
+) extends PlanetSideGamePacket {
   type Packet = DestroyMessage
   def opcode = GamePacketOpcode.DestroyMessage
   def encode = DestroyMessage.encode(this)
@@ -23,5 +23,5 @@ object DestroyMessage extends Marshallable[DestroyMessage] {
       ("killer_guid" | PlanetSideGUID.codec) ::
       ("weapon_guid" | PlanetSideGUID.codec) ::
       ("position" | Vector3.codec_pos)
-    ).as[DestroyMessage]
+  ).as[DestroyMessage]
 }

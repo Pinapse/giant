@@ -22,6 +22,7 @@ import net.psforever.objects.vehicles.AccessPermissionGroup
   * @param sdef the vehicle's definition entry
   */
 class OrbitalShuttle(sdef: VehicleDefinition) extends Vehicle(sdef) {
+
   /**
     * Either locate a place for a passenger to mount,
     * or designate a spontaneous mount point to handle a new passenger.
@@ -71,12 +72,11 @@ class OrbitalShuttle(sdef: VehicleDefinition) extends Vehicle(sdef) {
     * @param seatNumber the index of a mount point
     * @return `Passenger` permissions
     */
-  override def SeatPermissionGroup(seatNumber : Int) : Option[AccessPermissionGroup.Value] = {
+  override def SeatPermissionGroup(seatNumber: Int): Option[AccessPermissionGroup.Value] = {
     Seats.get(seatNumber) match {
       case Some(_) =>
         Some(AccessPermissionGroup.Passenger)
-      case None
-        if seats.size == seatNumber && Seats.values.exists { _.definition.occupancy > seats.size } =>
+      case None if seats.size == seatNumber && Seats.values.exists { _.definition.occupancy > seats.size } =>
         Some(AccessPermissionGroup.Passenger)
       case _ =>
         None

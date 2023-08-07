@@ -27,7 +27,8 @@ trait Damageable {
 
   /** the official mixin hook;
     * `orElse` onto the "control" `Actor` `receive`; or,
-    * cite the `originalTakesDamage` protocol during inheritance overrides */
+    * cite the `originalTakesDamage` protocol during inheritance overrides
+    */
   val takesDamage: Receive = {
     case Vitality.Damage(damage_func) =>
       val obj = DamageableObject
@@ -102,12 +103,12 @@ object Damageable {
   private def adversarialOrHackableChecks(obj: Vitality with FactionAffinity, data: DamageInteraction): Boolean = {
     (data.adversarial match {
       case Some(adversarial) => adversarial.attacker.Faction != adversarial.defender.Faction
-      case None                                  => true
+      case None              => true
     }) ||
-     (obj match {
-       case hobj: Hackable => hobj.HackedBy.nonEmpty
-       case _              => false
-     })
+    (obj match {
+      case hobj: Hackable => hobj.HackedBy.nonEmpty
+      case _              => false
+    })
   }
 
   /**

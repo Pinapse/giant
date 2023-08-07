@@ -31,11 +31,12 @@ trait DamageModifiers {
 
 object DamageModifiers {
   trait Mod {
+
     /** Perform the underlying calculations, returning a modified value from the input value. */
-    final def calculate(damage : Int, data : DamageInteraction) : Int = {
+    final def calculate(damage: Int, data: DamageInteraction): Int = {
       calculate(damage, data, data.cause)
     }
 
-    def calculate(damage : Int, data : DamageInteraction, cause : DamageReason) : Int
+    def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int
   }
 }

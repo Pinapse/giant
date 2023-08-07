@@ -17,13 +17,15 @@ import scala.concurrent.duration._
   * @see `PlayerControl`
   */
 trait AuraEffectBehavior {
-  _ : Actor =>
+  _: Actor =>
+
   /** active aura effects are monotonic, but the timer will be updated for continuing and cancelling effects as well<br>
     * only effects that are initialized to this mapping are approved for display on this target<br>
     * key - aura effect; value - the timer for that effect
     * @see `ApplicableEffect`
     */
-  private val effectToTimer: mutable.HashMap[Aura, AuraEffectBehavior.Entry] = mutable.HashMap.empty[Aura, AuraEffectBehavior.Entry]
+  private val effectToTimer: mutable.HashMap[Aura, AuraEffectBehavior.Entry] =
+    mutable.HashMap.empty[Aura, AuraEffectBehavior.Entry]
 
   def AuraTargetObject: AuraEffectBehavior.Target
 
@@ -56,9 +58,9 @@ trait AuraEffectBehavior {
     * @return the active effect index number
     */
   def StartAuraEffect(effect: Aura, duration: Long): Unit = {
-    val obj = AuraTargetObject
+    val obj               = AuraTargetObject
     val auraEffectsBefore = obj.Aura.size
-    if(StartAuraTimer(effect, duration) && obj.AddEffectToAura(effect).size > auraEffectsBefore) {
+    if (StartAuraTimer(effect, duration) && obj.AddEffectToAura(effect).size > auraEffectsBefore) {
       //new effect; update visuals
       UpdateAuraEffect(AuraTargetObject)
     }
@@ -115,10 +117,10 @@ trait AuraEffectBehavior {
   /**
     * Stop the target entity from emitting all aura particle effects.
     */
-  def EndAllEffects() : Unit = {
+  def EndAllEffects(): Unit = {
     effectToTimer.keysIterator.foreach { effect =>
       effectToTimer(effect).cancel()
-      //effectToTimer(effect) = Default.Cancellable
+    //effectToTimer(effect) = Default.Cancellable
     }
     val obj = AuraTargetObject
     obj.Aura.foreach { obj.RemoveEffectFromAura }
@@ -128,8 +130,8 @@ trait AuraEffectBehavior {
     * Stop the target entity from emitting the aura particle effect, if it currently is.
     * If the effect has been stopped, animate the new particle effect state.
     */
-  def EndAuraEffectAndUpdate(effect: Aura) : Unit = {
-    if(EndAuraEffect(effect)) {
+  def EndAuraEffectAndUpdate(effect: Aura): Unit = {
+    if (EndAuraEffect(effect)) {
       UpdateAuraEffect(AuraTargetObject)
     }
   }
@@ -138,7 +140,7 @@ trait AuraEffectBehavior {
     * Stop the target entity from emitting all aura particle effects.
     * Animate the new particle effect state.
     */
-  def EndAllEffectsAndUpdate() : Unit = {
+  def EndAllEffectsAndUpdate(): Unit = {
     EndAllEffects()
     UpdateAuraEffect(AuraTargetObject)
   }
@@ -151,7 +153,7 @@ trait AuraEffectBehavior {
     */
   def TestForEffect(effect: Aura): Boolean = {
     effectToTimer.get(effect) match {
-      case None => false
+      case None        => false
       case Some(timer) => timer.isCancelled
     }
   }
@@ -160,7 +162,7 @@ trait AuraEffectBehavior {
     * An override callback to display aura effects emitted.
     * @param target the entity from which the aura effects are being emitted
     */
-  def UpdateAuraEffect(target: AuraEffectBehavior.Target) : Unit
+  def UpdateAuraEffect(target: AuraEffectBehavior.Target): Unit
 }
 
 object AuraEffectBehavior {
@@ -169,7 +171,7 @@ object AuraEffectBehavior {
   case class Entry(duration: Long, timer: Cancellable) extends Cancellable {
     val start: Long = System.currentTimeMillis()
 
-    override def isCancelled : Boolean = timer.isCancelled
+    override def isCancelled: Boolean = timer.isCancelled
 
     override def cancel(): Boolean = timer.cancel()
   }

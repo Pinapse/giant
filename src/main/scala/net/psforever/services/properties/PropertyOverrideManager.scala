@@ -43,8 +43,8 @@ class PropertyOverrideManager extends Actor {
   private def ProcessGamePropertyScopes(): Unit = {
     val scopesBuffer: ListBuffer[GamePropertyScope] = ListBuffer()
     for (over <- overrides) {
-      val zoneId      = over._1
-      val overrideMap = over._2
+      val zoneId                                                                      = over._1
+      val overrideMap                                                                 = over._2
       val gamePropertyTargets: ListBuffer[PropertyOverrideMessage.GamePropertyTarget] = ListBuffer()
       for (propOverride <- overrideMap) {
         val objectId = ObjectClass.ByName(propOverride._1)
@@ -67,8 +67,8 @@ class PropertyOverrideManager extends Actor {
     for (line <- content) {
       val splitLine = line.split(" ")
       if (splitLine.length >= 3) {
-        val objectName = splitLine(1)
-        val property   = splitLine(2)
+        val objectName    = splitLine(1)
+        val property      = splitLine(2)
         var propertyValue = ""
         for (i <- 3 until splitLine.length) {
           propertyValue += splitLine(i) + " "

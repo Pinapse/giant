@@ -6,6 +6,7 @@ import net.psforever.objects.serverobject.shuttle.OrbitalShuttlePad
 import net.psforever.services.local.{LocalAction, LocalServiceMessage}
 
 object HartTimerActions {
+
   /**
     * Update the shuttle's mounted arrangement with the pad, setting the state.
     * @param pad the orbital shuttle pad
@@ -14,7 +15,7 @@ object HartTimerActions {
     */
   def ShuttleDocked(pad: OrbitalShuttlePad, shuttle: Vehicle, toChannel: String): Unit = {
     val zone = pad.Zone
-    if(toChannel.equals(zone.id)) {
+    if (toChannel.equals(zone.id)) {
       shuttle.MountedIn = pad.GUID
     }
     zone.LocalEvents ! LocalServiceMessage(
@@ -31,7 +32,7 @@ object HartTimerActions {
     */
   def ShuttleFreeFromDock(pad: OrbitalShuttlePad, shuttle: Vehicle, toChannel: String): Unit = {
     val zone = pad.Zone
-    if(toChannel.equals(zone.id)) {
+    if (toChannel.equals(zone.id)) {
       shuttle.MountedIn = None
     }
     zone.LocalEvents ! LocalServiceMessage(
@@ -48,7 +49,7 @@ object HartTimerActions {
     */
   def ShuttleStateUpdate(pad: OrbitalShuttlePad, shuttle: Vehicle, toChannel: String, state: Int): Unit = {
     val zone = pad.Zone
-    if(toChannel.equals(zone.id)) {
+    if (toChannel.equals(zone.id)) {
       shuttle.Flying = state
     }
     zone.LocalEvents ! LocalServiceMessage(

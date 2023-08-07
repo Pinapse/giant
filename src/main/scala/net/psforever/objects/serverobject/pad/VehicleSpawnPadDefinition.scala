@@ -18,7 +18,7 @@ class VehicleSpawnPadDefinition(objectId: Int) extends AmenityDefinition(objectI
   // However, it seems these values need to be reversed to turn CCW to CW rotation (e.g. +90 to -90)
   private var vehicle_creation_z_orient_offset = 0f
 
-  def VehicleCreationZOffset: Float = vehicle_creation_z_offset
+  def VehicleCreationZOffset: Float       = vehicle_creation_z_offset
   def VehicleCreationZOrientOffset: Float = vehicle_creation_z_orient_offset
 
   def VehicleCreationZOffset_=(offset: Float): Float = {
@@ -32,12 +32,14 @@ class VehicleSpawnPadDefinition(objectId: Int) extends AmenityDefinition(objectI
 
   /** The region surrounding a vehicle spawn pad that is cleared of damageable targets prior to a vehicle being spawned.
     * I mean to say that, if it can die, that target will die.
-    * @see `net.psforever.objects.serverobject.pad.process.VehicleSpawnControlRailJack` */
-  var killBox: (VehicleSpawnPad, Boolean)=>(PlanetSideGameObject, PlanetSideGameObject, Float)=> Boolean =
+    * @see `net.psforever.objects.serverobject.pad.process.VehicleSpawnControlRailJack`
+    */
+  var killBox: (VehicleSpawnPad, Boolean) => (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean =
     VehicleSpawnPadDefinition.prepareKillBox(forwardLimit = 0, backLimit = 0, sideLimit = 0, aboveLimit = 0)
 }
 
 object VehicleSpawnPadDefinition {
+
   /**
     * A function that sets up the region around a vehicle spawn pad
     * to be cleared of damageable targets upon spawning of a vehicle.
@@ -53,17 +55,16 @@ object VehicleSpawnPadDefinition {
     * @return a function that describes a region around the vehicle spawn pad
     */
   def prepareKillBox(
-                      forwardLimit: Float,
-                      backLimit: Float,
-                      sideLimit: Float,
-                      aboveLimit: Float
-                    )
-                    (
-                      pad: VehicleSpawnPad,
-                      flightVehicle: Boolean
-                    ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
-    val forward = Vector3(0,1,0).Rz(pad.Orientation.z + pad.Definition.VehicleCreationZOrientOffset)
-    val side = Vector3.CrossProduct(forward, Vector3(0,0,1))
+      forwardLimit: Float,
+      backLimit: Float,
+      sideLimit: Float,
+      aboveLimit: Float
+  )(
+      pad: VehicleSpawnPad,
+      flightVehicle: Boolean
+  ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
+    val forward = Vector3(0, 1, 0).Rz(pad.Orientation.z + pad.Definition.VehicleCreationZOrientOffset)
+    val side    = Vector3.CrossProduct(forward, Vector3(0, 0, 1))
     vehicleSpawnKillBox(
       forward,
       side,
@@ -71,7 +72,7 @@ object VehicleSpawnPadDefinition {
       if (flightVehicle) backLimit else forwardLimit,
       backLimit,
       sideLimit,
-      if (flightVehicle) aboveLimit * 2 else aboveLimit,
+      if (flightVehicle) aboveLimit * 2 else aboveLimit
     )
   }
 
@@ -95,34 +96,31 @@ object VehicleSpawnPadDefinition {
     *        `false`, otherwise
     */
   protected def vehicleSpawnKillBox(
-                                     forward: Vector3,
-                                     side: Vector3,
-                                     origin: Vector3,
-                                     forwardLimit: Float,
-                                     backLimit: Float,
-                                     sideLimit: Float,
-                                     aboveLimit: Float
-                                   )
-                                   (
-                                     obj1: PlanetSideGameObject,
-                                     obj2: PlanetSideGameObject,
-                                     maxDistance: Float
-                                   ): Boolean = {
+      forward: Vector3,
+      side: Vector3,
+      origin: Vector3,
+      forwardLimit: Float,
+      backLimit: Float,
+      sideLimit: Float,
+      aboveLimit: Float
+  )(
+      obj1: PlanetSideGameObject,
+      obj2: PlanetSideGameObject,
+      maxDistance: Float
+  ): Boolean = {
     val dir: Vector3 = {
-      val g2 = obj2.Definition.Geometry(obj2)
-      val cdir = Vector3.Unit(origin - g2.center.asVector3)
+      val g2    = obj2.Definition.Geometry(obj2)
+      val cdir  = Vector3.Unit(origin - g2.center.asVector3)
       val point = g2.pointOnOutside(cdir).asVector3
       point - origin
     }
     val originZ = origin.z
-    val obj2Z = obj2.Position.z
-    originZ - 1 <= obj2Z && originZ + aboveLimit > obj2Z &&
-    {
+    val obj2Z   = obj2.Position.z
+    originZ - 1 <= obj2Z && originZ + aboveLimit > obj2Z && {
       val calculatedForwardDistance = Vector3.ScalarProjection(dir, forward)
       if (calculatedForwardDistance >= 0) {
         calculatedForwardDistance < forwardLimit
-      }
-      else {
+      } else {
         -calculatedForwardDistance < backLimit
       }
     } &&
@@ -141,13 +139,12 @@ object VehicleSpawnPadDefinition {
     * @return a function that describes a region around the vehicle spawn pad
     */
   def prepareVanuKillBox(
-                          radius: Float,
-                          aboveLimit: Float
-                        )
-                        (
-                          pad: VehicleSpawnPad,
-                          flightVehicle: Boolean
-                        ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
+      radius: Float,
+      aboveLimit: Float
+  )(
+      pad: VehicleSpawnPad,
+      flightVehicle: Boolean
+  ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
     if (flightVehicle) {
       cylinderKillBox(pad.Position, radius, aboveLimit * 2)
     } else {
@@ -168,15 +165,14 @@ object VehicleSpawnPadDefinition {
     * @return a function that describes a region ahead of the battleframe vehicle spawn shed
     */
   def prepareBfrShedKillBox(
-                             radius: Float,
-                             aboveLimit: Float
-                           )
-                           (
-                             pad: VehicleSpawnPad,
-                             requiredButUnused: Boolean
-                           ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
+      radius: Float,
+      aboveLimit: Float
+  )(
+      pad: VehicleSpawnPad,
+      requiredButUnused: Boolean
+  ): (PlanetSideGameObject, PlanetSideGameObject, Float) => Boolean = {
     cylinderKillBox(
-      Vector3(0,radius,0).Rz(pad.Orientation.z + pad.Definition.VehicleCreationZOrientOffset) + pad.Position,
+      Vector3(0, radius, 0).Rz(pad.Orientation.z + pad.Definition.VehicleCreationZOrientOffset) + pad.Position,
       radius,
       aboveLimit
     )
@@ -198,23 +194,22 @@ object VehicleSpawnPadDefinition {
     *        `false`, otherwise
     */
   def cylinderKillBox(
-                       origin: Vector3,
-                       radius: Float,
-                       aboveLimit: Float
-                     )
-                     (
-                       obj1: PlanetSideGameObject,
-                       obj2: PlanetSideGameObject,
-                       maxDistance: Float
-                     ): Boolean = {
+      origin: Vector3,
+      radius: Float,
+      aboveLimit: Float
+  )(
+      obj1: PlanetSideGameObject,
+      obj2: PlanetSideGameObject,
+      maxDistance: Float
+  ): Boolean = {
     val dir: Vector3 = {
-      val g2 = obj2.Definition.Geometry(obj2)
-      val cdir = Vector3.Unit(origin - g2.center.asVector3)
+      val g2    = obj2.Definition.Geometry(obj2)
+      val cdir  = Vector3.Unit(origin - g2.center.asVector3)
       val point = g2.pointOnOutside(cdir).asVector3
       point - origin
     }
     val originZ = origin.z
-    val obj2Z = obj2.Position.z
+    val obj2Z   = obj2.Position.z
     originZ - 1 <= obj2Z && originZ + aboveLimit > obj2Z &&
     Vector3.MagnitudeSquared(dir.xy) < radius * radius
   }

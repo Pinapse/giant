@@ -6,8 +6,7 @@ import net.psforever.objects.Player
 /**
   * na
   */
-class WeaponRechargeTerminalDefinition(objectId: Int)
-  extends ProximityTerminalDefinition(objectId) {
+class WeaponRechargeTerminalDefinition(objectId: Int) extends ProximityTerminalDefinition(objectId) {
   private var ammoAmount: Int = 1
 
   def AmmoAmount: Int = ammoAmount

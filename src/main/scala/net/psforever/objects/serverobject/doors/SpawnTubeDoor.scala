@@ -6,6 +6,7 @@ import akka.actor.ActorContext
 import net.psforever.types.Vector3
 
 object SpawnTubeDoor {
+
   /**
     * Instantiate and configure a `Door` object that is to later be paired with a `SpawnTube` entity.
     * @param pos the position of the door

@@ -10,12 +10,13 @@ class ToolDefinition(objectId: Int) extends EquipmentDefinition(objectId) {
   private val ammoTypes: mutable.ListBuffer[AmmoBoxDefinition]          = new mutable.ListBuffer[AmmoBoxDefinition]
   private val projectileTypes: mutable.ListBuffer[ProjectileDefinition] = new mutable.ListBuffer[ProjectileDefinition]
   private val fireModes: mutable.ListBuffer[FireModeDefinition]         = new mutable.ListBuffer[FireModeDefinition]
+
   /**
     * the multiplier value at which the base repair amount of an ammunition operates;
     * by default, it always has a single "no repair" multiplier
     */
-  private val repairMultipliers: mutable.ListBuffer[Float]              = new mutable.ListBuffer[Float].addOne(0f)
-  private var defaultFireModeIndex: Option[Int]                         = None
+  private val repairMultipliers: mutable.ListBuffer[Float] = new mutable.ListBuffer[Float].addOne(0f)
+  private var defaultFireModeIndex: Option[Int]            = None
   Name = "tool"
   Packet = ToolDefinition.converter
   registerAs = "tools"
@@ -40,7 +41,7 @@ class ToolDefinition(objectId: Int) extends EquipmentDefinition(objectId) {
 
   def AddRepairMultiplier(level: Int, value: Float): Seq[Float] = {
     if (level > 0) {
-      while(repairMultipliers.size <= level) {
+      while (repairMultipliers.size <= level) {
         repairMultipliers.addOne(0f)
       }
       repairMultipliers.update(level, value)

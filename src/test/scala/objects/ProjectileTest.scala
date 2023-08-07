@@ -14,8 +14,10 @@ import net.psforever.types.{PlanetSideGUID, _}
 import org.specs2.mutable.Specification
 
 class ProjectileTest extends Specification {
-  val player: Player = Player(Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute))
-  val fury: Vehicle  = Vehicle(GlobalDefinitions.fury)
+  val player: Player = Player(
+    Avatar(0, "TestCharacter", PlanetSideEmpire.TR, CharacterSex.Male, 0, CharacterVoice.Mute)
+  )
+  val fury: Vehicle = Vehicle(GlobalDefinitions.fury)
 
   "Range" should {
     "local projectile range" in {

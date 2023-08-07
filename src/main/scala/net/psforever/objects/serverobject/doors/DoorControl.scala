@@ -14,30 +14,29 @@ import net.psforever.services.local.{LocalAction, LocalResponse, LocalServiceMes
   * An `Actor` that handles messages being dispatched to a specific `Door`.
   * @param door the `Door` object being governed
   */
-class DoorControl(door: Door)
-  extends PoweredAmenityControl
-  with FactionAffinityBehavior.Check {
+class DoorControl(door: Door) extends PoweredAmenityControl with FactionAffinityBehavior.Check {
   def FactionObject: FactionAffinity = door
 
-  private var isLocked: Boolean = false
+  private var isLocked: Boolean                            = false
   private var lockingMechanism: Door.LockingMechanismLogic = DoorControl.alwaysOpen
 
-  def commonBehavior: Receive = checkBehavior
-    .orElse {
-      case Door.Lock =>
-        isLocked = true
-        if (door.isOpen) {
-          val zone = door.Zone
-          door.Open = None
-          zone.LocalEvents ! LocalServiceMessage(zone.id, LocalAction.DoorSlamsShut(door))
-        }
+  def commonBehavior: Receive =
+    checkBehavior
+      .orElse {
+        case Door.Lock =>
+          isLocked = true
+          if (door.isOpen) {
+            val zone = door.Zone
+            door.Open = None
+            zone.LocalEvents ! LocalServiceMessage(zone.id, LocalAction.DoorSlamsShut(door))
+          }
 
-      case Door.Unlock =>
-        isLocked = false
+        case Door.Unlock =>
+          isLocked = false
 
-      case Door.UpdateMechanism(logic) =>
-        lockingMechanism = logic
-    }
+        case Door.UpdateMechanism(logic) =>
+          lockingMechanism = logic
+      }
 
   def poweredStateLogic: Receive =
     commonBehavior
@@ -66,32 +65,32 @@ class DoorControl(door: Door)
   }
 
   /**
-   * If the player is close enough to the door,
-   * the locking mechanism allows for the door to open,
-   * and the door is not bolted shut (locked),
-   * then tell the door that it should open.
-   * @param player player who is standing somewhere
-   * @param door door that is installed somewhere
-   * @param maximumDistance permissible square distance between the player and the door
-   * @param replyTo the player's session message reference
-   */
+    * If the player is close enough to the door,
+    * the locking mechanism allows for the door to open,
+    * and the door is not bolted shut (locked),
+    * then tell the door that it should open.
+    * @param player player who is standing somewhere
+    * @param door door that is installed somewhere
+    * @param maximumDistance permissible square distance between the player and the door
+    * @param replyTo the player's session message reference
+    */
   private def testToOpenDoor(
-                              player: Player,
-                              door: Door,
-                              maximumDistance: Float,
-                              replyTo: ActorRef
-                            ): Unit = {
+      player: Player,
+      door: Door,
+      maximumDistance: Float,
+      replyTo: ActorRef
+  ): Unit = {
     if (
-        Doors.testForSpecificTargetHoldingDoorOpen(player, door, maximumDistance * maximumDistance).contains(player) &&
-          lockingMechanism(player, door) && !isLocked
+      Doors.testForSpecificTargetHoldingDoorOpen(player, door, maximumDistance * maximumDistance).contains(player) &&
+      lockingMechanism(player, door) && !isLocked
     ) {
       DoorControl.openDoor(player, door, replyTo)
     }
   }
 
-  override def powerTurnOffCallback() : Unit = { }
+  override def powerTurnOffCallback(): Unit = {}
 
-  override def powerTurnOnCallback() : Unit = { }
+  override def powerTurnOnCallback(): Unit = {}
 }
 
 object DoorControl {
@@ -99,14 +98,14 @@ object DoorControl {
   def alwaysOpen(obj: PlanetSideServerObject, door: Door): Boolean = true
 
   /**
-   * If the door is not open, open this door, propped open by the given player.
-   * If the door is considered open, ensure the door is proper visible as open to the player.
-   * @param player the player
-   * @param door the door
-   * @param replyTo the player's session message reference
-   */
+    * If the door is not open, open this door, propped open by the given player.
+    * If the door is considered open, ensure the door is proper visible as open to the player.
+    * @param player the player
+    * @param door the door
+    * @param replyTo the player's session message reference
+    */
   private def openDoor(player: Player, door: Door, replyTo: ActorRef = Default.Actor): Unit = {
-    val zone = door.Zone
+    val zone     = door.Zone
     val doorGUID = door.GUID
     if (!door.isOpen) {
       //global open

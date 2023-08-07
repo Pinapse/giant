@@ -20,15 +20,16 @@ import scodec.codecs._
   *            consistently 3
   */
 final case class DroppodLaunchRequestMessage(
-                                              info: DroppodLaunchInfo,
-                                              unk: Int
-                                            ) extends PlanetSideGamePacket {
+    info: DroppodLaunchInfo,
+    unk: Int
+) extends PlanetSideGamePacket {
   type Packet = DroppodLaunchRequestMessage
   def opcode = GamePacketOpcode.DroppodLaunchRequestMessage
   def encode = DroppodLaunchRequestMessage.encode(this)
 }
 
 object DroppodLaunchRequestMessage extends Marshallable[DroppodLaunchRequestMessage] {
+
   /**
     * Overloaded constructor that ignores the last field.
     * Existing fields match `DroppodLaunchInfo`.
@@ -42,6 +43,6 @@ object DroppodLaunchRequestMessage extends Marshallable[DroppodLaunchRequestMess
 
   implicit val codec: Codec[DroppodLaunchRequestMessage] = (
     DroppodLaunchInfo.codec ::
-    ("unk" | uint2)
-    ).as[DroppodLaunchRequestMessage]
+      ("unk" | uint2)
+  ).as[DroppodLaunchRequestMessage]
 }

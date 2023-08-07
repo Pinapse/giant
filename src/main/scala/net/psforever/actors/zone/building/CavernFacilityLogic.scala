@@ -6,7 +6,11 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import net.psforever.actors.commands.NtuCommand
 import net.psforever.actors.zone.{BuildingActor, BuildingControlDetails}
 import net.psforever.objects.serverobject.structures.{Amenity, Building}
-import net.psforever.objects.serverobject.terminals.capture.{CaptureTerminal, CaptureTerminalAware, CaptureTerminalAwareBehavior}
+import net.psforever.objects.serverobject.terminals.capture.{
+  CaptureTerminal,
+  CaptureTerminalAware,
+  CaptureTerminalAwareBehavior
+}
 import net.psforever.services.galaxy.{GalaxyAction, GalaxyServiceMessage}
 import net.psforever.services.local.{LocalAction, LocalServiceMessage}
 import net.psforever.types.{PlanetSideEmpire, PlanetSideGUID}
@@ -14,15 +18,14 @@ import net.psforever.types.{PlanetSideEmpire, PlanetSideGUID}
 /**
   * The logic that governs facilities and structures found in the cavern regions.
   */
-case object CavernFacilityLogic
-  extends BuildingLogic {
+case object CavernFacilityLogic extends BuildingLogic {
   import BuildingActor.Command
 
   override def wrapper(
-                        building: Building,
-                        context: ActorContext[BuildingActor.Command],
-                        details: BuildingControlDetails
-                      ): BuildingWrapper = {
+      building: Building,
+      context: ActorContext[BuildingActor.Command],
+      details: BuildingControlDetails
+  ): BuildingWrapper = {
     FacilityWrapper(building, context, details.galaxyService, details.interstellarCluster)
   }
 
@@ -43,16 +46,21 @@ case object CavernFacilityLogic
         data match {
           case Some(isResecured: Boolean) =>
             //pass hack information to amenities
-            building.Amenities.filter(x => x.isInstanceOf[CaptureTerminalAware]).foreach(amenity => {
-              amenity.Actor ! CaptureTerminalAwareBehavior.TerminalStatusChanged(terminal, isResecured)
-            })
+            building.Amenities
+              .filter(x => x.isInstanceOf[CaptureTerminalAware])
+              .foreach(amenity => {
+                amenity.Actor ! CaptureTerminalAwareBehavior.TerminalStatusChanged(terminal, isResecured)
+              })
           case _ =>
             log(details).warn("CaptureTerminal AmenityStateChange was received with no attached data.")
         }
         // When a CC is hacked (or resecured) all currently hacked amenities for the base should return to their default unhacked state
         building.HackableAmenities.foreach(amenity => {
           if (amenity.HackedBy.isDefined) {
-            building.Zone.LocalEvents ! LocalServiceMessage(amenity.Zone.id,LocalAction.ClearTemporaryHack(PlanetSideGUID(0), amenity))
+            building.Zone.LocalEvents ! LocalServiceMessage(
+              amenity.Zone.id,
+              LocalAction.ClearTemporaryHack(PlanetSideGUID(0), amenity)
+            )
           }
         })
       // No map update needed - will be sent by `HackCaptureActor` when required
@@ -79,9 +87,9 @@ case object CavernFacilityLogic
   }
 
   def setFactionTo(
-                    details: BuildingWrapper,
-                    faction: PlanetSideEmpire.Value
-                  ): Behavior[Command] = {
+      details: BuildingWrapper,
+      faction: PlanetSideEmpire.Value
+  ): Behavior[Command] = {
     BuildingActor.setFactionTo(details, faction, log)
     val building = details.building
     building.Neighbours.getOrElse(Nil).foreach { _.Actor ! BuildingActor.AlertToFactionChange(building) }

@@ -24,17 +24,18 @@ final case class VehiclePage(stock: Map[String, () => Vehicle], trunk: Map[Strin
     stock.get(msg.item_name) match {
       case Some(vehicle) =>
         val createdVehicle = vehicle()
-        if(!Exclude.exists(_.checkRule(player, msg, createdVehicle))) {
+        if (!Exclude.exists(_.checkRule(player, msg, createdVehicle))) {
           val (weapons, inventory) = trunk.get(msg.item_name) match {
             case Some(loadout: VehicleLoadout) =>
               (
                 loadout.visible_slots.map(entry => {
                   InventoryItem(EquipmentTerminalDefinition.BuildSimplifiedPattern(entry.item), entry.index)
                 }),
-                loadout.inventory.map(entry => {
-                  InventoryItem(EquipmentTerminalDefinition.BuildSimplifiedPattern(entry.item), entry.index)
-                })
-                  .filterNot( item => Exclude.exists(_.checkRule(player, msg, item.obj)))
+                loadout.inventory
+                  .map(entry => {
+                    InventoryItem(EquipmentTerminalDefinition.BuildSimplifiedPattern(entry.item), entry.index)
+                  })
+                  .filterNot(item => Exclude.exists(_.checkRule(player, msg, item.obj)))
               )
             case _ =>
               (List.empty, List.empty)

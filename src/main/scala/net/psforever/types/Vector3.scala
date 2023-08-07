@@ -376,10 +376,10 @@ object Vector3 {
   def PlanarRotateAroundPoint(point: Vector3, axis: Vector3, radians: Float): Vector3 = {
     val cos = math.cos(radians).toFloat
     val sin = math.sin(radians).toFloat
-    val dx = point.x - axis.x
-    val dy = point.y - axis.y
-    val x = cos * dx - sin * dy + axis.x
-    val y = sin * dx + cos * dy + axis.y
+    val dx  = point.x - axis.x
+    val dy  = point.y - axis.y
+    val x   = cos * dx - sin * dy + axis.x
+    val y   = sin * dx + cos * dy + axis.y
     Vector3(
       closeToInsignificance(x),
       closeToInsignificance(y),
@@ -406,7 +406,7 @@ object Vector3 {
     * @return a mathematical vector representing a relative "up" direction
     */
   def relativeUp(orient: Vector3): Vector3 = {
-    relativeUp(orient, Vector3(0,0,1)) //world up
+    relativeUp(orient, Vector3(0, 0, 1)) //world up
   }
 
   /**

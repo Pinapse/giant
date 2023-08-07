@@ -77,14 +77,15 @@ object Deployables {
     * @see `DeploymentAction`
     * @see `LocalAction.DeployableMapIcon`
     * @param target the deployable that is destroyed
-    **/
+    */
   def AnnounceDestroyDeployable(target: Deployable): Unit = {
-    val zone = target.Zone
+    val zone   = target.Zone
     val events = zone.LocalEvents
-    val item = target.Definition.Item
+    val item   = target.Definition.Item
     target.OwnerName
       .foreach { owner =>
-        zone.LivePlayers.find { p => owner.equals(p.Name) }
+        zone.LivePlayers
+          .find { p => owner.equals(p.Name) }
           .orElse(zone.Corpses.find { c => owner.equals(c.Name) })
           .foreach { p =>
             p.Actor ! Player.LoseDeployable(target)
@@ -152,17 +153,18 @@ object Deployables {
     *        `false`, otherwise
     */
   def initializeConstructionItem(
-                                  certs: Set[Certification],
-                                  obj: ConstructionItem
-                                ): Boolean = {
+      certs: Set[Certification],
+      obj: ConstructionItem
+  ): Boolean = {
     val initialFireModeIndex = obj.FireModeIndex
     if (!Deployables.constructionItemPermissionComparison(certs, obj.ModePermissions)) {
-      while (!Deployables.constructionItemPermissionComparison(certs, obj.ModePermissions) &&
-             !Deployables.performConstructionItemAmmoChange(certs, obj, obj.AmmoTypeIndex) &&
-             {
-               obj.NextFireMode
-               initialFireModeIndex != obj.FireModeIndex
-             }) {
+      while (
+        !Deployables.constructionItemPermissionComparison(certs, obj.ModePermissions) &&
+        !Deployables.performConstructionItemAmmoChange(certs, obj, obj.AmmoTypeIndex) && {
+          obj.NextFireMode
+          initialFireModeIndex != obj.FireModeIndex
+        }
+      ) {
         /* change in fire mode occurs in conditional */
       }
       Deployables.constructionItemPermissionComparison(certs, obj.ModePermissions)
@@ -188,15 +190,15 @@ object Deployables {
     *        `false`, otherwise
     */
   def performConstructionItemAmmoChange(
-                                         certs: Set[Certification],
-                                         obj: ConstructionItem,
-                                         originalAmmoIndex: Int
-                                       ): Boolean = {
+      certs: Set[Certification],
+      obj: ConstructionItem,
+      originalAmmoIndex: Int
+  ): Boolean = {
     do {
       obj.NextAmmoType
     } while (
       !Deployables.constructionItemPermissionComparison(certs, obj.ModePermissions) &&
-      originalAmmoIndex != obj.AmmoTypeIndex
+        originalAmmoIndex != obj.AmmoTypeIndex
     )
     obj.AmmoTypeIndex != originalAmmoIndex
   }
@@ -217,19 +219,19 @@ object Deployables {
     *        `false`, otherwise
     */
   def performConstructionItemFireModeChange(
-                                             certs: Set[Certification],
-                                             obj: ConstructionItem,
-                                             originalModeIndex: Int
-                                           ): Boolean = {
+      certs: Set[Certification],
+      obj: ConstructionItem,
+      originalModeIndex: Int
+  ): Boolean = {
     /*
     if any of the fire modes possess an initial option that is not valid for a given set of certifications,
     but a subsequent option is valid, the do...while loop has to be modified to traverse and compare each option
-    */
+     */
     do {
       obj.NextFireMode
     } while (
       !Deployables.constructionItemPermissionComparison(certs, obj.ModePermissions) &&
-      originalModeIndex != obj.FireModeIndex
+        originalModeIndex != obj.FireModeIndex
     )
     originalModeIndex != obj.FireModeIndex
   }
@@ -243,9 +245,9 @@ object Deployables {
     * @return `true`, if the desired certification requirements are met; `false`, otherwise
     */
   def constructionItemPermissionComparison(
-                                            sample: Set[Certification],
-                                            test: Set[Certification]
-                                          ): Boolean = {
+      sample: Set[Certification],
+      test: Set[Certification]
+  ): Boolean = {
     import Certification._
     val engineeringCerts: Set[Certification] = Set(AssaultEngineering, FortificationEngineering)
     val testDiff: Set[Certification]         = test diff (engineeringCerts ++ Set(AdvancedEngineering))

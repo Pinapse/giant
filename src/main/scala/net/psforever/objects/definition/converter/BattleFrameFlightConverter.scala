@@ -11,11 +11,15 @@ import scala.util.{Failure, Success, Try}
 
 class BattleFrameFlightConverter extends ObjectCreateConverter[Vehicle]() {
   override def DetailedConstructorData(obj: Vehicle): Try[BattleFrameRoboticsData] =
-    Failure(new Exception("BattleFrameFlightConverter should not be used to generate detailed BattleFrameRoboticsData (nothing should)"))
+    Failure(
+      new Exception(
+        "BattleFrameFlightConverter should not be used to generate detailed BattleFrameRoboticsData (nothing should)"
+      )
+    )
 
   override def ConstructorData(obj: Vehicle): Try[BattleFrameRoboticsData] = {
     val health = StatConverter.Health(obj.Health, obj.MaxHealth)
-    if(health > 0) { //active
+    if (health > 0) { //active
       Success(
         BattleFrameRoboticsData(
           PlacementData(obj.Position, obj.Orientation, obj.Velocity),
@@ -30,7 +34,7 @@ class BattleFrameFlightConverter extends ObjectCreateConverter[Vehicle]() {
             v5 = None,
             obj.Owner match {
               case Some(owner) => owner
-              case None => PlanetSideGUID(0)
+              case None        => PlanetSideGUID(0)
             }
           ),
           health,
@@ -46,8 +50,7 @@ class BattleFrameFlightConverter extends ObjectCreateConverter[Vehicle]() {
           Some(InventoryData(MakeDriverSeat(obj) ++ MakeUtilities(obj) ++ MakeMountings(obj)))
         )
       )
-    }
-    else { //destroyed
+    } else { //destroyed
       Success(
         BattleFrameRoboticsData(
           PlacementData(obj.Position, obj.Orientation),
@@ -60,7 +63,7 @@ class BattleFrameFlightConverter extends ObjectCreateConverter[Vehicle]() {
             jammered = false,
             v4 = None,
             v5 = None,
-            guid =  PlanetSideGUID(0)
+            guid = PlanetSideGUID(0)
           ),
           0,
           0,
@@ -79,7 +82,8 @@ class BattleFrameFlightConverter extends ObjectCreateConverter[Vehicle]() {
   }
 
   private def MakeDriverSeat(obj: Vehicle): List[InventoryItemData.InventoryItem] = {
-    val offset: Long = MountableInventory.InitialStreamLengthToSeatEntries(obj.Velocity.nonEmpty, VehicleFormat.BattleframeFlight)
+    val offset: Long =
+      MountableInventory.InitialStreamLengthToSeatEntries(obj.Velocity.nonEmpty, VehicleFormat.BattleframeFlight)
     obj.Seats(0).occupant match {
       case Some(player) =>
         List(InventoryItemData(ObjectClass.avatar, player.GUID, 0, SeatConverter.MakeSeat(player, offset)))

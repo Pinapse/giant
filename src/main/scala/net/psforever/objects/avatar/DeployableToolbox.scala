@@ -325,9 +325,10 @@ class DeployableToolbox {
     List((curr, dType.Current, max, dType.Max))
   }
 
-  def UpdateUI(): List[(Int, Int, Int, Int)] = DeployedItem.values.flatMap { value: DeployedItem.Value =>
-    UpdateUIElement(value)
-  }.toList
+  def UpdateUI(): List[(Int, Int, Int, Int)] =
+    DeployedItem.values.flatMap { value: DeployedItem.Value =>
+      UpdateUIElement(value)
+    }.toList
 
   def UpdateUI(entry: Certification): List[(Int, Int, Int, Int)] = {
     import Certification._

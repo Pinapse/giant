@@ -144,77 +144,126 @@ class OrbitalShuttleTimeMsgTest extends Specification {
   }
 
   "encode (1)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.Land, 4, 23669, 8000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 5),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 5),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 27)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.Land,
+      4,
+      23669,
+      8000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 5),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 5),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 27)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string1
   }
 
   "encode (2)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.PrepareForBoarding, 5, 8000, 8000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.PrepareForBoarding,
+      5,
+      8000,
+      8000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string2
   }
 
   "encode (3)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.State0, 5, 4294967295L, 8000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.State0,
+      5,
+      4294967295L,
+      8000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string3
   }
 
   "encode (4)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.State0, 0, 0, 60000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.State0,
+      0,
+      0,
+      60000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string4
   }
 
   "encode (5)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.PrepareForDeparture, 1, 224998, 8000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.PrepareForDeparture,
+      1,
+      224998,
+      8000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string5
   }
 
   "encode (6)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.TakeOff, 2, 216998, 8000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 6),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 25),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 5)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.TakeOff,
+      2,
+      216998,
+      8000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 6),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 25),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 5)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string6
   }
 
   "encode (7)" in {
-    val msg = OrbitalShuttleTimeMsg(HartSequence.State7, 3, 203669, 8000, 0, List(
-      PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
-      PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
-      PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
-    ))
+    val msg = OrbitalShuttleTimeMsg(
+      HartSequence.State7,
+      3,
+      203669,
+      8000,
+      0,
+      List(
+        PadAndShuttlePair(PlanetSideGUID(788), PlanetSideGUID(1127), 20),
+        PadAndShuttlePair(PlanetSideGUID(787), PlanetSideGUID(1128), 20),
+        PadAndShuttlePair(PlanetSideGUID(786), PlanetSideGUID(1129), 20)
+      )
+    )
     val pkt = PacketCoding.encodePacket(msg).require.toByteVector
 
     pkt mustEqual string7

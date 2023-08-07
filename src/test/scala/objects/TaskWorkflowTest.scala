@@ -49,13 +49,15 @@ class AsyncTaskWorkflowTest extends AsyncFlatSpec {
   it should "append the strings in order of subtasks then main task, with the subtasks being in either order" in {
     val test: StringBuilder = new StringBuilder()
     assert(test.mkString.isEmpty)
-    val result = TaskWorkflow.execute(TaskBundle(
-      StringAppendTask(test, " world"),
-      Seq(
-        TaskBundle(StringAppendTask(test, " hello")),
-        TaskBundle(StringAppendTask(test, " or goodbye"))
+    val result = TaskWorkflow.execute(
+      TaskBundle(
+        StringAppendTask(test, " world"),
+        Seq(
+          TaskBundle(StringAppendTask(test, " hello")),
+          TaskBundle(StringAppendTask(test, " or goodbye"))
+        )
       )
-    ))
+    )
     result map { _ =>
       val output = test.mkString
       assert(
@@ -71,46 +73,57 @@ class AsyncTaskWorkflowTest extends AsyncFlatSpec {
     val result = TaskWorkflow.execute(TaskBundle(FailedStringAppendTask(test, " world")))
     result map { _ =>
       val output = test.mkString
-      assert(output.equals(""),"async result was written when should have not been written")
-      //see implementation of FailedStringAppendTask.undo
+      assert(output.equals(""), "async result was written when should have not been written")
+    //see implementation of FailedStringAppendTask.undo
     }
   }
 
   it should "if a middling subtask fails, its parent task will not be executed or undone, but its own subtask will be undone (1)" in {
     val test: StringBuilder = new StringBuilder()
     assert(test.mkString.isEmpty)
-    val result = TaskWorkflow.execute(TaskBundle(
-      StringAppendTask(test, " world"),
-      TaskBundle(FailedStringAppendTask(test, "hello"), StringAppendTask(test, " or goodbye")))
+    val result = TaskWorkflow.execute(
+      TaskBundle(
+        StringAppendTask(test, " world"),
+        TaskBundle(FailedStringAppendTask(test, "hello"), StringAppendTask(test, " or goodbye"))
+      )
     )
     result map { _ =>
       val output = test.mkString
-      assert(output.equals("[successful task undo]"),s"async result, formerly successful, was written as if it had failed - $output")
-      //see implementation of StringAppendTask.undo
+      assert(
+        output.equals("[successful task undo]"),
+        s"async result, formerly successful, was written as if it had failed - $output"
+      )
+    //see implementation of StringAppendTask.undo
     }
   }
 
   it should "if a middling subtask fails, its parent task will not be executed or undone, but its own subtasks will be undone (2)" in {
     val test: StringBuilder = new StringBuilder()
     assert(test.mkString.isEmpty)
-    val result = TaskWorkflow.execute(TaskBundle(
-      StringAppendTask(test, " world"),
-      TaskBundle(FailedStringAppendTask(test, "hello"), List(
-        TaskBundle(StringAppendTask(test, " or goodbye")),
-        TaskBundle(StringAppendTask(test, " or something"))
-      ))
-    ))
+    val result = TaskWorkflow.execute(
+      TaskBundle(
+        StringAppendTask(test, " world"),
+        TaskBundle(
+          FailedStringAppendTask(test, "hello"),
+          List(
+            TaskBundle(StringAppendTask(test, " or goodbye")),
+            TaskBundle(StringAppendTask(test, " or something"))
+          )
+        )
+      )
+    )
     result map { _ =>
       val output = test.mkString
       assert(
         output.equals("[successful task undo][successful task undo]"),
         s"async result, formerly successful, was written as if it had failed - $output"
       )
-      //see implementation of StringAppendTask.undo
+    //see implementation of StringAppendTask.undo
     }
   }
 }
 
 object TaskWorkflowTest {
+
   /** placeholder */
 }

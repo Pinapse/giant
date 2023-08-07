@@ -105,9 +105,9 @@ object TelepadLike {
     */
   def StartRouterInternalTelepad(zone: Zone, routerGUID: PlanetSideGUID, obj: InternalTelepad): Unit = {
     val utilityGUID = obj.GUID
-    val udef  = obj.Definition
-    val events = zone.LocalEvents
-    val zoneId = zone.id
+    val udef        = obj.Definition
+    val events      = zone.LocalEvents
+    val zoneId      = zone.id
     /*
     the following instantiation and configuration creates the internal Router component
     normally dispatched while the Router is transitioned into its Deploying state

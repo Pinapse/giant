@@ -5,9 +5,7 @@ import net.psforever.objects.serverobject.mount.MountableDefinition
 
 import scala.collection.mutable
 
-trait MountableWeaponsDefinition
-  extends MountedWeaponsDefinition
-  with MountableDefinition {
+trait MountableWeaponsDefinition extends MountedWeaponsDefinition with MountableDefinition {
   private val _controlledWeapons: mutable.HashMap[Int, Set[Int]] = mutable.HashMap[Int, Set[Int]]()
 
   def controlledWeapons(): Map[Int, Set[Int]] = _controlledWeapons.toMap

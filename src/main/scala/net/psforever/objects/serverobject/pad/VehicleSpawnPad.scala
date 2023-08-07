@@ -131,10 +131,9 @@ object VehicleSpawnPad {
     * An `Enumeration` of reasons for sending a periodic reminder to the user.
     */
   object Reminders extends Enumeration {
-    val
-    Queue, //optional data is the numeric position in the queue
-    Blocked, //optional data is a message regarding the blockage
-    Cancelled //optional data is the message
+    val Queue, //optional data is the numeric position in the queue
+    Blocked,   //optional data is a message regarding the blockage
+    Cancelled  //optional data is the message
     = Value
   }
 

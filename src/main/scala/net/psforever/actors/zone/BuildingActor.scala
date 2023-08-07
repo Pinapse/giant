@@ -19,9 +19,9 @@ import org.log4s.Logger
 import scala.util.{Failure, Success}
 
 final case class BuildingControlDetails(
-                                         galaxyService: classic.ActorRef = null,
-                                         interstellarCluster: ActorRef[InterstellarClusterService.Command] = null
-                                       )
+    galaxyService: classic.ActorRef = null,
+    interstellarCluster: ActorRef[InterstellarClusterService.Command] = null
+)
 
 object BuildingActor {
   def apply(zone: Zone, building: Building): Behavior[Command] =
@@ -60,7 +60,7 @@ object BuildingActor {
 
   final case class AmenityStateChange(obj: Amenity, data: Option[Any]) extends Command
 
-  object AmenityStateChange{
+  object AmenityStateChange {
     def apply(obj: Amenity): AmenityStateChange = AmenityStateChange(obj, None)
   }
 
@@ -81,10 +81,10 @@ object BuildingActor {
     * @param log wrapped-up log for customized debug information
     */
   def setFactionTo(
-                    details: BuildingWrapper,
-                    faction: PlanetSideEmpire.Value,
-                    log: BuildingWrapper => Logger
-                  ): Unit = {
+      details: BuildingWrapper,
+      faction: PlanetSideEmpire.Value,
+      log: BuildingWrapper => Logger
+  ): Unit = {
     setFactionInDatabase(details, faction, log)
     setFactionOnEntity(details, faction, log)
   }
@@ -97,12 +97,12 @@ object BuildingActor {
     * @param log wrapped-up log for customized debug information
     */
   def setFactionInDatabase(
-                            details: BuildingWrapper,
-                            faction: PlanetSideEmpire.Value,
-                            log: BuildingWrapper => Logger
-                          ): Unit = {
+      details: BuildingWrapper,
+      faction: PlanetSideEmpire.Value,
+      log: BuildingWrapper => Logger
+  ): Unit = {
     val building = details.building
-    val zone = building.Zone
+    val zone     = building.Zone
     import ctx._
     import scala.concurrent.ExecutionContext.Implicits.global
     ctx
@@ -131,9 +131,9 @@ object BuildingActor {
                 .run(
                   query[persistence.Building]
                     .insert(
-                      _.localId -> lift(building.MapId),
+                      _.localId   -> lift(building.MapId),
                       _.factionId -> lift(faction.id),
-                      _.zoneId -> lift(zone.Number)
+                      _.zoneId    -> lift(zone.Number)
                     )
                 )
                 .onComplete {
@@ -153,12 +153,12 @@ object BuildingActor {
     * @param log wrapped-up log for customized debug information
     */
   def setFactionOnEntity(
-                          details: BuildingWrapper,
-                          faction: PlanetSideEmpire.Value,
-                          log: BuildingWrapper => Logger
-                        ): Unit = {
+      details: BuildingWrapper,
+      faction: PlanetSideEmpire.Value,
+      log: BuildingWrapper => Logger
+  ): Unit = {
     val building = details.building
-    val zone = building.Zone
+    val zone     = building.Zone
     building.Faction = faction
     zone.actor ! ZoneActor.ZoneMapUpdate() // Update entire lattice to show lattice benefits
     zone.LocalEvents ! LocalServiceMessage(zone.id, LocalAction.SetEmpire(building.GUID, faction))
@@ -189,7 +189,7 @@ class BuildingActor(
   def setup(details: BuildingControlDetails): Behavior[Command] = {
     Behaviors.receiveMessage {
       case ReceptionistListing(InterstellarClusterService.InterstellarClusterServiceKey.Listing(listings))
-        if listings.isEmpty =>
+          if listings.isEmpty =>
         Behaviors.same
 
       case ReceptionistListing(InterstellarClusterService.InterstellarClusterServiceKey.Listing(listings)) =>

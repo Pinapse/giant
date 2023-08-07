@@ -9,9 +9,9 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 class ScoreCard() {
-  private var curr: Life = Life()
-  private var lives: Seq[Life] = Seq()
-  private val killStatistics: mutable.HashMap[Int, Statistic] = mutable.HashMap[Int, Statistic]()
+  private var curr: Life                                        = Life()
+  private var lives: Seq[Life]                                  = Seq()
+  private val killStatistics: mutable.HashMap[Int, Statistic]   = mutable.HashMap[Int, Statistic]()
   private val assistStatistics: mutable.HashMap[Int, Statistic] = mutable.HashMap[Int, Statistic]()
 
   def CurrentLife: Life = curr
@@ -51,39 +51,39 @@ object ScoreCard {
   }
 
   private def updateEquipmentStat(
-                                   curr: Life,
-                                   entry: EquipmentStat,
-                                   objectId: Int,
-                                   killCount: Int
-                                 ): Life = {
+      curr: Life,
+      entry: EquipmentStat,
+      objectId: Int,
+      killCount: Int
+  ): Life = {
     curr.equipmentStats.indexWhere { a => a.objectId == objectId } match {
       case -1 =>
         curr.copy(equipmentStats = entry +: curr.equipmentStats)
       case index =>
         val stats = curr.equipmentStats
-        val old = stats(index)
+        val old   = stats(index)
         curr.copy(
           equipmentStats = (stats.take(index) :+ old.copy(
             shotsFired = old.shotsFired + entry.shotsFired,
             shotsLanded = old.shotsLanded + entry.shotsLanded,
             kills = old.kills + killCount
-          )) ++ stats.drop(index+1)
+          )) ++ stats.drop(index + 1)
         )
     }
   }
 
   @tailrec
   private def updateStatisticsFor(
-                                   statisticMap: mutable.HashMap[Int, Statistic],
-                                   objectId: Int,
-                                   victimFaction: PlanetSideEmpire.Value
-                                 ): Statistic = {
+      statisticMap: mutable.HashMap[Int, Statistic],
+      objectId: Int,
+      victimFaction: PlanetSideEmpire.Value
+  ): Statistic = {
     statisticMap.get(objectId) match {
       case Some(fields) =>
         val outEntry = victimFaction match {
-          case PlanetSideEmpire.TR =>      fields.copy(tr_b = fields.tr_b + 1)
-          case PlanetSideEmpire.NC =>      fields.copy(nc_b = fields.nc_b + 1)
-          case PlanetSideEmpire.VS =>      fields.copy(vs_b = fields.vs_b + 1)
+          case PlanetSideEmpire.TR      => fields.copy(tr_b = fields.tr_b + 1)
+          case PlanetSideEmpire.NC      => fields.copy(nc_b = fields.nc_b + 1)
+          case PlanetSideEmpire.VS      => fields.copy(vs_b = fields.vs_b + 1)
           case PlanetSideEmpire.NEUTRAL => fields.copy(ps_b = fields.ps_b + 1)
         }
         outEntry
@@ -97,9 +97,9 @@ object ScoreCard {
   def weaponObjectIdMap(objectId: Int): Int = {
     objectId match {
       //aphelion
-      case  81 | 82  => 80
-      case  90 | 92  => 88
-      case  94 | 95  => 93
+      case 81 | 82   => 80
+      case 90 | 92   => 88
+      case 94 | 95   => 93
       case 102 | 104 => 100
       case 107 | 109 => 105
       //colossus

@@ -18,7 +18,9 @@ final case class LocalServiceResponse(
     channel: String,
     avatar_guid: PlanetSideGUID,
     replyMessage: LocalResponse.Response
-) extends GenericEventBusMsg
+) extends GenericEventBusMsg {
+  def inner = replyMessage
+}
 
 object LocalResponse {
   trait Response
@@ -29,23 +31,26 @@ object LocalResponse {
   final case class DoorOpens(door_guid: PlanetSideGUID)                                          extends Response
   final case class DoorCloses(door_guid: PlanetSideGUID)                                         extends Response
   final case class EliminateDeployable(
-                                        obj: Deployable,
-                                        object_guid: PlanetSideGUID,
-                                        pos: Vector3,
-                                        deletionEffect: Int
+      obj: Deployable,
+      object_guid: PlanetSideGUID,
+      pos: Vector3,
+      deletionEffect: Int
   )                                                                                                extends Response
   final case class SendHackMessageHackCleared(target_guid: PlanetSideGUID, unk1: Long, unk2: Long) extends Response
-  final case class HackObject(target_guid: PlanetSideGUID, unk1: Long, unk2: Long) extends Response
+  final case class HackObject(target_guid: PlanetSideGUID, unk1: Long, unk2: Long)                 extends Response
 
   final case class SendPacket(packet: PlanetSideGamePacket) extends Response
-  final case class PlanetsideAttribute(target_guid: PlanetSideGUID, attribute_number: PlanetsideAttributeEnum, attribute_value: Long)
-      extends Response
+  final case class PlanetsideAttribute(
+      target_guid: PlanetSideGUID,
+      attribute_number: PlanetsideAttributeEnum,
+      attribute_value: Long
+  ) extends Response
   final case class GenericObjectAction(target_guid: PlanetSideGUID, action_number: GenericObjectActionEnum)
-    extends Response
-  final case class ChatMessage(msg: ChatMsg) extends Response
+      extends Response
+  final case class ChatMessage(msg: ChatMsg)                       extends Response
   final case class GenericActionMessage(action_num: GenericAction) extends Response
 
-  final case class LluSpawned(llu: CaptureFlag) extends Response
+  final case class LluSpawned(llu: CaptureFlag)                          extends Response
   final case class LluDespawned(guid: PlanetSideGUID, position: Vector3) extends Response
 
   final case class ObjectDelete(item_guid: PlanetSideGUID, unk: Int) extends Response
@@ -57,21 +62,22 @@ object LocalResponse {
       passenger_guid: PlanetSideGUID,
       src_guid: PlanetSideGUID,
       dest_guid: PlanetSideGUID
-  )                                                                                       extends Response
-  final case class SendResponse(pkt: PlanetSideGamePacket)                                extends Response
-  final case class SetEmpire(object_guid: PlanetSideGUID, empire: PlanetSideEmpire.Value) extends Response
-  final case class ShuttleDock(pad_guid: PlanetSideGUID, shuttle_guid: PlanetSideGUID, toSlot: Int)   extends Response
+  )                                                                                                 extends Response
+  final case class SendResponse(pkt: PlanetSideGamePacket)                                          extends Response
+  final case class SetEmpire(object_guid: PlanetSideGUID, empire: PlanetSideEmpire.Value)           extends Response
+  final case class ShuttleDock(pad_guid: PlanetSideGUID, shuttle_guid: PlanetSideGUID, toSlot: Int) extends Response
   final case class ShuttleUndock(
       pad_guid: PlanetSideGUID,
       shuttle_guid: PlanetSideGUID,
-      pos: Vector3, orient: Vector3
-  ) extends Response
+      pos: Vector3,
+      orient: Vector3
+  )                                                                                                   extends Response
   final case class ShuttleEvent(ev: OrbitalShuttleEvent)                                              extends Response
   final case class ShuttleState(guid: PlanetSideGUID, pos: Vector3, orientation: Vector3, state: Int) extends Response
   final case class StartRouterInternalTelepad(
-    router_guid: PlanetSideGUID,
-    obj_guid: PlanetSideGUID,
-    obj: Utility.InternalTelepad
+      router_guid: PlanetSideGUID,
+      obj_guid: PlanetSideGUID,
+      obj: Utility.InternalTelepad
   ) extends Response
   final case class ToggleTeleportSystem(
       router: Vehicle,

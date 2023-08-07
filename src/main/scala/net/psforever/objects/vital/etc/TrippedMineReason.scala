@@ -14,29 +14,29 @@ import net.psforever.objects.vital.resolution.DamageAndResistance
   * @param mine na
   * @param owner na
   */
-final case class TrippedMineReason(mine: DeployableSource, owner: SourceEntry)
-  extends DamageReason {
+final case class TrippedMineReason(mine: DeployableSource, owner: SourceEntry) extends DamageReason {
 
   def source: DamageProperties = mine.Definition.innateDamage.getOrElse(TrippedMineReason.triggered)
 
   def resolution: DamageResolution.Value = DamageResolution.Resolved
 
-  def same(test: DamageReason): Boolean = test match {
-    case trip: TrippedMineReason => mine == trip.mine && mine.OwnerName == trip.mine.OwnerName
-    case _                      => false
-  }
+  def same(test: DamageReason): Boolean =
+    test match {
+      case trip: TrippedMineReason => mine == trip.mine && mine.OwnerName == trip.mine.OwnerName
+      case _                       => false
+    }
 
   /** lay the blame on the player who laid this mine, if possible */
   def adversary: Option[SourceEntry] = Some(owner)
 
-  override def damageModel : DamageAndResistance = mine.Definition
+  override def damageModel: DamageAndResistance = mine.Definition
 
   override def attribution: Int = mine.Definition.ObjectId
 }
 
 object TrippedMineReason {
   private val triggered = new DamageProperties {
-    Damage0 = 1 //token damage
+    Damage0 = 1                 //token damage
     SympatheticExplosion = true //sets off mine
   }
 }

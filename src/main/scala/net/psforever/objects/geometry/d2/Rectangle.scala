@@ -13,8 +13,7 @@ import net.psforever.objects.geometry.{AxisAlignment, AxisAlignment2D}
   * @param inPlane the axis plan that the geometry occupies;
   *                for example, an XY-axis rectangle is Z-up
   */
-final case class Rectangle(top: Float, right: Float, base: Float, left: Float, inPlane: AxisAlignment2D)
-  extends Flat {
+final case class Rectangle(top: Float, right: Float, base: Float, left: Float, inPlane: AxisAlignment2D) extends Flat {
   assert(right > left, s"right needs to be greater than left - $right > $left")
   assert(top > base, s"top needs to be greater than base - $top > $base")
 
@@ -23,7 +22,7 @@ final case class Rectangle(top: Float, right: Float, base: Float, left: Float, i
   def moveCenter(point: geometry.Point): Rectangle = {
     point match {
       case p: Point if inPlane == p.inPlane =>
-        val halfWidth = (right - left) * 0.5f
+        val halfWidth  = (right - left) * 0.5f
         val halfHeight = (top - base) * 0.5f
         Rectangle(p.b + halfHeight, p.a + halfWidth, p.b - halfHeight, p.a - halfWidth, inPlane)
       case _ =>
@@ -33,6 +32,7 @@ final case class Rectangle(top: Float, right: Float, base: Float, left: Float, i
 }
 
 object Rectangle {
+
   /**
     * Overloaded constructor for a `Rectangle` in the XY-plane.
     * @param top the highest "vertical" coordinate

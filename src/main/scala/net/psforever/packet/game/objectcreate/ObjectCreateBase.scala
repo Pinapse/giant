@@ -157,7 +157,7 @@ object ObjectCreateBase {
     */
   private val parent: Codec[parentPattern] = (
     ("parentGuid" | PlanetSideGUID.codec) ::                //16u
-      ("objectClass" | uintL(0xb)) ::                 //11u
+      ("objectClass" | uintL(0xb)) ::                       //11u
       ("guid" | PlanetSideGUID.codec) ::                    //16u
       ("parentSlotIndex" | PacketHelpers.encodedStringSize) //8u or 16u
   ).exmap[parentPattern](

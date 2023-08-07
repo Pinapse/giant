@@ -18,6 +18,7 @@ trait Geometry3D extends geometry.PrimitiveGeometry {
 trait VolumetricGeometry extends Geometry3D {
 
   def moveCenter(point: geometry.Point): VolumetricGeometry
+
   /**
     * Find a point on the exterior of the geometry if a line was drawn outwards from the centroid.
     * What counts as "the exterior" is limited to the complexity of the geometry.

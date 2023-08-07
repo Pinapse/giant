@@ -42,12 +42,12 @@ class ImplantTerminalMechControl(mech: ImplantTerminalMech)
       .orElse(canBeRepairedByNanoDispenser)
       .orElse(autoRepairBehavior)
 
-  def poweredStateLogic : Receive =
+  def poweredStateLogic: Receive =
     commonBehavior
       .orElse(mountBehavior)
       .orElse {
         case CommonMessages.Use(player, Some(item: SimpleItem))
-          if item.Definition == GlobalDefinitions.remote_electronics_kit =>
+            if item.Definition == GlobalDefinitions.remote_electronics_kit =>
           //TODO setup certifications check
           mech.Owner match {
             case b: Building if (b.Faction != player.Faction || b.CaptureTerminalIsHacked) && mech.HackedBy.isEmpty =>
@@ -68,10 +68,10 @@ class ImplantTerminalMechControl(mech: ImplantTerminalMech)
       }
 
   override protected def mountTest(
-                                    obj: PlanetSideServerObject with Mountable,
-                                    seatNumber: Int,
-                                    player: Player
-                                  ): Boolean = {
+      obj: PlanetSideServerObject with Mountable,
+      seatNumber: Int,
+      player: Player
+  ): Boolean = {
     val zone = obj.Zone
     zone.map.terminalToInterface.get(obj.GUID.guid) match {
       case Some(interface_guid) =>
@@ -90,7 +90,7 @@ class ImplantTerminalMechControl(mech: ImplantTerminalMech)
     super.DamageAwareness(target, cause, amount)
     val damageTo = amount match {
       case a: Int => a
-      case _ => 0
+      case _      => 0
     }
     DamageableMountable.DamageAwareness(DamageableObject, cause, damageTo)
   }
@@ -100,23 +100,23 @@ class ImplantTerminalMechControl(mech: ImplantTerminalMech)
     DamageableMountable.DestructionAwareness(DamageableObject, cause)
   }
 
-  override def PerformRepairs(target : Damageable.Target, amount : Int) : Int = {
+  override def PerformRepairs(target: Damageable.Target, amount: Int): Int = {
     val newHealth = super.PerformRepairs(target, amount)
-    if(newHealth == target.Definition.MaxHealth) {
+    if (newHealth == target.Definition.MaxHealth) {
       stopAutoRepair()
     }
     newHealth
   }
 
-  override def tryAutoRepair() : Boolean = {
+  override def tryAutoRepair(): Boolean = {
     isPowered && super.tryAutoRepair()
   }
 
   def powerTurnOffCallback(): Unit = {
     stopAutoRepair()
     //kick all occupants
-    val guid = mech.GUID
-    val zone = mech.Zone
+    val guid   = mech.GUID
+    val zone   = mech.Zone
     val zoneId = zone.id
     val events = zone.VehicleEvents
     mech.Seats.values.foreach(seat =>

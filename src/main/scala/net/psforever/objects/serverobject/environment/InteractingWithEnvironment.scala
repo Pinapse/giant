@@ -12,10 +12,10 @@ import net.psforever.types.{OxygenState, PlanetSideGUID}
   * @param progress the percentage of completion towards the state
   */
 final case class OxygenStateTarget(
-                                    guid: PlanetSideGUID,
-                                    state: OxygenState,
-                                    progress: Float
-                                  )
+    guid: PlanetSideGUID,
+    state: OxygenState,
+    progress: Float
+)
 
 /**
   * The target has clipped into a critical region of a piece of environment.
@@ -25,10 +25,10 @@ final case class OxygenStateTarget(
   *                       (specifically, if the target is a `Player` who is mounted in a `Vehicle`)
   */
 final case class InteractingWithEnvironment(
-                                             obj: PlanetSideServerObject,
-                                             environment: PieceOfEnvironment,
-                                             mountedVehicle: Option[OxygenStateTarget]
-                                           )
+    obj: PlanetSideServerObject,
+    environment: PieceOfEnvironment,
+    mountedVehicle: Option[OxygenStateTarget]
+)
 
 /**
   * The target has ceased to clip into a critical region of a piece of environment.
@@ -38,10 +38,10 @@ final case class InteractingWithEnvironment(
   *                       (specifically, if the target is a `Player` who is mounted in a `Vehicle`)
   */
 final case class EscapeFromEnvironment(
-                                        obj: PlanetSideServerObject,
-                                        environment: PieceOfEnvironment,
-                                        mountedVehicle: Option[OxygenStateTarget]
-                                      )
+    obj: PlanetSideServerObject,
+    environment: PieceOfEnvironment,
+    mountedVehicle: Option[OxygenStateTarget]
+)
 
 /**
   * Completely reset any internal actions or processes related to environment clipping.

@@ -14,12 +14,14 @@ sealed trait AwardOption {
   def value: Long
   def completion: Long
 }
+
 /**
   * Display this award's development progress.
   * @param value the current count towards this award
   * @param completion the target (maximum) count
   */
 final case class AwardProgress(value: Long, completion: Long) extends AwardOption
+
 /**
   * Display this award's qualification progress.
   * The process is the penultimate conditions necessary for award completion,
@@ -29,15 +31,18 @@ final case class AwardProgress(value: Long, completion: Long) extends AwardOptio
   * @param value the current count towards this award
   */
 final case class AwardQualificationProgress(value: Long) extends AwardOption {
+
   /** zero'd as the value is not reported here */
   def completion: Long = 0L
 }
+
 /**
   * Display this award as completed.
   * @param value the date (mm/dd/yyyy) that the award was achieved in POSIX seconds;
   *              that's `System.currentTimeMillis() / 1000`
   */
 final case class AwardCompletion(value: Long) extends AwardOption {
+
   /** same as the parameter value */
   def completion: Long = value
 }
@@ -66,18 +71,17 @@ final case class AwardCompletion(value: Long) extends AwardOption {
   *            0 is the common value
   */
 final case class AvatarAwardMessage(
-                                     merit_commendation: MeritCommendation.Value,
-                                     state: AwardOption,
-                                     unk: Int
-                                   )
-  extends PlanetSideGamePacket {
+    merit_commendation: MeritCommendation.Value,
+    state: AwardOption,
+    unk: Int
+) extends PlanetSideGamePacket {
   type Packet = AvatarAwardMessage
   def opcode = GamePacketOpcode.AvatarAwardMessage
   def encode = AvatarAwardMessage.encode(this)
 }
 
 object AvatarAwardMessage extends Marshallable[AvatarAwardMessage] {
-  def apply(meritCommendation: MeritCommendation.Value, state: AwardOption):AvatarAwardMessage =
+  def apply(meritCommendation: MeritCommendation.Value, state: AwardOption): AvatarAwardMessage =
     AvatarAwardMessage(meritCommendation, state, unk = 0)
 
   private val qualification_codec: Codec[AwardOption] = {
@@ -115,28 +119,29 @@ object AvatarAwardMessage extends Marshallable[AvatarAwardMessage] {
 
   implicit val codec: Codec[AvatarAwardMessage] = (
     ("merit_commendation" | MeritCommendation.codec) ::
-    ("state" | either(bool,
-      either(bool, progress_codec, qualification_codec).xmap[AwardOption](
+      ("state" | either(
+        bool,
+        either(bool, progress_codec, qualification_codec).xmap[AwardOption](
+          {
+            case Left(d)  => d
+            case Right(d) => d
+          },
+          {
+            case d: AwardProgress => Left(d)
+            case d: AwardOption   => Right(d)
+          }
+        ),
+        completion_codec
+      ).xmap[AwardOption](
         {
           case Left(d)  => d
           case Right(d) => d
         },
         {
-          case d: AwardProgress => Left(d)
-          case d: AwardOption   => Right(d)
+          case d: AwardCompletion => Right(d)
+          case d: AwardOption     => Left(d)
         }
-      ),
-      completion_codec
-    ).xmap[AwardOption](
-      {
-        case Left(d)  => d
-        case Right(d) => d
-      },
-      {
-        case d: AwardCompletion => Right(d)
-        case d: AwardOption     => Left(d)
-      }
-    )) ::
-    ("unk" | uint8L)
+      )) ::
+      ("unk" | uint8L)
   ).as[AvatarAwardMessage]
 }

@@ -11,55 +11,74 @@ import net.psforever.objects.vital.prop.DamageWithPosition
   * `Tool` objects emit `ProjectileDefinition` objects and that is later wrapped into a `Projectile` object.
   * @param objectId the object's identifier number
   */
-class ProjectileDefinition(objectId: Int)
-  extends ObjectDefinition(objectId)
-    with DamageWithPosition {
+class ProjectileDefinition(objectId: Int) extends ObjectDefinition(objectId) with DamageWithPosition {
+
   /** ascertain that this object is a valid projectile type */
-  private val projectileType: Projectiles.Types.Value     = Projectiles.Types(objectId) //let throw NoSuchElementException
+  private val projectileType: Projectiles.Types.Value = Projectiles.Types(objectId) //let throw NoSuchElementException
   /** how much faster (or slower) the projectile moves (m/s^2^) */
-  private var acceleration: Int                     = 0
+  private var acceleration: Int = 0
+
   /** when the acceleration stops being applied (s) */
-  private var accelerationUntil: Float              = 0f
+  private var accelerationUntil: Float = 0f
+
   /** number of seconds before an airborne projectile's damage begins to degrade (s) */
-  private var degradeDelay: Float                   = 1f
+  private var degradeDelay: Float = 1f
+
   /** the rate of degrade of projectile damage after the degrade delay */
-  private var degradeMultiplier: Float              = 1f
+  private var degradeMultiplier: Float = 1f
+
   /** the out-of-the-muzzle speed of a projectile (m/s) */
-  private var initialVelocity: Int                  = 1
+  private var initialVelocity: Int = 1
+
   /** for how long the projectile exists (s) */
-  private var lifespan: Float                       = 1f
+  private var lifespan: Float = 1f
+
   /** for lashing damage, how far away a target will be affected by the projectile (m) */
-  private var lashRadius : Float                    = 0f
+  private var lashRadius: Float = 0f
+
   /** the projectile is represented by a server-side entity
     * that is updated by the projectile owner
     * and transmitted to all projectile observers;
-    * `true` spawns a server-managed object */
-  private var existsOnRemoteClients: Boolean        = false
+    * `true` spawns a server-managed object
+    */
+  private var existsOnRemoteClients: Boolean = false
+
   /** the values used by the `ObjectCreateMessage` packet for construction of the server-managed projectile
     * `0, 0` are artificial values;
-    * the oicw_little_buddy is undefined for these values */
+    * the oicw_little_buddy is undefined for these values
+    */
   private var remoteClientData: (Int, Int) = (0, 0)
+
   /** this projectile follows its target, after a fashion */
-  private var autoLock: Boolean         = false
+  private var autoLock: Boolean = false
+
   /** the projectile tries to confer the jammered status effect to its target(s) */
   private var jammerProjectile: Boolean = false
+
   /** projectile takes the form of a type of "grenade";
-    * grenades arc with gravity rather than travel in a relatively straight path */
+    * grenades arc with gravity rather than travel in a relatively straight path
+    */
   private var grenade_projectile: Boolean = false
+
   /** radiation clouds create independent damage-dealing areas in a zone that last for the projectile's lifespan */
   var radiation_cloud: Boolean = false
   //derived calculations
   /** the calculated distance at which the projectile have traveled far enough to despawn (m);
     * typically handled as the projectile no longer performing damage;
-    * occasionally, this value is purely mathematical as opposed to realistic, e.g., the melee weapons */
-  private var distanceMax: Float              = 0f
+    * occasionally, this value is purely mathematical as opposed to realistic, e.g., the melee weapons
+    */
+  private var distanceMax: Float = 0f
+
   /** how far the projectile will travel while accelerating (m) */
   private var distanceFromAcceleration: Float = 0f
+
   /** how far the projectile will travel while not degrading (m);
-    * this field is not to be used in the place of minimum radial damage */
-  private var distanceNoDegrade: Float        = 0f
+    * this field is not to be used in the place of minimum radial damage
+    */
+  private var distanceNoDegrade: Float = 0f
+
   /** after acceleration, if any, what is the final speed of the projectile (m/s) */
-  private var finalVelocity: Float            = 0f
+  private var finalVelocity: Float = 0f
   Name = "projectile"
   Modifiers = DistanceDegrade
   registerAs = "projectiles"
@@ -94,7 +113,7 @@ class ProjectileDefinition(objectId: Int)
     ProjectileDamageTypeSecondary
   }
 
-  def ProjectileDamageTypes : Set[DamageType.Value] = AllDamageTypes
+  def ProjectileDamageTypes: Set[DamageType.Value] = AllDamageTypes
 
   def DegradeDelay: Float = degradeDelay
 
@@ -159,14 +178,14 @@ class ProjectileDefinition(objectId: Int)
     JammerProjectile
   }
 
-  def GrenadeProjectile : Boolean = grenade_projectile
+  def GrenadeProjectile: Boolean = grenade_projectile
 
-  def GrenadeProjectile_=(isGrenade : Boolean) : Boolean = {
+  def GrenadeProjectile_=(isGrenade: Boolean): Boolean = {
     grenade_projectile = isGrenade
     GrenadeProjectile
   }
 
-  def DistanceMax : Float = distanceMax //accessor only
+  def DistanceMax: Float = distanceMax //accessor only
 
   def DistanceFromAcceleration: Float = distanceFromAcceleration //accessor only
 

@@ -7,11 +7,12 @@ import scodec.codecs._
 import shapeless.{::, HNil}
 
 final case class LittleBuddyProjectileData(
-                                            data: CommonFieldDataWithPlacement,
-                                            u2: Int,
-                                            u4: Boolean
-                                          ) extends ConstructorData {
+    data: CommonFieldDataWithPlacement,
+    u2: Int,
+    u4: Boolean
+) extends ConstructorData {
   assert(data.pos.vel.nonEmpty, "oicw little buddy object always requires velocity to be defined")
+
   /**
     * The length of the little buddy data is functionally `32u`
     * after all other fields are accounted for
@@ -27,7 +28,7 @@ object LittleBuddyProjectileData extends Marshallable[LittleBuddyProjectileData]
       ("unk2" | uint24L) ::
       uint(bits = 7) ::
       ("unk4" | bool)
-    ).exmap[LittleBuddyProjectileData](
+  ).exmap[LittleBuddyProjectileData](
     {
       case data :: u2 :: _ :: u4 :: HNil =>
         Attempt.successful(LittleBuddyProjectileData(data, u2, u4))

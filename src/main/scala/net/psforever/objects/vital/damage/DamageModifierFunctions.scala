@@ -33,8 +33,7 @@ case object RadialDegrade extends DamageModifiers.Mod {
 final case class GalaxyGunshipReduction(multiplier: Float) extends DamageModifiers.Mod {
   def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
     data.target match {
-      case v: VehicleSource
-        if v.Definition == GlobalDefinitions.galaxy_gunship && v.Shields == 0 =>
+      case v: VehicleSource if v.Definition == GlobalDefinitions.galaxy_gunship && v.Shields == 0 =>
         (damage * multiplier).toInt
       case _ =>
         damage
@@ -43,6 +42,7 @@ final case class GalaxyGunshipReduction(multiplier: Float) extends DamageModifie
 }
 
 object DamageModifierFunctions {
+
   /**
     * The input value degrades (lessens)
     * the further the distance between the point of origin (target position)

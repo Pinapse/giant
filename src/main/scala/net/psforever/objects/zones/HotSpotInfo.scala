@@ -142,10 +142,10 @@ class ActivityReport {
   }
 
   /**
-   * Submit new activity, increasing the lifespan of the current report's existence.
-   * @see `Renew`
-   * @return the current report
-   */
+    * Submit new activity, increasing the lifespan of the current report's existence.
+    * @see `Renew`
+    * @return the current report
+    */
   def Report(pow: Int, duration: FiniteDuration): ActivityReport = {
     RaiseHeat(pow)
     Duration = duration

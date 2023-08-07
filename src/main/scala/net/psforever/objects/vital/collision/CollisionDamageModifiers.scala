@@ -5,6 +5,7 @@ import net.psforever.objects.vital.base._
 import net.psforever.objects.vital.interaction.DamageInteraction
 
 object CollisionDamageModifiers {
+
   /**
     * For modifiers that should be used with `CollisionReason`.
     */
@@ -12,7 +13,7 @@ object CollisionDamageModifiers {
     def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
       cause match {
         case o: CollisionReason => calculate(damage, data, o)
-        case _ => damage
+        case _                  => damage
       }
     }
 
@@ -21,6 +22,7 @@ object CollisionDamageModifiers {
 }
 
 object CollisionWithDamageModifiers {
+
   /**
     * or modifiers that should be used with `CollisionWithReason`.
     */
@@ -28,7 +30,7 @@ object CollisionWithDamageModifiers {
     def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
       cause match {
         case o: CollisionWithReason => calculate(damage, data, o)
-        case _ => damage
+        case _                      => damage
       }
     }
 

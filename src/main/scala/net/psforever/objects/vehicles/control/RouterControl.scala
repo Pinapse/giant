@@ -13,8 +13,7 @@ import net.psforever.types.DriveState
   * may synchronize with the vehicle to establish a short to medium range infantry teleportation system.
   * @param vehicle the router
   */
-class RouterControl(vehicle: Vehicle)
-  extends DeployingVehicleControl(vehicle) {
+class RouterControl(vehicle: Vehicle) extends DeployingVehicleControl(vehicle) {
 
   /**
     * React to a deployment state change.

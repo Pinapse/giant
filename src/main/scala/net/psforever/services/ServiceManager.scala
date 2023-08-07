@@ -32,8 +32,8 @@ class ServiceManager extends Actor {
   import ServiceManager._
   private[this] val log = org.log4s.getLogger
 
-  var nextLookupId: Long                     = 0
-  val lookups: mutable.LongMap[RequestEntry] = mutable.LongMap()
+  var nextLookupId: Long                                       = 0
+  val lookups: mutable.LongMap[RequestEntry]                   = mutable.LongMap()
   val retainedRequests: mutable.HashMap[String, Set[ActorRef]] = mutable.HashMap()
 
   override def preStart() = {
@@ -44,7 +44,7 @@ class ServiceManager extends Actor {
     case Register(props, name) =>
       log.info(s"Registered $name service")
       try {
-        val ref = context.actorOf(props, name)
+        val ref    = context.actorOf(props, name)
         val result = LookupResult(name, ref)
         //handle logged premature requests
         retainedRequests.remove(name) match {
@@ -58,12 +58,12 @@ class ServiceManager extends Actor {
         val poorlytTimedRequests = lookups.filter {
           _._2.request.equals(name)
         }
-        poorlytTimedRequests.foreach { case (id, entry) =>
-          entry.responder ! result
-          lookups.remove(id)
+        poorlytTimedRequests.foreach {
+          case (id, entry) =>
+            entry.responder ! result
+            lookups.remove(id)
         }
-      }
-      catch {
+      } catch {
         case e: InvalidActorNameException => //if an entry already exists, no harm, no foul, just don't do it again
           log.warn(s"service manager says: service already exists - ${e.getMessage}")
         case e: Exception =>

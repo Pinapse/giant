@@ -32,8 +32,7 @@ final case class TradeFour(value: Int, unk: Int) extends Trade {
   assert(unk > -1 && unk < 16, s"TradeFour value is out of bounds - $unk not in [0-f]")
 }
 
-final case class TradeMessage(trade: Trade)
-  extends PlanetSideGamePacket {
+final case class TradeMessage(trade: Trade) extends PlanetSideGamePacket {
   type Packet = TradeMessage
   def opcode = GamePacketOpcode.TradeMessage
   def encode = TradeMessage.encode(this)
@@ -60,51 +59,56 @@ object TradeFour {
 }
 
 object TradeMessage extends Marshallable[TradeMessage] {
-  private def tradeOneCodec(value: Int): Codec[TradeOne] = (
-    ("u1" | PlanetSideGUID.codec) ::
-    ("u2" | PlanetSideGUID.codec) ::
-    ("u3" | PlanetSideGUID.codec)
-  ).xmap[TradeOne](
-    {
-      case a :: b :: c :: HNil => TradeOne(value, a, b, c)
-    },
-    {
-      case TradeOne(_, a, b, c) => a :: b :: c :: HNil
-    }
-  )
+  private def tradeOneCodec(value: Int): Codec[TradeOne] =
+    (
+      ("u1" | PlanetSideGUID.codec) ::
+        ("u2" | PlanetSideGUID.codec) ::
+        ("u3" | PlanetSideGUID.codec)
+    ).xmap[TradeOne](
+      {
+        case a :: b :: c :: HNil => TradeOne(value, a, b, c)
+      },
+      {
+        case TradeOne(_, a, b, c) => a :: b :: c :: HNil
+      }
+    )
 
-  private def tradeTwoCodec(value: Int): Codec[TradeTwo] = (
-    ("u1" | PlanetSideGUID.codec) ::
-    ("u2" | PlanetSideGUID.codec)
-  ).xmap[TradeTwo](
-    {
-      case a :: b :: HNil => TradeTwo(value, a, b)
-    },
-    {
-      case TradeTwo(_, a, b) => a :: b :: HNil
-    }
-  )
+  private def tradeTwoCodec(value: Int): Codec[TradeTwo] =
+    (
+      ("u1" | PlanetSideGUID.codec) ::
+        ("u2" | PlanetSideGUID.codec)
+    ).xmap[TradeTwo](
+      {
+        case a :: b :: HNil => TradeTwo(value, a, b)
+      },
+      {
+        case TradeTwo(_, a, b) => a :: b :: HNil
+      }
+    )
 
-  private def tradeThreeCodec(value: Int): Codec[TradeThree] = ("u1" | PlanetSideGUID.codec).xmap[TradeThree](
-    a => TradeThree(value, a),
-    {
-      case TradeThree(_, a) => a
-    }
-  )
+  private def tradeThreeCodec(value: Int): Codec[TradeThree] =
+    ("u1" | PlanetSideGUID.codec).xmap[TradeThree](
+      a => TradeThree(value, a),
+      {
+        case TradeThree(_, a) => a
+      }
+    )
 
-  private def tradeFourCodec(value: Int): Codec[TradeFour] = ("u1" | uint4).xmap[TradeFour](
-    a => TradeFour(value, a),
-    {
-      case TradeFour(_, a) => a
-    }
-  )
+  private def tradeFourCodec(value: Int): Codec[TradeFour] =
+    ("u1" | uint4).xmap[TradeFour](
+      a => TradeFour(value, a),
+      {
+        case TradeFour(_, a) => a
+      }
+    )
 
-  private def noTradeCodec(value: Int): Codec[NoTrade] = conditional(included = false, ignore(size = 1)).xmap[NoTrade](
-    _ => NoTrade(value),
-    {
-      case NoTrade(_) => None
-    }
-  )
+  private def noTradeCodec(value: Int): Codec[NoTrade] =
+    conditional(included = false, ignore(size = 1)).xmap[NoTrade](
+      _ => NoTrade(value),
+      {
+        case NoTrade(_) => None
+      }
+    )
 
   private def selectTradeCodec(code: Int): Codec[Trade] = {
     (code match {
@@ -118,7 +122,7 @@ object TradeMessage extends Marshallable[TradeMessage] {
 
   implicit val codec: Codec[TradeMessage] = (
     uint4 >>:~ { code => ("trade" | selectTradeCodec(code)).hlist }
-    ).xmap[TradeMessage](
+  ).xmap[TradeMessage](
     {
       case _ :: trade :: HNil => TradeMessage(trade)
     },

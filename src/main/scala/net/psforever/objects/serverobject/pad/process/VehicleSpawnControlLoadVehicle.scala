@@ -55,7 +55,7 @@ class VehicleSpawnControlLoadVehicle(pad: VehicleSpawnPad) extends VehicleSpawnC
         //resolution
         result.onComplete {
           case Success(Zone.Vehicle.HasSpawned(zone, v))
-          if (temp match { case Some(_order) => _order.vehicle eq v; case _ => false }) =>
+              if (temp match { case Some(_order) => _order.vehicle eq v; case _ => false }) =>
             val definition = v.Definition
             val vtype      = definition.ObjectId
             val vguid      = v.GUID

@@ -22,8 +22,10 @@ class Tool(private val toolDef: ToolDefinition)
     with FireModeSwitch[FireModeDefinition]
     with JammableUnit {
   private var tdef = toolDef
+
   /** index of the current fire mode on the `ToolDefinition`'s list of fire modes */
   private var fireModeIndex: Int = tdef.DefaultFireModeIndex
+
   /** current ammunition slot being used by this fire mode */
   private var ammoSlots: List[Tool.FireModeSlot] = List.empty
   var lastDischarge: Long                        = 0
@@ -130,11 +132,12 @@ object Tool {
     * @param tool the `Tool` being initialized
     */
   def LoadDefinition(tool: Tool): Unit = {
-    val tdef       = tool.Definition
-    val maxSlot    = tdef.FireModes.maxBy(fmode => fmode.AmmoSlotIndex).AmmoSlotIndex
+    val tdef    = tool.Definition
+    val maxSlot = tdef.FireModes.maxBy(fmode => fmode.AmmoSlotIndex).AmmoSlotIndex
     tool.ammoSlots = buildFireModes(tdef, (0 to maxSlot).iterator, tdef.FireModes.toList)
     tool.fireModeIndex = tdef.DefaultFireModeIndex
   }
+
   /**
     * Substitute this `Definition` for the one that was originally provided for this entity.
     * Calling this will not reconstruct the internal fields of the entity.

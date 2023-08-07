@@ -9,10 +9,10 @@ import scodec.codecs._
 import shapeless.{::, HNil}
 
 final case class ClientFinished(
-                                 obj_type: Int,
-                                 pubKey: ByteVector,
-                                 challengeResult: ByteVector
-                               ) extends PlanetSideCryptoPacket {
+    obj_type: Int,
+    pubKey: ByteVector,
+    challengeResult: ByteVector
+) extends PlanetSideCryptoPacket {
   type Packet = ClientFinished
   def opcode = CryptoPacketOpcode.ClientFinished
   def encode = ClientFinished.encode(this)

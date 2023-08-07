@@ -41,14 +41,14 @@ trait SectorPopulation {
     */
   def total: Int = {
     livePlayerList.size +
-    corpseList.size +
-    vehicleList.size +
-    equipmentOnGroundList.size +
-    deployableList.size +
-    buildingList.size +
-    amenityList.size +
-    environmentList.size +
-    projectileList.size
+      corpseList.size +
+      vehicleList.size +
+      equipmentOnGroundList.size +
+      deployableList.size +
+      buildingList.size +
+      amenityList.size +
+      environmentList.size +
+      projectileList.size
   }
 }
 
@@ -56,10 +56,13 @@ trait SectorPopulation {
   * Information about the sector.
   */
 trait SectorTraits {
+
   /** the starting coordinate of the region (in terms of width) */
   def longitude: Float
+
   /** the starting coordinate of the region (in terms of length) */
   def latitude: Float
+
   /** how width and long is the region */
   def span: Int
 }
@@ -117,49 +120,39 @@ class SectorListOf[A](eqFunc: (A, A) => Boolean = (a: A, b: A) => a == b) {
   * @param latitude a starting coordinate of the region (in terms of length)
   * @param span the distance across the sector in both directions
   */
-class Sector(val longitude: Int, val latitude: Int, val span: Int)
-  extends SectorPopulation {
-  private val livePlayers: SectorListOf[Player] = new SectorListOf[Player](
-    (a: Player, b: Player) => a.GUID == b.GUID
+class Sector(val longitude: Int, val latitude: Int, val span: Int) extends SectorPopulation {
+  private val livePlayers: SectorListOf[Player] = new SectorListOf[Player]((a: Player, b: Player) => a.GUID == b.GUID)
+
+  private val corpses: SectorListOf[Player] = new SectorListOf[Player]((a: Player, b: Player) => a eq b)
+
+  private val vehicles: SectorListOf[Vehicle] = new SectorListOf[Vehicle]((a: Vehicle, b: Vehicle) => a eq b)
+
+  private val equipmentOnGround: SectorListOf[Equipment] = new SectorListOf[Equipment]((a: Equipment, b: Equipment) =>
+    a eq b
   )
 
-  private val corpses: SectorListOf[Player] = new SectorListOf[Player](
-    (a: Player, b: Player) => a eq b
+  private val deployables: SectorListOf[Deployable] = new SectorListOf[Deployable]((a: Deployable, b: Deployable) =>
+    a eq b
   )
 
-  private val vehicles: SectorListOf[Vehicle] = new SectorListOf[Vehicle](
-    (a: Vehicle, b: Vehicle) => a eq b
+  private val buildings: SectorListOf[Building] = new SectorListOf[Building]((a: Building, b: Building) =>
+    a.GUID == b.GUID
   )
 
-  private val equipmentOnGround: SectorListOf[Equipment] = new SectorListOf[Equipment](
-    (a: Equipment, b: Equipment) => a eq b
-  )
+  private val amenities: SectorListOf[Amenity] = new SectorListOf[Amenity]((a: Amenity, b: Amenity) => a.GUID == b.GUID)
 
-  private val deployables: SectorListOf[Deployable] = new SectorListOf[Deployable](
-    (a: Deployable, b: Deployable) => a eq b
-  )
+  private val environment: SectorListOf[PieceOfEnvironment] =
+    new SectorListOf[PieceOfEnvironment]((a: PieceOfEnvironment, b: PieceOfEnvironment) => a eq b)
 
-  private val buildings: SectorListOf[Building] = new SectorListOf[Building](
-    (a: Building, b: Building) => a.GUID == b.GUID
-  )
-
-  private val amenities: SectorListOf[Amenity] = new SectorListOf[Amenity](
-    (a: Amenity, b: Amenity) => a.GUID == b.GUID
-  )
-
-  private val environment: SectorListOf[PieceOfEnvironment] = new SectorListOf[PieceOfEnvironment](
-    (a: PieceOfEnvironment, b: PieceOfEnvironment) => a eq b
-  )
-
-  private val projectiles: SectorListOf[Projectile] = new SectorListOf[Projectile](
-    (a: Projectile, b: Projectile) => a.id == b.id
+  private val projectiles: SectorListOf[Projectile] = new SectorListOf[Projectile]((a: Projectile, b: Projectile) =>
+    a.id == b.id
   )
 
   def rangeX: Float = span.toFloat
 
   def rangeY: Float = span.toFloat
 
-  def livePlayerList : List[Player] = livePlayers.list
+  def livePlayerList: List[Player] = livePlayers.list
 
   def corpseList: List[Player] = corpses.list
 
@@ -171,7 +164,7 @@ class Sector(val longitude: Int, val latitude: Int, val span: Int)
 
   def buildingList: List[Building] = buildings.list
 
-  def amenityList : List[Amenity] = amenities.list
+  def amenityList: List[Amenity] = amenities.list
 
   def environmentList: List[PieceOfEnvironment] = environment.list
 
@@ -237,11 +230,12 @@ class Sector(val longitude: Int, val latitude: Int, val span: Int)
 }
 
 object Sector {
+
   /**
     * An sector that is empty forever.
     */
   final val Empty = new Sector(longitude = 0, latitude = 0, span = 0) {
-    override def addTo(o : BlockMapEntity): Boolean = false
+    override def addTo(o: BlockMapEntity): Boolean = false
   }
 }
 
@@ -258,21 +252,21 @@ object Sector {
   * @param environmentList fields that represent the game world environment
   */
 class SectorGroup(
-                   val rangeX: Float,
-                   val rangeY: Float,
-                   val livePlayerList: List[Player],
-                   val corpseList: List[Player],
-                   val vehicleList: List[Vehicle],
-                   val equipmentOnGroundList: List[Equipment],
-                   val deployableList: List[Deployable],
-                   val buildingList: List[Building],
-                   val amenityList: List[Amenity],
-                   val environmentList: List[PieceOfEnvironment],
-                   val projectileList: List[Projectile]
-                 )
-  extends SectorPopulation
+    val rangeX: Float,
+    val rangeY: Float,
+    val livePlayerList: List[Player],
+    val corpseList: List[Player],
+    val vehicleList: List[Vehicle],
+    val equipmentOnGroundList: List[Equipment],
+    val deployableList: List[Deployable],
+    val buildingList: List[Building],
+    val amenityList: List[Amenity],
+    val environmentList: List[PieceOfEnvironment],
+    val projectileList: List[Projectile]
+) extends SectorPopulation
 
 object SectorGroup {
+
   /**
     * Overloaded constructor that takes a single sector
     * and transfers the lists of entities into a single conglomeration of the sector populations.

@@ -36,15 +36,16 @@ class MaxNumberSource(val max: Int) extends NumberSource {
     }
   }
 
-  def get(obj: IdentifiableEntity) : Option[SecureKey] = {
-    ary.zipWithIndex.find { case (key, _) =>
-      key.obj match {
-        case Some(o) => o eq obj
-        case _ => false
-      }
+  def get(obj: IdentifiableEntity): Option[SecureKey] = {
+    ary.zipWithIndex.find {
+      case (key, _) =>
+        key.obj match {
+          case Some(o) => o eq obj
+          case _       => false
+        }
     } match {
       case Some((key, number)) => Some(new SecureKey(number, key))
-      case _=> None
+      case _                   => None
     }
   }
 

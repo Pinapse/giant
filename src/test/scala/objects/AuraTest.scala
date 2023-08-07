@@ -86,7 +86,7 @@ class AuraEffectBehaviorInitTest extends ActorTest {
 }
 
 class AuraEffectBehaviorStartEffectTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
   obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor")
 
@@ -117,7 +117,7 @@ class AuraEffectBehaviorStartEffectTest extends ActorTest {
 }
 
 class AuraEffectBehaviorStartLongerEffectTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
   obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor")
 
@@ -142,7 +142,7 @@ class AuraEffectBehaviorStartLongerEffectTest extends ActorTest {
 }
 
 class AuraEffectBehaviorNoRedundantStartEffectTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
   obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor")
 
@@ -167,7 +167,7 @@ class AuraEffectBehaviorNoRedundantStartEffectTest extends ActorTest {
 }
 
 class AuraEffectBehaviorNoOverrideStartEffectTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
   obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor")
 
@@ -192,9 +192,10 @@ class AuraEffectBehaviorNoOverrideStartEffectTest extends ActorTest {
 }
 
 class AuraEffectBehaviorNoStartUnsupportedEffectTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
-  obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor") //supports Plasma only
+  obj.Actor =
+    system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor") //supports Plasma only
 
   "AuraEffectBehavior" should {
     "not start an effect that is not approved" in {
@@ -206,10 +207,8 @@ class AuraEffectBehaviorNoStartUnsupportedEffectTest extends ActorTest {
   }
 }
 
-
-
 class AuraEffectBehaviorEndEarlyTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
   obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor")
 
@@ -239,7 +238,7 @@ class AuraEffectBehaviorEndEarlyTest extends ActorTest {
 }
 
 class AuraEffectBehaviorEndNothingTest extends ActorTest {
-  val obj = new AuraTest.Entity()
+  val obj         = new AuraTest.Entity()
   val updateProbe = new TestProbe(system)
   obj.Actor = system.actorOf(Props(classOf[AuraTest.Agency], obj, updateProbe.ref), "aura-test-actor")
 
@@ -264,20 +263,21 @@ class AuraEffectBehaviorEndNothingTest extends ActorTest {
 
 object AuraTest {
   class Agency(obj: AuraEffectBehavior.Target, updateRef: ActorRef) extends Actor with AuraEffectBehavior {
-    def AuraTargetObject : Target = obj
+    def AuraTargetObject: Target = obj
     ApplicableEffect(Aura.Plasma)
 
-    def receive: Receive = auraBehavior.orElse {
-      case _ => ;
-    }
+    def receive: Receive =
+      auraBehavior.orElse {
+        case _ => ;
+      }
 
-    def UpdateAuraEffect(target : Target) : Unit = {
+    def UpdateAuraEffect(target: Target): Unit = {
       updateRef ! DoUpdateAuraEffect()
     }
   }
 
   class Entity extends PlanetSideServerObject with AuraContainer {
-    def Faction = PlanetSideEmpire.NEUTRAL
+    def Faction    = PlanetSideEmpire.NEUTRAL
     def Definition = null
   }
 

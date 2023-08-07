@@ -25,28 +25,31 @@ import net.psforever.objects.zones.Zone
   * @param instigation what previous event happened, if any, that caused this explosion
   */
 final case class ExplodingEntityReason(
-                                        entity: SourceEntry,
-                                        source: DamageProperties,
-                                        damageModel: DamageAndResistance,
-                                        instigation: Option[DamageResult]
-                                      ) extends DamageReason {
+    entity: SourceEntry,
+    source: DamageProperties,
+    damageModel: DamageAndResistance,
+    instigation: Option[DamageResult]
+) extends DamageReason {
   def resolution: DamageResolution.Value = DamageResolution.Explosion
 
-  def same(test: DamageReason): Boolean = test match {
-    case eer: ExplodingEntityReason => eer.entity eq entity
-    case _                          => false
-  }
+  def same(test: DamageReason): Boolean =
+    test match {
+      case eer: ExplodingEntityReason => eer.entity eq entity
+      case _                          => false
+    }
 
   /** lay the blame on that which caused this explosion to occur */
-  def adversary: Option[SourceEntry] = instigation match {
-    case Some(prior) => prior.interaction.cause.adversary
-    case None         => Some(entity)
-  }
+  def adversary: Option[SourceEntry] =
+    instigation match {
+      case Some(prior) => prior.interaction.cause.adversary
+      case None        => Some(entity)
+    }
 
   override def attribution: Int = entity.Definition.ObjectId
 }
 
 object ExplodingEntityReason {
+
   /**
     * An overloaded constructor for a wrapper for a "damage source" in damage calculations.
     * @param entity the source of the explosive yield
@@ -55,10 +58,10 @@ object ExplodingEntityReason {
     * @return an `ExplodingEntityReason` entity
     */
   def apply(
-             entity: PlanetSideGameObject with FactionAffinity with Vitality,
-             damageModel: DamageAndResistance,
-             instigation: Option[DamageResult]
-           ): ExplodingEntityReason = {
+      entity: PlanetSideGameObject with FactionAffinity with Vitality,
+      damageModel: DamageAndResistance,
+      instigation: Option[DamageResult]
+  ): ExplodingEntityReason = {
     val definition = entity.Definition.asInstanceOf[ObjectDefinition with VitalityDefinition]
     assert(definition.innateDamage.nonEmpty, "causal entity does not explode")
     ExplodingEntityReason(SourceEntry(entity), definition.innateDamage.get, damageModel, instigation)
@@ -67,14 +70,14 @@ object ExplodingEntityReason {
 
 object ExplodingDamageModifiers {
   trait Mod extends DamageModifiers.Mod {
-    def calculate(damage : Int, data : DamageInteraction, cause : DamageReason) : Int = {
+    def calculate(damage: Int, data: DamageInteraction, cause: DamageReason): Int = {
       cause match {
         case o: ExplodingEntityReason => calculate(damage, data, o)
-        case _ => damage
+        case _                        => damage
       }
     }
 
-    def calculate(damage : Int, data : DamageInteraction, cause : ExplodingEntityReason) : Int
+    def calculate(damage: Int, data: DamageInteraction, cause: ExplodingEntityReason): Int
   }
 }
 
@@ -90,10 +93,12 @@ case object ExplodingRadialDegrade extends ExplodingDamageModifiers.Mod {
       case withPosition: DamageWithPosition =>
         val radius    = withPosition.DamageRadius
         val radiusMin = withPosition.DamageRadiusMin
-        val distance = math.sqrt(Zone.distanceCheck(
-          cause.entity.Definition.asInstanceOf[ObjectDefinition].Geometry(cause.entity),
-          data.target.Definition.Geometry(data.target)
-        ))
+        val distance = math.sqrt(
+          Zone.distanceCheck(
+            cause.entity.Definition.asInstanceOf[ObjectDefinition].Geometry(cause.entity),
+            data.target.Definition.Geometry(data.target)
+          )
+        )
         if (distance <= radiusMin) {
           damage
         } else if (distance <= radius) {

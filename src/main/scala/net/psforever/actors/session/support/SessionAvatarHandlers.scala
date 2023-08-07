@@ -27,23 +27,32 @@ import net.psforever.types._
 import net.psforever.util.Config
 import net.psforever.zones.Zones
 
+object SessionAvatarHandlers {
+  private[support] case class LastUpstream(
+      msg: Option[AvatarResponse.PlayerState],
+      visible: Boolean,
+      shooting: Option[PlanetSideGUID],
+      time: Long
+  )
+}
+
 class SessionAvatarHandlers(
-                             val sessionData: SessionData,
-                             avatarActor: typed.ActorRef[AvatarActor.Command],
-                             chatActor: typed.ActorRef[ChatActor.Command],
-                             implicit val context: ActorContext
-                           ) extends CommonSessionInterfacingFunctionality {
+    val sessionData: SessionData,
+    avatarActor: typed.ActorRef[AvatarActor.Command],
+    chatActor: typed.ActorRef[ChatActor.Command],
+    implicit val context: ActorContext
+) extends CommonSessionInterfacingFunctionality {
   //TODO player characters only exist within a certain range of GUIDs for a given zone; this is overkill
   private[support] var lastSeenStreamMessage: mutable.LongMap[SessionAvatarHandlers.LastUpstream] =
     mutable.LongMap[SessionAvatarHandlers.LastUpstream]()
   private[this] val hidingPlayerRandomizer = new scala.util.Random
 
   /**
-   * na
-   * @param toChannel na
-   * @param guid      na
-   * @param reply     na
-   */
+    * na
+    * @param toChannel na
+    * @param guid      na
+    * @param reply     na
+    */
   def handle(toChannel: String, guid: PlanetSideGUID, reply: AvatarResponse.Response): Unit = {
     val resolvedPlayerGuid = if (player != null && player.HasGUID) {
       player.GUID
@@ -51,7 +60,7 @@ class SessionAvatarHandlers(
       Service.defaultPlayerGUID
     }
     val isNotSameTarget = resolvedPlayerGuid != guid
-    val isSameTarget = !isNotSameTarget
+    val isSameTarget    = !isNotSameTarget
     reply match {
       /* special messages */
       case AvatarResponse.TeardownConnection() =>
@@ -60,59 +69,60 @@ class SessionAvatarHandlers(
 
       /* really common messages (very frequently, every life) */
       case pstate @ AvatarResponse.PlayerState(
-      pos,
-      vel,
-      yaw,
-      pitch,
-      yawUpper,
-      _,
-      isCrouching,
-      isJumping,
-      jumpThrust,
-      isCloaking,
-      isNotRendered,
-      canSeeReallyFar
-      ) if isNotSameTarget =>
+            pos,
+            vel,
+            yaw,
+            pitch,
+            yawUpper,
+            _,
+            isCrouching,
+            isJumping,
+            jumpThrust,
+            isCloaking,
+            isNotRendered,
+            canSeeReallyFar
+          ) if isNotSameTarget =>
         val pstateToSave = pstate.copy(timestamp = 0)
         val (lastMsg, lastTime, lastPosition, wasVisible, wasShooting) = lastSeenStreamMessage.get(guid.guid) match {
-          case Some(SessionAvatarHandlers.LastUpstream(Some(msg), visible, shooting, time)) => (Some(msg), time, msg.pos, visible, shooting)
+          case Some(SessionAvatarHandlers.LastUpstream(Some(msg), visible, shooting, time)) =>
+            (Some(msg), time, msg.pos, visible, shooting)
           case _ => (None, 0L, Vector3.Zero, false, None)
         }
-        val drawConfig = Config.app.game.playerDraw //m
-        val maxRange = drawConfig.rangeMax * drawConfig.rangeMax //sq.m
-        val ourPosition = player.Position //xyz
+        val drawConfig      = Config.app.game.playerDraw                //m
+        val maxRange        = drawConfig.rangeMax * drawConfig.rangeMax //sq.m
+        val ourPosition     = player.Position                           //xyz
         val currentDistance = Vector3.DistanceSquared(ourPosition, pos) //sq.m
         val inDrawableRange = currentDistance <= maxRange
-        val now = System.currentTimeMillis() //ms
+        val now             = System.currentTimeMillis()                //ms
         if (
           sessionData.zoning.zoningStatus != Zoning.Status.Deconstructing &&
           !isNotRendered && inDrawableRange
         ) {
           //conditions where visibility is assured
-          val durationSince = now - lastTime //ms
+          val durationSince                  = now - lastTime //ms
           lazy val previouslyInDrawableRange = Vector3.DistanceSquared(ourPosition, lastPosition) <= maxRange
           lazy val targetDelay = {
             val populationOver = math.max(
               0,
               sessionData.localSector.livePlayerList.size - drawConfig.populationThreshold
             )
-            val distanceAdjustment = math.pow(populationOver / drawConfig.populationStep * drawConfig.rangeStep, 2) //sq.m
+            val distanceAdjustment =
+              math.pow(populationOver / drawConfig.populationStep * drawConfig.rangeStep, 2) //sq.m
             val adjustedDistance = currentDistance + distanceAdjustment //sq.m
             drawConfig.ranges.lastIndexWhere { dist => adjustedDistance > dist * dist } match {
-              case -1 => 1
+              case -1    => 1
               case index => drawConfig.delays(index)
             }
           } //ms
-          if (!wasVisible ||
+          if (
+            !wasVisible ||
             !previouslyInDrawableRange ||
             durationSince > drawConfig.delayMax ||
             (!lastMsg.contains(pstateToSave) &&
-              (canSeeReallyFar ||
-                currentDistance < drawConfig.rangeMin * drawConfig.rangeMin ||
-                sessionData.canSeeReallyFar ||
-                durationSince > targetDelay
-                )
-              )
+            (canSeeReallyFar ||
+            currentDistance < drawConfig.rangeMin * drawConfig.rangeMin ||
+            sessionData.canSeeReallyFar ||
+            durationSince > targetDelay))
           ) {
             //must draw
             sendResponse(
@@ -130,10 +140,16 @@ class SessionAvatarHandlers(
                 isCloaking
               )
             )
-            lastSeenStreamMessage.put(guid.guid, SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible=true, wasShooting, now))
+            lastSeenStreamMessage.put(
+              guid.guid,
+              SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible = true, wasShooting, now)
+            )
           } else {
             //is visible, but skip reinforcement
-            lastSeenStreamMessage.put(guid.guid, SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible=true, wasShooting, lastTime))
+            lastSeenStreamMessage.put(
+              guid.guid,
+              SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible = true, wasShooting, lastTime)
+            )
           }
         } else {
           //conditions where the target is not currently visible
@@ -144,24 +160,29 @@ class SessionAvatarHandlers(
               PlayerStateMessage(
                 guid,
                 Vector3(1f, lat, 1f),
-                vel=None,
-                facingYaw=0f,
-                facingPitch=0f,
-                facingYawUpper=0f,
-                timestamp=0, //is this okay?
+                vel = None,
+                facingYaw = 0f,
+                facingPitch = 0f,
+                facingYawUpper = 0f,
+                timestamp = 0, //is this okay?
                 is_cloaked = isCloaking
               )
             )
-            lastSeenStreamMessage.put(guid.guid, SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible=false, wasShooting, now))
+            lastSeenStreamMessage.put(
+              guid.guid,
+              SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible = false, wasShooting, now)
+            )
           } else {
             //skip drawing altogether
-            lastSeenStreamMessage.put(guid.guid, SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible=false, wasShooting, lastTime))
+            lastSeenStreamMessage.put(
+              guid.guid,
+              SessionAvatarHandlers.LastUpstream(Some(pstateToSave), visible = false, wasShooting, lastTime)
+            )
           }
         }
 
-      case AvatarResponse.ObjectHeld(slot, _)
-        if isSameTarget && player.VisibleSlots.contains(slot) =>
-        sendResponse(ObjectHeldMessage(guid, slot, unk1=true))
+      case AvatarResponse.ObjectHeld(slot, _) if isSameTarget && player.VisibleSlots.contains(slot) =>
+        sendResponse(ObjectHeldMessage(guid, slot, unk1 = true))
         //Stop using proximity terminals if player unholsters a weapon
         continent.GUID(sessionData.terminals.usingMedicalTerminal).collect {
           case term: Terminal with ProximityUnit => sessionData.terminals.StopUsingProximityUnit(term)
@@ -170,34 +191,32 @@ class SessionAvatarHandlers(
           sessionData.stopDeconstructing()
         }
 
-      case AvatarResponse.ObjectHeld(slot, _)
-        if isSameTarget && slot > -1 =>
-        sendResponse(ObjectHeldMessage(guid, slot, unk1=true))
+      case AvatarResponse.ObjectHeld(slot, _) if isSameTarget && slot > -1 =>
+        sendResponse(ObjectHeldMessage(guid, slot, unk1 = true))
 
-      case AvatarResponse.ObjectHeld(_, _)
-        if isSameTarget => ()
+      case AvatarResponse.ObjectHeld(_, _) if isSameTarget => ()
 
       case AvatarResponse.ObjectHeld(_, previousSlot) =>
-        sendResponse(ObjectHeldMessage(guid, previousSlot, unk1=false))
+        sendResponse(ObjectHeldMessage(guid, previousSlot, unk1 = false))
 
       case AvatarResponse.ChangeFireState_Start(weaponGuid)
-        if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
+          if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
         sendResponse(ChangeFireStateMessage_Start(weaponGuid))
         val entry = lastSeenStreamMessage(guid.guid)
         lastSeenStreamMessage.put(guid.guid, entry.copy(shooting = Some(weaponGuid)))
 
-      case AvatarResponse.ChangeFireState_Start(weaponGuid)
-        if isNotSameTarget =>
+      case AvatarResponse.ChangeFireState_Start(weaponGuid) if isNotSameTarget =>
         sendResponse(ChangeFireStateMessage_Start(weaponGuid))
 
       case AvatarResponse.ChangeFireState_Stop(weaponGuid)
-        if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { msg => msg.visible || msg.shooting.nonEmpty } =>
+          if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { msg =>
+            msg.visible || msg.shooting.nonEmpty
+          } =>
         sendResponse(ChangeFireStateMessage_Stop(weaponGuid))
         val entry = lastSeenStreamMessage(guid.guid)
         lastSeenStreamMessage.put(guid.guid, entry.copy(shooting = None))
 
-      case AvatarResponse.ChangeFireState_Stop(weaponGuid)
-        if isNotSameTarget =>
+      case AvatarResponse.ChangeFireState_Stop(weaponGuid) if isNotSameTarget =>
         sendResponse(ChangeFireStateMessage_Stop(weaponGuid))
 
       case AvatarResponse.LoadPlayer(pkt) if isNotSameTarget =>
@@ -223,7 +242,7 @@ class SessionAvatarHandlers(
         sessionData.zoning.CancelZoningProcessWithDescriptiveReason("cancel_dmg")
 
       case AvatarResponse.DestroyDisplay(killer, victim, method, unk)
-        if killer.CharId == avatar.id && killer.Faction != victim.Faction =>
+          if killer.CharId == avatar.id && killer.Faction != victim.Faction =>
         // TODO Temporary thing that should go somewhere else and use proper xp values
         sendResponse(sessionData.destroyDisplayMessage(killer, victim, method, unk))
         avatarActor ! AvatarActor.AwardBep((1000 * Config.app.game.bepRate).toLong, ExperienceType.Normal)
@@ -237,7 +256,7 @@ class SessionAvatarHandlers(
         sendResponse(sessionData.destroyDisplayMessage(killer, victim, method, unk))
 
       case AvatarResponse.TerminalOrderResult(terminalGuid, action, result)
-        if result && (action == TransactionType.Buy || action == TransactionType.Loadout) =>
+          if result && (action == TransactionType.Buy || action == TransactionType.Loadout) =>
         sendResponse(ItemTransactionResultMessage(terminalGuid, action, result))
         sessionData.terminals.lastTerminalOrderFulfillment = true
         AvatarActor.savePlayerData(player)
@@ -251,35 +270,37 @@ class SessionAvatarHandlers(
         sessionData.terminals.lastTerminalOrderFulfillment = true
 
       case AvatarResponse.ChangeExosuit(
-      target,
-      armor,
-      exosuit,
-      subtype,
-      _,
-      maxhand,
-      oldHolsters,
-      holsters,
-      oldInventory,
-      inventory,
-      drop,
-      delete
-      ) if resolvedPlayerGuid == target =>
+            target,
+            armor,
+            exosuit,
+            subtype,
+            _,
+            maxhand,
+            oldHolsters,
+            holsters,
+            oldInventory,
+            inventory,
+            drop,
+            delete
+          ) if resolvedPlayerGuid == target =>
         sendResponse(ArmorChangedMessage(target, exosuit, subtype))
-        sendResponse(PlanetsideAttributeMessage(target, attribute_type=4, armor))
+        sendResponse(PlanetsideAttributeMessage(target, attribute_type = 4, armor))
         //happening to this player
         //cleanup
-        sendResponse(ObjectHeldMessage(target, Player.HandsDownSlot, unk1=false))
+        sendResponse(ObjectHeldMessage(target, Player.HandsDownSlot, unk1 = false))
         (oldHolsters ++ oldInventory ++ delete).foreach {
-          case (_, dguid) => sendResponse(ObjectDeleteMessage(dguid, unk1=0))
+          case (_, dguid) => sendResponse(ObjectDeleteMessage(dguid, unk1 = 0))
         }
         //functionally delete
         delete.foreach { case (obj, _) => TaskWorkflow.execute(GUIDTask.unregisterEquipment(continent.GUID, obj)) }
         //redraw
         if (maxhand) {
-          TaskWorkflow.execute(HoldNewEquipmentUp(player)(
-            Tool(GlobalDefinitions.MAXArms(subtype, player.Faction)),
-            0
-          ))
+          TaskWorkflow.execute(
+            HoldNewEquipmentUp(player)(
+              Tool(GlobalDefinitions.MAXArms(subtype, player.Faction)),
+              0
+            )
+          )
         }
         //draw free hand
         player.FreeHand.Equipment.foreach { obj =>
@@ -308,13 +329,26 @@ class SessionAvatarHandlers(
         }
         DropLeftovers(player)(drop)
 
-      case AvatarResponse.ChangeExosuit(target, armor, exosuit, subtype, slot, _, oldHolsters, holsters, _, _, _, delete) =>
+      case AvatarResponse.ChangeExosuit(
+            target,
+            armor,
+            exosuit,
+            subtype,
+            slot,
+            _,
+            oldHolsters,
+            holsters,
+            _,
+            _,
+            _,
+            delete
+          ) =>
         sendResponse(ArmorChangedMessage(target, exosuit, subtype))
-        sendResponse(PlanetsideAttributeMessage(target, attribute_type=4, armor))
+        sendResponse(PlanetsideAttributeMessage(target, attribute_type = 4, armor))
         //happening to some other player
         sendResponse(ObjectHeldMessage(target, slot, unk1 = false))
         //cleanup
-        (oldHolsters ++ delete).foreach { case (_, guid) => sendResponse(ObjectDeleteMessage(guid, unk1=0)) }
+        (oldHolsters ++ delete).foreach { case (_, guid) => sendResponse(ObjectDeleteMessage(guid, unk1 = 0)) }
         //draw holsters
         holsters.foreach {
           case InventoryItem(obj, index) =>
@@ -330,34 +364,36 @@ class SessionAvatarHandlers(
         }
 
       case AvatarResponse.ChangeLoadout(
-      target,
-      armor,
-      exosuit,
-      subtype,
-      _,
-      maxhand,
-      oldHolsters,
-      holsters,
-      oldInventory,
-      inventory,
-      drops
-      ) if resolvedPlayerGuid == target =>
+            target,
+            armor,
+            exosuit,
+            subtype,
+            _,
+            maxhand,
+            oldHolsters,
+            holsters,
+            oldInventory,
+            inventory,
+            drops
+          ) if resolvedPlayerGuid == target =>
         sendResponse(ArmorChangedMessage(target, exosuit, subtype))
         sendResponse(PlanetsideAttributeMessage(target, attribute_type = 4, armor))
         //happening to this player
-        sendResponse(ObjectHeldMessage(target, Player.HandsDownSlot, unk1=true))
+        sendResponse(ObjectHeldMessage(target, Player.HandsDownSlot, unk1 = true))
         //cleanup
         (oldHolsters ++ oldInventory).foreach {
           case (obj, objGuid) =>
-            sendResponse(ObjectDeleteMessage(objGuid, unk1=0))
+            sendResponse(ObjectDeleteMessage(objGuid, unk1 = 0))
             TaskWorkflow.execute(GUIDTask.unregisterEquipment(continent.GUID, obj))
         }
         //redraw
         if (maxhand) {
-          TaskWorkflow.execute(HoldNewEquipmentUp(player)(
-            Tool(GlobalDefinitions.MAXArms(subtype, player.Faction)),
-            slot = 0
-          ))
+          TaskWorkflow.execute(
+            HoldNewEquipmentUp(player)(
+              Tool(GlobalDefinitions.MAXArms(subtype, player.Faction)),
+              slot = 0
+            )
+          )
         }
         sessionData.applyPurchaseTimersBeforePackingLoadout(player, player, holsters ++ inventory)
         DropLeftovers(player)(drops)
@@ -365,11 +401,11 @@ class SessionAvatarHandlers(
       case AvatarResponse.ChangeLoadout(target, armor, exosuit, subtype, slot, _, oldHolsters, _, _, _, _) =>
         //redraw handled by callbacks
         sendResponse(ArmorChangedMessage(target, exosuit, subtype))
-        sendResponse(PlanetsideAttributeMessage(target, attribute_type=4, armor))
+        sendResponse(PlanetsideAttributeMessage(target, attribute_type = 4, armor))
         //happening to some other player
-        sendResponse(ObjectHeldMessage(target, slot, unk1=false))
+        sendResponse(ObjectHeldMessage(target, slot, unk1 = false))
         //cleanup
-        oldHolsters.foreach { case (_, guid) => sendResponse(ObjectDeleteMessage(guid, unk1=0)) }
+        oldHolsters.foreach { case (_, guid) => sendResponse(ObjectDeleteMessage(guid, unk1 = 0)) }
 
       case AvatarResponse.UseKit(kguid, kObjId) =>
         sendResponse(
@@ -387,7 +423,7 @@ class SessionAvatarHandlers(
             kObjId
           )
         )
-        sendResponse(ObjectDeleteMessage(kguid, unk1=0))
+        sendResponse(ObjectDeleteMessage(kguid, unk1 = 0))
 
       case AvatarResponse.KitNotUsed(_, "") =>
         sessionData.kitToBeUsed = None
@@ -404,24 +440,26 @@ class SessionAvatarHandlers(
 
       /* common messages (maybe once every respawn) */
       case AvatarResponse.Reload(itemGuid)
-        if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
-        sendResponse(ReloadMessage(itemGuid, ammo_clip=1, unk1=0))
+          if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
+        sendResponse(ReloadMessage(itemGuid, ammo_clip = 1, unk1 = 0))
 
       case AvatarResponse.Killed(mount) =>
         //log and chat messages
-        val cause = player.LastDamage.flatMap { damage =>
-          damage.interaction.cause match {
-            case cause: ExplodingEntityReason if cause.entity.isInstanceOf[VehicleSpawnPad] =>
-              //also, @SVCP_Killed_TooCloseToPadOnCreate^n~ or "... within n meters of pad ..."
-              sendResponse(ChatMsg(ChatMessageType.UNK_227, "@SVCP_Killed_OnPadOnCreate"))
-            case _ => ()
+        val cause = player.LastDamage
+          .flatMap { damage =>
+            damage.interaction.cause match {
+              case cause: ExplodingEntityReason if cause.entity.isInstanceOf[VehicleSpawnPad] =>
+                //also, @SVCP_Killed_TooCloseToPadOnCreate^n~ or "... within n meters of pad ..."
+                sendResponse(ChatMsg(ChatMessageType.UNK_227, "@SVCP_Killed_OnPadOnCreate"))
+              case _ => ()
+            }
+            damage match {
+              case damage if damage.adversarial.nonEmpty => Some(damage.adversarial.get.attacker.Name)
+              case damage                                => Some(s"a ${damage.interaction.cause.getClass.getSimpleName}")
+            }
           }
-          damage match {
-            case damage if damage.adversarial.nonEmpty => Some(damage.adversarial.get.attacker.Name)
-            case damage => Some(s"a ${damage.interaction.cause.getClass.getSimpleName}")
-          }
-        }.getOrElse { s"an unfortunate circumstance (probably ${player.Sex.pronounObject} own fault)" }
-        log.info(s"${player.Name} has died, killed by $cause")
+          .getOrElse { s"an unfortunate circumstance (probably ${player.Sex.pronounObject} own fault)" }
+        log.trace(s"${player.Name} has died, killed by $cause")
         if (sessionData.shooting.shotsWhileDead > 0) {
           log.warn(
             s"SHOTS_WHILE_DEAD: client of ${avatar.name} fired ${sessionData.shooting.shotsWhileDead} rounds while character was dead on server"
@@ -440,9 +478,10 @@ class SessionAvatarHandlers(
         sessionData.keepAliveFunc = sessionData.zoning.NormalKeepAlive
         sessionData.zoning.zoningStatus = Zoning.Status.None
         sessionData.zoning.spawn.deadState = DeadState.Dead
-        continent.GUID(mount).collect { case obj: Vehicle =>
-          sessionData.vehicles.ConditionalDriverVehicleControl(obj)
-          sessionData.unaccessContainer(obj)
+        continent.GUID(mount).collect {
+          case obj: Vehicle =>
+            sessionData.vehicles.ConditionalDriverVehicleControl(obj)
+            sessionData.unaccessContainer(obj)
         }
         sessionData.playerActionsToCancel()
         sessionData.terminals.CancelAllProximityUnits()
@@ -470,33 +509,42 @@ class SessionAvatarHandlers(
         sessionData.zoning.spawn.DepictPlayerAsCorpse(tplayer)
 
       case AvatarResponse.Revive(revivalTargetGuid) if resolvedPlayerGuid == revivalTargetGuid =>
-        log.info(s"No time for rest, ${player.Name}.  Back on your feet!")
+        log.trace(s"No time for rest, ${player.Name}.  Back on your feet!")
         sessionData.zoning.spawn.reviveTimer.cancel()
         sessionData.zoning.spawn.deadState = DeadState.Alive
         player.Revive
         val health = player.Health
-        sendResponse(PlanetsideAttributeMessage(revivalTargetGuid, attribute_type=0, health))
-        sendResponse(AvatarDeadStateMessage(DeadState.Alive, timer_max=0, timer=0, player.Position, player.Faction, unk5=true))
+        sendResponse(PlanetsideAttributeMessage(revivalTargetGuid, attribute_type = 0, health))
+        sendResponse(
+          AvatarDeadStateMessage(
+            DeadState.Alive,
+            timer_max = 0,
+            timer = 0,
+            player.Position,
+            player.Faction,
+            unk5 = true
+          )
+        )
         continent.AvatarEvents ! AvatarServiceMessage(
           continent.id,
-          AvatarAction.PlanetsideAttributeToAll(revivalTargetGuid, attribute_type=0, health)
+          AvatarAction.PlanetsideAttributeToAll(revivalTargetGuid, attribute_type = 0, health)
         )
 
       /* uncommon messages (utility, or once in a while) */
       case AvatarResponse.ChangeAmmo(weapon_guid, weapon_slot, previous_guid, ammo_id, ammo_guid, ammo_data)
-        if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
+          if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
         changeAmmoProcedures(weapon_guid, previous_guid, ammo_id, ammo_guid, weapon_slot, ammo_data)
         sendResponse(ChangeAmmoMessage(weapon_guid, 1))
 
       case AvatarResponse.ChangeAmmo(weapon_guid, weapon_slot, previous_guid, ammo_id, ammo_guid, ammo_data)
-        if isNotSameTarget =>
+          if isNotSameTarget =>
         changeAmmoProcedures(weapon_guid, previous_guid, ammo_id, ammo_guid, weapon_slot, ammo_data)
 
       case AvatarResponse.ChangeFireMode(itemGuid, mode) if isNotSameTarget =>
         sendResponse(ChangeFireModeMessage(itemGuid, mode))
 
       case AvatarResponse.ConcealPlayer() =>
-        sendResponse(GenericObjectActionMessage(guid, code=9))
+        sendResponse(GenericObjectActionMessage(guid, code = 9))
 
       case AvatarResponse.EnvironmentalDamage(_, _, _) =>
         //TODO damage marker?
@@ -516,15 +564,18 @@ class SessionAvatarHandlers(
         sessionData.dropSpecialSlotItem()
 
       case AvatarResponse.OxygenState(player, vehicle) =>
-        sendResponse(OxygenStateMessage(
-          DrowningTarget(player.guid, player.progress, player.state),
-          vehicle.flatMap { vinfo => Some(DrowningTarget(vinfo.guid, vinfo.progress, vinfo.state)) }
-        ))
+        sendResponse(
+          OxygenStateMessage(
+            DrowningTarget(player.guid, player.progress, player.state),
+            vehicle.flatMap { vinfo => Some(DrowningTarget(vinfo.guid, vinfo.progress, vinfo.state)) }
+          )
+        )
 
       case AvatarResponse.LoadProjectile(pkt) if isNotSameTarget =>
         sendResponse(pkt)
 
-      case AvatarResponse.ProjectileState(projectileGuid, shotPos, shotVel, shotOrient, seq, end, targetGuid) if isNotSameTarget =>
+      case AvatarResponse.ProjectileState(projectileGuid, shotPos, shotVel, shotOrient, seq, end, targetGuid)
+          if isNotSameTarget =>
         sendResponse(ProjectileStateMessage(projectileGuid, shotPos, shotVel, shotOrient, seq, end, targetGuid))
 
       case AvatarResponse.ProjectileExplodes(projectileGuid, projectile) =>
@@ -534,18 +585,18 @@ class SessionAvatarHandlers(
             projectile.Position,
             shot_vel = Vector3.Zero,
             projectile.Orientation,
-            sequence_num=0,
-            end=true,
-            hit_target_guid=PlanetSideGUID(0)
+            sequence_num = 0,
+            end = true,
+            hit_target_guid = PlanetSideGUID(0)
           )
         )
-        sendResponse(ObjectDeleteMessage(projectileGuid, unk1=2))
+        sendResponse(ObjectDeleteMessage(projectileGuid, unk1 = 2))
 
       case AvatarResponse.ProjectileAutoLockAwareness(mode) =>
         sendResponse(GenericActionMessage(mode))
 
       case AvatarResponse.PutDownFDU(target) if isNotSameTarget =>
-        sendResponse(GenericObjectActionMessage(target, code=53))
+        sendResponse(GenericObjectActionMessage(target, code = 53))
 
       case AvatarResponse.StowEquipment(target, slot, item) if isNotSameTarget =>
         val definition = item.Definition
@@ -559,7 +610,7 @@ class SessionAvatarHandlers(
         )
 
       case AvatarResponse.WeaponDryFire(weaponGuid)
-        if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
+          if isNotSameTarget && lastSeenStreamMessage.get(guid.guid).exists { _.visible } =>
         continent.GUID(weaponGuid).collect {
           case tool: Tool if tool.Magazine == 0 =>
             // check that the magazine is still empty before sending WeaponDryFireMessage
@@ -572,13 +623,13 @@ class SessionAvatarHandlers(
   }
 
   private def changeAmmoProcedures(
-                                    weaponGuid: PlanetSideGUID,
-                                    previousAmmoGuid: PlanetSideGUID,
-                                    ammoTypeId: Int,
-                                    ammoGuid: PlanetSideGUID,
-                                    ammoSlot: Int,
-                                    ammoData: ConstructorData
-                                  ): Unit = {
+      weaponGuid: PlanetSideGUID,
+      previousAmmoGuid: PlanetSideGUID,
+      ammoTypeId: Int,
+      ammoGuid: PlanetSideGUID,
+      ammoSlot: Int,
+      ammoData: ConstructorData
+  ): Unit = {
     sendResponse(ObjectDetachMessage(weaponGuid, previousAmmoGuid, Vector3.Zero, 0))
     //TODO? sendResponse(ObjectDeleteMessage(previousAmmoGuid, 0))
     sendResponse(
@@ -590,13 +641,4 @@ class SessionAvatarHandlers(
       )
     )
   }
-}
-
-object SessionAvatarHandlers {
-  private[support] case class LastUpstream(
-                                            msg: Option[AvatarResponse.PlayerState],
-                                            visible: Boolean,
-                                            shooting: Option[PlanetSideGUID],
-                                            time: Long
-                                          )
 }

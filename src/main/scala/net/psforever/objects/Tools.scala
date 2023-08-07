@@ -7,8 +7,8 @@ import net.psforever.services.Service
 import net.psforever.services.avatar.{AvatarAction, AvatarServiceMessage}
 
 object Tools {
+
   /**
-    *
     * @param player the player performing the revive action
     * @param tool the tool being used to execute the attack;
     *             should have a selected chargeable fire mode

@@ -16,23 +16,25 @@ trait ResistanceSelection {
   def Aggravated: ResistanceSelection.Format
   def Radiation: ResistanceSelection.Format
 
-  def apply(data: DamageInteraction) : ResistanceSelection.Format = data.cause.source.CausesDamageType match {
-    case DamageType.Direct     => Direct
-    case DamageType.Splash     => Splash
-    case DamageType.Lash       => Lash
-    case DamageType.Aggravated => Aggravated
-    case DamageType.Radiation  => Splash
-    case _                     => ResistanceSelection.None
-  }
+  def apply(data: DamageInteraction): ResistanceSelection.Format =
+    data.cause.source.CausesDamageType match {
+      case DamageType.Direct     => Direct
+      case DamageType.Splash     => Splash
+      case DamageType.Lash       => Lash
+      case DamageType.Aggravated => Aggravated
+      case DamageType.Radiation  => Splash
+      case _                     => ResistanceSelection.None
+    }
 
-  def apply(res: DamageType.Value) : ResistanceSelection.Format = res match {
-    case DamageType.Direct     => Direct
-    case DamageType.Splash     => Splash
-    case DamageType.Lash       => Lash
-    case DamageType.Aggravated => Aggravated
-    case DamageType.Radiation  => Splash
-    case _                     => ResistanceSelection.None
-  }
+  def apply(res: DamageType.Value): ResistanceSelection.Format =
+    res match {
+      case DamageType.Direct     => Direct
+      case DamageType.Splash     => Splash
+      case DamageType.Lash       => Lash
+      case DamageType.Aggravated => Aggravated
+      case DamageType.Radiation  => Splash
+      case _                     => ResistanceSelection.None
+    }
 }
 
 object ResistanceSelection {

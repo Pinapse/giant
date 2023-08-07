@@ -504,7 +504,7 @@ Even with all this work, the tests have a high chance of failure just due to bei
 class AvatarReleaseTest extends FreedContextActorTest {
   val guid: NumberPoolHub = new NumberPoolHub(new MaxNumberSource(15))
   val zone = new Zone("test", new ZoneMap("test-map"), 0) {
-    override def SetupNumberPools() : Unit = { }
+    override def SetupNumberPools(): Unit = {}
     GUID(guid)
   }
   zone.init(context)
@@ -527,7 +527,10 @@ class AvatarReleaseTest extends FreedContextActorTest {
       assert(zone.Corpses.size == 1)
       assert(obj.HasGUID)
       val guid = obj.GUID
-      zone.AvatarEvents ! AvatarServiceMessage("test", AvatarAction.Release(obj, zone, Some(1 second))) //alive for one second
+      zone.AvatarEvents ! AvatarServiceMessage(
+        "test",
+        AvatarAction.Release(obj, zone, Some(1 second))
+      ) //alive for one second
 
       val reply1 = subscriber.receiveOne(200 milliseconds)
       assert(reply1.isInstanceOf[AvatarServiceResponse])
@@ -555,7 +558,7 @@ class AvatarReleaseTest extends FreedContextActorTest {
 class AvatarReleaseEarly1Test extends FreedContextActorTest {
   val guid: NumberPoolHub = new NumberPoolHub(new MaxNumberSource(15))
   val zone = new Zone("test", new ZoneMap("test-map"), 0) {
-    override def SetupNumberPools() : Unit = { }
+    override def SetupNumberPools(): Unit = {}
     GUID(guid)
   }
   zone.init(context)
@@ -588,7 +591,9 @@ class AvatarReleaseEarly1Test extends FreedContextActorTest {
       assert(reply1msg.replyMessage.isInstanceOf[AvatarResponse.Release])
       assert(reply1msg.replyMessage.asInstanceOf[AvatarResponse.Release].player == obj)
 
-      zone.AvatarEvents ! AvatarServiceMessage.Corpse(RemoverActor.HurrySpecific(List(obj), zone)) //IMPORTANT: ONE ENTRY
+      zone.AvatarEvents ! AvatarServiceMessage.Corpse(
+        RemoverActor.HurrySpecific(List(obj), zone)
+      ) //IMPORTANT: ONE ENTRY
       val reply2 = subscriber.receiveOne(200 milliseconds)
       assert(reply2.isInstanceOf[AvatarServiceResponse])
       val reply2msg = reply2.asInstanceOf[AvatarServiceResponse]
@@ -607,7 +612,7 @@ class AvatarReleaseEarly1Test extends FreedContextActorTest {
 class AvatarReleaseEarly2Test extends FreedContextActorTest {
   val guid: NumberPoolHub = new NumberPoolHub(new MaxNumberSource(15))
   val zone = new Zone("test", new ZoneMap("test-map"), 0) {
-    override def SetupNumberPools() : Unit = { }
+    override def SetupNumberPools(): Unit = {}
     GUID(guid)
   }
   zone.init(context)

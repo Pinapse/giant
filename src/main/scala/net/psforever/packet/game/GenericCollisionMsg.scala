@@ -44,19 +44,19 @@ object CollisionIs extends IntEnum[CollisionIs] {
   * @param unk3 na
   */
 final case class GenericCollisionMsg(
-                                      collision_type: CollisionIs,
-                                      player: PlanetSideGUID,
-                                      player_health: Int,
-                                      player_pos: Vector3,
-                                      player_velocity: Vector3,
-                                      target: PlanetSideGUID,
-                                      target_health: Int,
-                                      target_pos: Vector3,
-                                      target_velocity: Vector3,
-                                      unk1: Long,
-                                      unk2: Long,
-                                      unk3: Long
-                                    ) extends PlanetSideGamePacket {
+    collision_type: CollisionIs,
+    player: PlanetSideGUID,
+    player_health: Int,
+    player_pos: Vector3,
+    player_velocity: Vector3,
+    target: PlanetSideGUID,
+    target_health: Int,
+    target_pos: Vector3,
+    target_velocity: Vector3,
+    unk1: Long,
+    unk2: Long,
+    unk3: Long
+) extends PlanetSideGamePacket {
   type Packet = GenericCollisionMsg
   def opcode = GamePacketOpcode.GenericCollisionMsg
   def encode = GenericCollisionMsg.encode(this)
@@ -70,17 +70,17 @@ object GenericCollisionMsg extends Marshallable[GenericCollisionMsg] {
 
   implicit val codec: Codec[GenericCollisionMsg] = (
     ("collision_type" | collisionIsCodec) ::
-    ("p" | PlanetSideGUID.codec) ::
-    ("t" | PlanetSideGUID.codec) ::
-    ("p_health" | uint16L) ::
-    ("t_health" | uint16L) ::
-    ("p_vel" | velocityFloatCodec) ::
-    ("t_vel" | velocityFloatCodec) ::
-    ("p_pos" | Vector3.codec_pos) ::
-    ("t_pos" | Vector3.codec_pos) ::
-    ("unk1" | uint32L) ::
-    ("unk2" | uint32L) ::
-    ("unk3" | uint32L)
+      ("p" | PlanetSideGUID.codec) ::
+      ("t" | PlanetSideGUID.codec) ::
+      ("p_health" | uint16L) ::
+      ("t_health" | uint16L) ::
+      ("p_vel" | velocityFloatCodec) ::
+      ("t_vel" | velocityFloatCodec) ::
+      ("p_pos" | Vector3.codec_pos) ::
+      ("t_pos" | Vector3.codec_pos) ::
+      ("unk1" | uint32L) ::
+      ("unk2" | uint32L) ::
+      ("unk3" | uint32L)
   ).xmap[GenericCollisionMsg](
     {
       case ct :: p :: t :: ph :: th :: pv :: tv :: pp :: tp :: u1 :: u2 :: u3 :: HNil =>
