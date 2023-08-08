@@ -70,8 +70,8 @@ object GenericGuidEventBus {
 class GenericGuidEventBus[A <: GenericGuidEventBusMsg](rateLimit: Double)
     extends ActorEventBus
     with SubchannelClassification {
-  private val buffer: concurrent.Map[String, concurrent.Map[PlanetSideGUID, concurrent.Map[String, A]]] =
-    new ConcurrentHashMap[String, concurrent.Map[PlanetSideGUID, concurrent.Map[String, A]]]().asScala
+  private val buffer: concurrent.Map[String, concurrent.Map[String, concurrent.Map[PlanetSideGUID, A]]] =
+    new ConcurrentHashMap[String, concurrent.Map[String, concurrent.Map[PlanetSideGUID, A]]]().asScala
 
   class Scheduler extends Thread {
     val sleepInterval = scala.math.floor(1000.0 / rateLimit).toInt
@@ -79,8 +79,8 @@ class GenericGuidEventBus[A <: GenericGuidEventBusMsg](rateLimit: Double)
       while (true) {
         Thread.sleep(sleepInterval)
         buffer.foreachEntry { (channel, map) =>
-          map.foreachEntry { (guid, map) =>
-            map.foreachEntry { (typeName, event) =>
+          map.foreachEntry { (typeName, map) =>
+            map.foreachEntry { (guid, event) =>
               publishForce(event)
             }
             map.clear()
@@ -108,12 +108,11 @@ class GenericGuidEventBus[A <: GenericGuidEventBusMsg](rateLimit: Double)
     if (rateLimit <= 0 || !event.shouldRateLimit) {
       publishForce(event)
     } else {
-      val cache =
-        buffer
-          .getOrElseUpdate(event.channel, new ConcurrentHashMap[PlanetSideGUID, concurrent.Map[String, A]]().asScala)
-          .getOrElseUpdate(event.guid, new ConcurrentHashMap[String, A]().asScala)
       val eventClassName = event.inner.getClass().getName()
-      cache.updateWith(eventClassName) { _ => Some(event) }
+      buffer
+        .getOrElseUpdate(event.channel, new ConcurrentHashMap[String, concurrent.Map[PlanetSideGUID, A]]().asScala)
+        .getOrElseUpdate(eventClassName, new ConcurrentHashMap[PlanetSideGUID, A]().asScala)
+        .updateWith(event.guid) { _ => Some(event) }
     }
   }
 
